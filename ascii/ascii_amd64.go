@@ -38,7 +38,10 @@ func EqualFold(a, b string) bool {
 }
 
 func IndexFold(a, b string) int {
-	// TODO: implement acceleration for this
+	if hasAVX2 {
+		return indexFoldAvx(a, b)
+	}
+
 	return indexFoldGo(a, b)
 }
 

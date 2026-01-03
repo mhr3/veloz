@@ -374,3 +374,228 @@ int64_t index_mask_avx(unsigned char *data, uint64_t length, uint8_t mask)
 
     return -1;
 }
+
+// AVX2 helper: fold a vector to uppercase (a-z -> A-Z)
+// Returns the uppercased vector
+static inline __m256i fold_to_upper_vec(__m256i v,
+                                        __m256i v_0x20, __m256i v_0x1f,
+                                        __m256i v_0x9a) {
+    // Check if character is lowercase letter [a-z]
+    // Shift range: tmp = v + 0x1f  (now 'a'=0x80, 'z'=0x99)
+    // Note: we check the ORIGINAL value, not (v | 0x20), to avoid
+    // incorrectly detecting uppercase letters as lowercase
+    __m256i tmp = _mm256_add_epi8(v, v_0x1f);
+    // is_lower = (0x9a > tmp) signed - true for 0x80-0x99 (lowercase letters only)
+    __m256i is_lower = _mm256_cmpgt_epi8(v_0x9a, tmp);
+
+    // Mask to subtract 0x20 only from lowercase letters
+    __m256i sub_mask = _mm256_and_si256(is_lower, v_0x20);
+
+    // Subtract 0x20 from lowercase letters to convert to uppercase
+    return _mm256_sub_epi8(v, sub_mask);
+}
+
+// SSE2 helper: fold a 128-bit vector to uppercase (a-z -> A-Z)
+static inline __m128i fold_to_upper_vec_128(__m128i v,
+                                            __m128i v_0x20, __m128i v_0x1f,
+                                            __m128i v_0x9a) {
+    __m128i tmp = _mm_add_epi8(v, v_0x1f);
+    __m128i is_lower = _mm_cmpgt_epi8(v_0x9a, tmp);
+    __m128i sub_mask = _mm_and_si128(is_lower, v_0x20);
+    return _mm_sub_epi8(v, sub_mask);
+}
+
+// Helper to load 1-31 bytes into a 256-bit register (zero-padded)
+// Uses only registers, no stack buffer, no overlapping loads
+static inline __m256i load_data32_avx2(const unsigned char *src, int64_t len) {
+    if (len >= 32) {
+        return _mm256_loadu_si256((const __m256i *)src);
+    } else if (len <= 0) {
+        return _mm256_setzero_si256();
+    }
+
+    uint64_t d0 = 0, d1 = 0, d2 = 0, d3 = 0;
+    int64_t pos;
+
+    // Load d0 (bytes 0-7)
+    if (len >= 8) {
+        __builtin_memcpy(&d0, src, 8);
+    } else {
+        // Partial load into d0 (1-7 bytes)
+        pos = 0;
+        if (len & 4) { uint32_t t; __builtin_memcpy(&t, src, 4); d0 = t; pos = 4; }
+        if (len & 2) { uint16_t t; __builtin_memcpy(&t, src + pos, 2); d0 |= (uint64_t)t << (pos * 8); pos += 2; }
+        if (len & 1) { d0 |= (uint64_t)src[pos] << (pos * 8); }
+        return _mm256_set_epi64x(0, 0, 0, d0);
+    }
+
+    // Load d1 (bytes 8-15)
+    if (len >= 16) {
+        __builtin_memcpy(&d1, src + 8, 8);
+    } else {
+        // Partial load into d1 (1-7 bytes remaining)
+        int64_t rem = len - 8;
+        pos = 0;
+        if (rem & 4) { uint32_t t; __builtin_memcpy(&t, src + 8, 4); d1 = t; pos = 4; }
+        if (rem & 2) { uint16_t t; __builtin_memcpy(&t, src + 8 + pos, 2); d1 |= (uint64_t)t << (pos * 8); pos += 2; }
+        if (rem & 1) { d1 |= (uint64_t)src[8 + pos] << (pos * 8); }
+        return _mm256_set_epi64x(0, 0, d1, d0);
+    }
+
+    // Load d2 (bytes 16-23)
+    if (len >= 24) {
+        __builtin_memcpy(&d2, src + 16, 8);
+    } else {
+        // Partial load into d2 (1-7 bytes remaining)
+        int64_t rem = len - 16;
+        pos = 0;
+        if (rem & 4) { uint32_t t; __builtin_memcpy(&t, src + 16, 4); d2 = t; pos = 4; }
+        if (rem & 2) { uint16_t t; __builtin_memcpy(&t, src + 16 + pos, 2); d2 |= (uint64_t)t << (pos * 8); pos += 2; }
+        if (rem & 1) { d2 |= (uint64_t)src[16 + pos] << (pos * 8); }
+        return _mm256_set_epi64x(0, d2, d1, d0);
+    }
+
+    // Load d3 (bytes 24-31, partial: 1-7 bytes remaining)
+    {
+        int64_t rem = len - 24;
+        pos = 0;
+        if (rem & 4) { uint32_t t; __builtin_memcpy(&t, src + 24, 4); d3 = t; pos = 4; }
+        if (rem & 2) { uint16_t t; __builtin_memcpy(&t, src + 24 + pos, 2); d3 |= (uint64_t)t << (pos * 8); pos += 2; }
+        if (rem & 1) { d3 |= (uint64_t)src[24 + pos] << (pos * 8); }
+    }
+
+    return _mm256_set_epi64x(d3, d2, d1, d0);
+}
+
+// Special case: search for a single byte case-insensitively
+static inline int64_t index_fold_1_byte_avx2(const unsigned char *haystack, int64_t haystack_len,
+                                              uint8_t needle) {
+    const unsigned char *haystack_start = haystack;
+
+    // Uppercase the needle if it's lowercase
+    if (needle >= 'a' && needle <= 'z') needle -= 0x20;
+
+    // Constants for case folding
+    const __m256i v_0x20 = _mm256_set1_epi8(0x20);
+    const __m256i v_0x1f = _mm256_set1_epi8(0x1f);
+    const __m256i v_0x9a = _mm256_set1_epi8((char)0x9a);
+    const __m256i needle_vec = _mm256_set1_epi8(needle);
+
+    // Process 32 bytes at a time
+    for (const unsigned char *data_bound = haystack + haystack_len - (haystack_len % 32);
+         haystack < data_bound; haystack += 32) {
+        __m256i data = _mm256_loadu_si256((const __m256i *)haystack);
+        __m256i folded = fold_to_upper_vec(data, v_0x20, v_0x1f, v_0x9a);
+        __m256i cmp = _mm256_cmpeq_epi8(folded, needle_vec);
+        int mask = _mm256_movemask_epi8(cmp);
+        if (mask) {
+            return (haystack - haystack_start) + __builtin_ctz(mask);
+        }
+    }
+    haystack_len %= 32;
+
+    // Handle remaining bytes with SSE
+    if (haystack_len >= 16) {
+        __m128i v_0x20_128 = _mm256_castsi256_si128(v_0x20);
+        __m128i v_0x1f_128 = _mm256_castsi256_si128(v_0x1f);
+        __m128i v_0x9a_128 = _mm256_castsi256_si128(v_0x9a);
+        __m128i needle_vec_128 = _mm256_castsi256_si128(needle_vec);
+
+        __m128i data = _mm_loadu_si128((const __m128i *)haystack);
+        __m128i folded = fold_to_upper_vec_128(data, v_0x20_128, v_0x1f_128, v_0x9a_128);
+        __m128i cmp = _mm_cmpeq_epi8(folded, needle_vec_128);
+        int mask = _mm_movemask_epi8(cmp);
+        if (mask) {
+            return (haystack - haystack_start) + __builtin_ctz(mask);
+        }
+        haystack += 16;
+        haystack_len -= 16;
+    }
+
+    // Scalar fallback for remaining bytes
+    for (int64_t i = 0; i < haystack_len; i++) {
+        uint8_t c = haystack[i];
+        if (c >= 'a' && c <= 'z') c -= 0x20;
+        if (c == needle) {
+            return (haystack - haystack_start) + i;
+        }
+    }
+
+    return -1;
+}
+
+// Special case: search for a 2-byte needle case-insensitively
+// Uses a simple approach: search for first byte, then verify second byte
+static inline int64_t index_fold_2_byte_avx2(const unsigned char *haystack, int64_t haystack_len,
+                                              const uint16_t *needle) {
+    const int64_t checked_len = haystack_len - 2;
+    if (checked_len < 0) return -1;
+
+    // Extract and uppercase both bytes of the needle
+    const uint8_t first_byte = ((const uint8_t *)needle)[0];
+    uint8_t first_upper = first_byte;
+    if (first_upper >= 'a' && first_upper <= 'z') first_upper -= 0x20;
+
+    const uint8_t second_byte = ((const uint8_t *)needle)[1];
+    uint8_t second_upper = second_byte;
+    if (second_upper >= 'a' && second_upper <= 'z') second_upper -= 0x20;
+
+    // Search for first byte, then verify second byte
+    int64_t i = 0;
+    while (i <= checked_len) {
+        int64_t pos = index_fold_1_byte_avx2(haystack + i, haystack_len - i, first_byte);
+        if (pos < 0 || i + pos > checked_len) return -1;
+
+        // Verify second byte
+        uint8_t c = haystack[i + pos + 1];
+        if (c >= 'a' && c <= 'z') c -= 0x20;
+        if (c == second_upper) {
+            return i + pos;
+        }
+
+        i = i + pos + 1;  // Skip past this position and continue
+    }
+
+    return -1;
+}
+
+// gocc: indexFoldAvx(a, b string) int
+int64_t index_fold_avx2(unsigned char *haystack, int64_t haystack_len,
+                        unsigned char *needle, int64_t needle_len) {
+    // Edge cases
+    if (haystack_len < needle_len) return -1;
+    if (needle_len <= 0) return 0;
+    if (haystack_len == needle_len) {
+        return equal_fold_scalar((const uint8_t *)haystack, (const uint8_t *)needle, needle_len) ? 0 : -1;
+    }
+
+    // Special cases for short needles
+    switch (needle_len) {
+    case 1:
+        return index_fold_1_byte_avx2(haystack, haystack_len, needle[0]);
+    case 2:
+        return index_fold_2_byte_avx2(haystack, haystack_len, (const uint16_t *)needle);
+    }
+
+    // For longer needles: search for first byte, then verify the rest
+    const int64_t checked_len = haystack_len - needle_len;
+    const uint8_t first_byte = needle[0];
+
+    int64_t i = 0;
+    while (i <= checked_len) {
+        // Find next occurrence of first byte
+        int64_t pos = index_fold_1_byte_avx2(haystack + i, haystack_len - i, first_byte);
+        if (pos < 0 || i + pos > checked_len) return -1;
+
+        // Verify the rest of the needle
+        if (equal_fold_scalar((const uint8_t *)(haystack + i + pos + 1),
+                              (const uint8_t *)(needle + 1),
+                              needle_len - 1)) {
+            return i + pos;
+        }
+
+        i = i + pos + 1;  // Skip past this position and continue
+    }
+
+    return -1;
+}
