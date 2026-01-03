@@ -524,39 +524,169 @@ static inline int64_t index_fold_1_byte_avx2(const unsigned char *haystack, int6
     return -1;
 }
 
+// Helper to load 1-15 bytes into a 128-bit register (zero-padded)
+static inline __m128i load_data16_avx2(const unsigned char *src, int64_t len) {
+    if (len >= 16) {
+        return _mm_loadu_si128((const __m128i *)src);
+    } else if (len <= 0) {
+        return _mm_setzero_si128();
+    }
+
+    uint64_t d0 = 0, d1 = 0;
+    int64_t pos;
+
+    // Load d0 (bytes 0-7)
+    if (len >= 8) {
+        __builtin_memcpy(&d0, src, 8);
+        // Load d1 (bytes 8-15, partial)
+        int64_t rem = len - 8;
+        pos = 0;
+        if (rem & 4) { uint32_t t; __builtin_memcpy(&t, src + 8, 4); d1 = t; pos = 4; }
+        if (rem & 2) { uint16_t t; __builtin_memcpy(&t, src + 8 + pos, 2); d1 |= (uint64_t)t << (pos * 8); pos += 2; }
+        if (rem & 1) { d1 |= (uint64_t)src[8 + pos] << (pos * 8); }
+    } else {
+        // Partial load into d0 (1-7 bytes)
+        pos = 0;
+        if (len & 4) { uint32_t t; __builtin_memcpy(&t, src, 4); d0 = t; pos = 4; }
+        if (len & 2) { uint16_t t; __builtin_memcpy(&t, src + pos, 2); d0 |= (uint64_t)t << (pos * 8); pos += 2; }
+        if (len & 1) { d0 |= (uint64_t)src[pos] << (pos * 8); }
+    }
+
+    return _mm_set_epi64x(d1, d0);
+}
+
+// Helper to prepare a 16-bit needle comparison vector (uppercased) for 128-bit
+static inline __m128i prepare_needle16_128(const uint16_t *needle,
+                                           __m128i v_0x20, __m128i v_0x1f,
+                                           __m128i v_0x9a) {
+    __m128i needle_vec = _mm_set1_epi16(*needle);
+    return fold_to_upper_vec_128(needle_vec, v_0x20, v_0x1f, v_0x9a);
+}
+
+// Process a 16-byte block for 2-byte needle search, returns match mask
+// Each bit in the returned mask corresponds to a potential match position
+static inline uint32_t index_fold_2byte_block_128(
+    __m128i folded, __m128i prev_folded,
+    __m128i needle_vec,
+    __m128i v_0x20, __m128i v_0x1f, __m128i v_0x9a) {
+
+    // Compare 16-bit aligned pairs (even positions: 0, 2, 4, ...)
+    __m128i cmp_even = _mm_cmpeq_epi16(folded, needle_vec);
+
+    // Create shifted data for odd positions using alignr
+    // shifted[0] = prev_folded[15], shifted[1] = folded[0], ...
+    __m128i shifted = _mm_alignr_epi8(folded, prev_folded, 15);
+    __m128i cmp_odd = _mm_cmpeq_epi16(shifted, needle_vec);
+
+    // Extract masks
+    int mask_even = _mm_movemask_epi8(cmp_even);
+    int mask_odd = _mm_movemask_epi8(cmp_odd);
+
+    // For 16-bit matches, both bytes of the word are 0xFF
+    // valid_even has bits at positions 0, 2, 4, ... for matches at those byte positions
+    int valid_even = mask_even & (mask_even >> 1) & 0x5555;
+    // valid_odd has bits at positions 0, 2, 4, ... but represents matches at odd positions
+    int valid_odd = mask_odd & (mask_odd >> 1) & 0x5555;
+
+    // Interleave: even positions stay, odd positions shift left by 1
+    // Result: bit N represents a match starting at position N-1 (for the combined view)
+    // We'll handle the -1 offset in the caller
+    return (uint32_t)((valid_even << 1) | valid_odd);
+}
+
 // Special case: search for a 2-byte needle case-insensitively
-// Uses a simple approach: search for first byte, then verify second byte
+// Uses 128-bit SSE with alignr for proper lane handling
 static inline int64_t index_fold_2_byte_avx2(const unsigned char *haystack, int64_t haystack_len,
                                               const uint16_t *needle) {
     const int64_t checked_len = haystack_len - 2;
     if (checked_len < 0) return -1;
 
-    // Extract and uppercase both bytes of the needle
-    const uint8_t first_byte = ((const uint8_t *)needle)[0];
-    uint8_t first_upper = first_byte;
-    if (first_upper >= 'a' && first_upper <= 'z') first_upper -= 0x20;
+    // Constants for case folding (128-bit)
+    const __m128i v_0x20 = _mm_set1_epi8(0x20);
+    const __m128i v_0x1f = _mm_set1_epi8(0x1f);
+    const __m128i v_0x9a = _mm_set1_epi8((char)0x9a);
 
-    const uint8_t second_byte = ((const uint8_t *)needle)[1];
-    uint8_t second_upper = second_byte;
-    if (second_upper >= 'a' && second_upper <= 'z') second_upper -= 0x20;
+    // Prepare uppercased needle vector
+    const __m128i needle_vec = prepare_needle16_128(needle, v_0x20, v_0x1f, v_0x9a);
 
-    // Search for first byte, then verify second byte
-    int64_t i = 0;
-    while (i <= checked_len) {
-        int64_t pos = index_fold_1_byte_avx2(haystack + i, haystack_len - i, first_byte);
-        if (pos < 0 || i + pos > checked_len) return -1;
+    __m128i prev_folded = _mm_setzero_si128();
 
-        // Verify second byte
-        uint8_t c = haystack[i + pos + 1];
-        if (c >= 'a' && c <= 'z') c -= 0x20;
-        if (c == second_upper) {
-            return i + pos;
+    // Process 16 bytes at a time
+    // Loop until we've processed all positions that could yield a match
+    // The shifted comparison can find matches at position (i + pos - 1), so we need
+    // to continue while (i - 1) <= checked_len, i.e., i <= checked_len + 1
+    for (int64_t i = 0; i <= checked_len + 16; i += 16) {
+        int64_t remaining = haystack_len - i;
+        if (remaining <= 0) {
+            // No more data, but we still need to check if prev block's last byte
+            // combined with nothing gives a match (it won't, so break)
+            break;
+        }
+        __m128i data = (remaining >= 16) ? _mm_loadu_si128((const __m128i *)(haystack + i))
+                                          : load_data16_avx2(haystack + i, remaining);
+        __m128i folded = fold_to_upper_vec_128(data, v_0x20, v_0x1f, v_0x9a);
+
+        uint32_t matches = index_fold_2byte_block_128(folded, prev_folded, needle_vec,
+                                                       v_0x20, v_0x1f, v_0x9a);
+        prev_folded = folded;
+
+        // On first iteration, clear bit 0 (represents position -1 which is invalid)
+        if (i == 0) {
+            matches &= ~1u;
         }
 
-        i = i + pos + 1;  // Skip past this position and continue
+        while (matches) {
+            int pos = __builtin_ctz(matches);
+            matches &= matches - 1;  // Clear lowest bit
+
+            int64_t match_pos = i + pos - 1;
+            if (match_pos >= 0 && match_pos <= checked_len) {
+                return match_pos;
+            }
+        }
     }
 
     return -1;
+}
+
+#define MIN(a, b) ((a) > (b) ? (b) : (a))
+#define MAX(a, b) ((a) < (b) ? (b) : (a))
+
+// Process a 16-byte block for first2+last2 matching
+static inline uint32_t index_fold_block_128(
+    __m128i data, __m128i data_end,
+    __m128i prev_data, __m128i prev_data_end,
+    __m128i first2, __m128i last2,
+    __m128i v_0x20, __m128i v_0x1f, __m128i v_0x9a) {
+
+    // Fold to uppercase
+    __m128i folded = fold_to_upper_vec_128(data, v_0x20, v_0x1f, v_0x9a);
+    __m128i folded_end = fold_to_upper_vec_128(data_end, v_0x20, v_0x1f, v_0x9a);
+    __m128i prev_folded = fold_to_upper_vec_128(prev_data, v_0x20, v_0x1f, v_0x9a);
+    __m128i prev_folded_end = fold_to_upper_vec_128(prev_data_end, v_0x20, v_0x1f, v_0x9a);
+
+    // Even positions: direct 16-bit compare
+    __m128i cmp_first_even = _mm_cmpeq_epi16(folded, first2);
+    __m128i cmp_last_even = _mm_cmpeq_epi16(folded_end, last2);
+    __m128i cmp_even = _mm_and_si128(cmp_first_even, cmp_last_even);
+
+    // Odd positions: use alignr to shift by 1 byte
+    __m128i shifted = _mm_alignr_epi8(folded, prev_folded, 15);
+    __m128i shifted_end = _mm_alignr_epi8(folded_end, prev_folded_end, 15);
+    __m128i cmp_first_odd = _mm_cmpeq_epi16(shifted, first2);
+    __m128i cmp_last_odd = _mm_cmpeq_epi16(shifted_end, last2);
+    __m128i cmp_odd = _mm_and_si128(cmp_first_odd, cmp_last_odd);
+
+    // Extract masks
+    int mask_even = _mm_movemask_epi8(cmp_even);
+    int mask_odd = _mm_movemask_epi8(cmp_odd);
+
+    // Valid matches: both bytes of the 16-bit word must be 0xFF
+    int valid_even = mask_even & (mask_even >> 1) & 0x5555;
+    int valid_odd = mask_odd & (mask_odd >> 1) & 0x5555;
+
+    // Combine: bit N in result represents position N-1 in the block
+    return (uint32_t)((valid_even << 1) | valid_odd);
 }
 
 // gocc: indexFoldAvx(a, b string) int
@@ -577,24 +707,57 @@ int64_t index_fold_avx2(unsigned char *haystack, int64_t haystack_len,
         return index_fold_2_byte_avx2(haystack, haystack_len, (const uint16_t *)needle);
     }
 
-    // For longer needles: search for first byte, then verify the rest
+    // Constants for case folding (128-bit)
+    const __m128i v_0x20 = _mm_set1_epi8(0x20);
+    const __m128i v_0x1f = _mm_set1_epi8(0x1f);
+    const __m128i v_0x9a = _mm_set1_epi8((char)0x9a);
+
+    // Prepare first2 and last2 comparison vectors (uppercased)
+    const __m128i first2 = prepare_needle16_128((const uint16_t *)needle, v_0x20, v_0x1f, v_0x9a);
+    const __m128i last2 = prepare_needle16_128((const uint16_t *)(needle + needle_len - 2), v_0x20, v_0x1f, v_0x9a);
+
     const int64_t checked_len = haystack_len - needle_len;
-    const uint8_t first_byte = needle[0];
+    __m128i prev_data = _mm_setzero_si128();
+    __m128i prev_data_end = _mm_setzero_si128();
 
-    int64_t i = 0;
-    while (i <= checked_len) {
-        // Find next occurrence of first byte
-        int64_t pos = index_fold_1_byte_avx2(haystack + i, haystack_len - i, first_byte);
-        if (pos < 0 || i + pos > checked_len) return -1;
+    // Process 16 bytes at a time
+    // Continue until we've checked all positions (shifted comparison needs extra iterations)
+    for (int64_t i = 0; i <= checked_len + 16; i += 16) {
+        int64_t remaining = haystack_len - i;
+        if (remaining <= 0) break;
 
-        // Verify the rest of the needle
-        if (equal_fold_scalar((const uint8_t *)(haystack + i + pos + 1),
-                              (const uint8_t *)(needle + 1),
-                              needle_len - 1)) {
-            return i + pos;
+        __m128i data = (remaining >= 16) ? _mm_loadu_si128((const __m128i *)(haystack + i))
+                                          : load_data16_avx2(haystack + i, remaining);
+        int64_t end_remaining = remaining - needle_len + 2;
+        __m128i data_end = (end_remaining >= 16) ? _mm_loadu_si128((const __m128i *)(haystack + i + needle_len - 2))
+                                                  : (end_remaining > 0) ? load_data16_avx2(haystack + i + needle_len - 2, end_remaining)
+                                                                        : _mm_setzero_si128();
+
+        uint32_t candidates = index_fold_block_128(data, data_end, prev_data, prev_data_end,
+                                                    first2, last2, v_0x20, v_0x1f, v_0x9a);
+        prev_data = data;
+        prev_data_end = data_end;
+
+        // On first iteration, clear bit 0 (represents position -1)
+        if (i == 0) {
+            candidates &= ~1u;
         }
 
-        i = i + pos + 1;  // Skip past this position and continue
+        while (candidates) {
+            int pos = __builtin_ctz(candidates);
+            candidates &= candidates - 1;
+
+            int64_t match_pos = i + pos - 1;
+            if (match_pos < 0 || match_pos > checked_len) continue;
+
+            // Verify the middle part of the needle (skip first2 and last2)
+            if (needle_len <= 4 ||
+                equal_fold_scalar((const uint8_t *)(haystack + match_pos + 2),
+                                  (const uint8_t *)(needle + 2),
+                                  needle_len - 4)) {
+                return match_pos;
+            }
+        }
     }
 
     return -1;
