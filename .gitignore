@@ -1,0 +1,12 @@
+ascii_bench.test
+ascii_fuzz.test
+*.arm64
+**/testdata/fuzz/
+
+# Build/test artifacts
+*.test
+test.bin
+*.prof
+*.bak
+bench*.txt
+TODO.md

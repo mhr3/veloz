@@ -1,11 +1,11 @@
 module github.com/mhr3/veloz
 
-go 1.22.4
+go 1.24.0
 
 require (
 	github.com/segmentio/asm v1.2.1
 	github.com/stretchr/testify v1.11.1
-	golang.org/x/sys v0.0.0-20220412211240-33da011f77ad
+	golang.org/x/sys v0.39.0
 )
 
 require (
