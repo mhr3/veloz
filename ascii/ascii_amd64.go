@@ -1,12 +1,13 @@
 package ascii
 
 import (
+	"github.com/mhr3/veloz/internal/bytealg"
 	"golang.org/x/sys/cpu"
 )
 
 var (
 	hasSSE41 = cpu.X86.HasSSE41
-	hasAVX2  = cpu.X86.HasAVX
+	hasAVX2  = cpu.X86.HasAVX2
 )
 
 func ValidString(s string) bool {
@@ -45,4 +46,9 @@ func IndexFold(a, b string) int {
 func indexFoldRabinKarp(a, b string) int {
 	// FIXME: definitely not Rabin-Karp
 	return indexFoldGo(a, b)
+}
+
+// Index finds the first case-sensitive match of needle in haystack.
+func Index(haystack, needle string) int {
+	return bytealg.Index(haystack, needle)
 }
