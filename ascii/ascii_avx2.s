@@ -146,17 +146,23 @@ DATA LCPI1_4<>+0x10(SB)/8, $0xfcfcfcfcfcfcfcfc
 DATA LCPI1_4<>+0x18(SB)/8, $0xfcfcfcfcfcfcfcfc
 GLOBL LCPI1_4<>(SB), (RODATA|NOPTR), $32
 
-DATA LCPI1_6<>+0x00(SB)/8, $0xc0c0c0c0c0c0c0c0
-DATA LCPI1_6<>+0x08(SB)/8, $0xc0c0c0c0c0c0c0c0
-DATA LCPI1_6<>+0x10(SB)/8, $0xc0c0c0c0c0c0c0c0
-DATA LCPI1_6<>+0x18(SB)/8, $0xc0c0c0c0c0c0c0c0
+DATA LCPI1_6<>+0x00(SB)/8, $0x0707070707070707
+DATA LCPI1_6<>+0x08(SB)/8, $0x0707070707070707
+DATA LCPI1_6<>+0x10(SB)/8, $0x0707070707070707
+DATA LCPI1_6<>+0x18(SB)/8, $0x0707070707070707
 GLOBL LCPI1_6<>(SB), (RODATA|NOPTR), $32
 
-DATA LCPI1_7<>+0x00(SB)/8, $0xe0e0e0e0e0e0e0e0
-DATA LCPI1_7<>+0x08(SB)/8, $0xe0e0e0e0e0e0e0e0
-DATA LCPI1_7<>+0x10(SB)/8, $0xe0e0e0e0e0e0e0e0
-DATA LCPI1_7<>+0x18(SB)/8, $0xe0e0e0e0e0e0e0e0
+DATA LCPI1_7<>+0x00(SB)/8, $0x8040201008040201
+DATA LCPI1_7<>+0x08(SB)/8, $0x8040201008040201
+DATA LCPI1_7<>+0x10(SB)/8, $0x8040201008040201
+DATA LCPI1_7<>+0x18(SB)/8, $0x8040201008040201
 GLOBL LCPI1_7<>(SB), (RODATA|NOPTR), $32
+
+DATA LCPI1_8<>+0x00(SB)/8, $0xffffffffffffffff
+DATA LCPI1_8<>+0x08(SB)/8, $0xffffffffffffffff
+DATA LCPI1_8<>+0x10(SB)/8, $0xffffffffffffffff
+DATA LCPI1_8<>+0x18(SB)/8, $0xffffffffffffffff
+GLOBL LCPI1_8<>(SB), (RODATA|NOPTR), $32
 
 DATA LCPI1_1<>+0x00(SB)/8, $0x0101010101010101
 GLOBL LCPI1_1<>(SB), (RODATA|NOPTR), $8
@@ -166,6 +172,9 @@ GLOBL LCPI1_3<>(SB), (RODATA|NOPTR), $8
 
 DATA LCPI1_5<>+0x00(SB)/8, $0x0404040404040404
 GLOBL LCPI1_5<>(SB), (RODATA|NOPTR), $8
+
+DATA LCPI1_9<>+0x00(SB)/8, $0x8040201008040201
+GLOBL LCPI1_9<>(SB), (RODATA|NOPTR), $8
 
 TEXT ·indexAnyAvxBitset(SB), NOSPLIT, $0-56
 	MOVQ         data+0(FP), DI
@@ -201,71 +210,63 @@ TEXT ·indexAnyAvxBitset(SB), NOSPLIT, $0-56
 	LONG         $0xe4efd9c5             // VPXOR X4, X4, X4                     // vpxor	xmm4, xmm4, xmm4
 	VPBROADCASTQ LCPI1_1<>(SB), Y6       // <--                                  // vpbroadcastq	ymm6, qword ptr [rip + .LCPI1_1]
 	VPBROADCASTQ LCPI1_3<>(SB), Y8       // <--                                  // vpbroadcastq	ymm8, qword ptr [rip + .LCPI1_3]
-	VPBROADCASTQ LCPI1_5<>(SB), Y10      // <--                                  // vpbroadcastq	ymm10, qword ptr [rip + .LCPI1_5]
+	VPBROADCASTQ LCPI1_5<>(SB), Y9       // <--                                  // vpbroadcastq	ymm9, qword ptr [rip + .LCPI1_5]
 
 LBB1_3:
-	LONG  $0x6f7e21c4; WORD $0x172c // VMOVDQU 0(DI)(R10*1), Y13            // vmovdqu	ymm13, ymmword ptr [rdi + r10]
-	LONG  $0x710dc1c4; WORD $0x04f5 // VPSLLW $0x4, Y13, Y14                // vpsllw	ymm14, ymm13, 4
-	VPAND LCPI1_0<>(SB), Y14, Y14   // <--                                  // vpand	ymm14, ymm14, ymmword ptr [rip + .LCPI1_0]
-	LONG  $0x645d41c4; BYTE $0xf6   // VPCMPGTB Y14, Y4, Y14                // vpcmpgtb	ymm14, ymm4, ymm14
-	LONG  $0xf6db0dc5               // VPAND Y6, Y14, Y14                   // vpand	ymm14, ymm14, ymm6
-	LONG  $0x7105c1c4; WORD $0x03f5 // VPSLLW $0x3, Y13, Y15                // vpsllw	ymm15, ymm13, 3
-	VPAND LCPI1_2<>(SB), Y15, Y15   // <--                                  // vpand	ymm15, ymm15, ymmword ptr [rip + .LCPI1_2]
-	LONG  $0x645d41c4; BYTE $0xff   // VPCMPGTB Y15, Y4, Y15                // vpcmpgtb	ymm15, ymm4, ymm15
-	LONG  $0xdb0541c4; BYTE $0xf8   // VPAND Y8, Y15, Y15                   // vpand	ymm15, ymm15, ymm8
-	LONG  $0xeb0d41c4; BYTE $0xf7   // VPOR Y15, Y14, Y14                   // vpor	ymm14, ymm14, ymm15
-	LONG  $0x7105c1c4; WORD $0x02f5 // VPSLLW $0x2, Y13, Y15                // vpsllw	ymm15, ymm13, 2
-	VPAND LCPI1_4<>(SB), Y15, Y15   // <--                                  // vpand	ymm15, ymm15, ymmword ptr [rip + .LCPI1_4]
-	LONG  $0x645d41c4; BYTE $0xff   // VPCMPGTB Y15, Y4, Y15                // vpcmpgtb	ymm15, ymm4, ymm15
-	LONG  $0xdb0541c4; BYTE $0xfa   // VPAND Y10, Y15, Y15                  // vpand	ymm15, ymm15, ymm10
-	LONG  $0xeb0d41c4; BYTE $0xf7   // VPOR Y15, Y14, Y14                   // vpor	ymm14, ymm14, ymm15
-	LONG  $0xf85d41c4; BYTE $0xfd   // VPSUBB Y13, Y4, Y15                  // vpsubb	ymm15, ymm4, ymm13
-	LONG  $0xfedb05c5               // VPAND Y6, Y15, Y15                   // vpand	ymm15, ymm15, ymm6
-	LONG  $0x7155c1c4; WORD $0x06f5 // VPSLLW $0x6, Y13, Y5                 // vpsllw	ymm5, ymm13, 6
-	VPAND LCPI1_6<>(SB), Y5, Y5     // <--                                  // vpand	ymm5, ymm5, ymmword ptr [rip + .LCPI1_6]
-	LONG  $0xed64ddc5               // VPCMPGTB Y5, Y4, Y5                  // vpcmpgtb	ymm5, ymm4, ymm5
-	LONG  $0xeddbbdc5               // VPAND Y5, Y8, Y5                     // vpand	ymm5, ymm8, ymm5
-	LONG  $0xedeb85c5               // VPOR Y5, Y15, Y5                     // vpor	ymm5, ymm15, ymm5
-	LONG  $0x7105c1c4; WORD $0x05f5 // VPSLLW $0x5, Y13, Y15                // vpsllw	ymm15, ymm13, 5
-	VPAND LCPI1_7<>(SB), Y15, Y15   // <--                                  // vpand	ymm15, ymm15, ymmword ptr [rip + .LCPI1_7]
-	LONG  $0x645d41c4; BYTE $0xff   // VPCMPGTB Y15, Y4, Y15                // vpcmpgtb	ymm15, ymm4, ymm15
-	LONG  $0xdb0541c4; BYTE $0xfa   // VPAND Y10, Y15, Y15                  // vpand	ymm15, ymm15, ymm10
-	LONG  $0xedeb85c5               // VPOR Y5, Y15, Y5                     // vpor	ymm5, ymm15, ymm5
-	LONG  $0xfc1541c4; BYTE $0xfd   // VPADDB Y13, Y13, Y15                 // vpaddb	ymm15, ymm13, ymm13
-	LONG  $0x645d41c4; BYTE $0xff   // VPCMPGTB Y15, Y4, Y15                // vpcmpgtb	ymm15, ymm4, ymm15
-	LONG  $0x645dc1c4; BYTE $0xfd   // VPCMPGTB Y13, Y4, Y7                 // vpcmpgtb	ymm7, ymm4, ymm13
-	LONG  $0x006542c4; BYTE $0xce   // VPSHUFB Y14, Y3, Y9                  // vpshufb	ymm9, ymm3, ymm14
-	LONG  $0x006d42c4; BYTE $0xde   // VPSHUFB Y14, Y2, Y11                 // vpshufb	ymm11, ymm2, ymm14
-	LONG  $0x007542c4; BYTE $0xe6   // VPSHUFB Y14, Y1, Y12                 // vpshufb	ymm12, ymm1, ymm14
-	LONG  $0x007d42c4; BYTE $0xf6   // VPSHUFB Y14, Y0, Y14                 // vpshufb	ymm14, ymm0, ymm14
-	LONG  $0xcddb35c5               // VPAND Y5, Y9, Y9                     // vpand	ymm9, ymm9, ymm5
-	LONG  $0xcc6435c5               // VPCMPGTB Y4, Y9, Y9                  // vpcmpgtb	ymm9, ymm9, ymm4
-	LONG  $0xdddb25c5               // VPAND Y5, Y11, Y11                   // vpand	ymm11, ymm11, ymm5
-	LONG  $0xe5db1dc5               // VPAND Y5, Y12, Y12                   // vpand	ymm12, ymm12, ymm5
-	LONG  $0xeddb8dc5               // VPAND Y5, Y14, Y5                    // vpand	ymm5, ymm14, ymm5
-	LONG  $0xf7eb05c5               // VPOR Y7, Y15, Y14                    // vpor	ymm14, ymm15, ymm7
-	LONG  $0xdf0d41c4; BYTE $0xc9   // VPANDN Y9, Y14, Y9                   // vpandn	ymm9, ymm14, ymm9
-	LONG  $0xe4641dc5               // VPCMPGTB Y4, Y12, Y12                // vpcmpgtb	ymm12, ymm12, ymm4
-	LONG  $0xdf0541c4; BYTE $0xe4   // VPANDN Y12, Y15, Y12                 // vpandn	ymm12, ymm15, ymm12
-	LONG  $0xdb1d41c4; BYTE $0xe5   // VPAND Y13, Y12, Y12                  // vpand	ymm12, ymm12, ymm13
-	LONG  $0xdc6425c5               // VPCMPGTB Y4, Y11, Y11                // vpcmpgtb	ymm11, ymm11, ymm4
-	LONG  $0xdf4541c4; BYTE $0xdb   // VPANDN Y11, Y7, Y11                  // vpandn	ymm11, ymm7, ymm11
-	LONG  $0xdb2541c4; BYTE $0xdf   // VPAND Y15, Y11, Y11                  // vpand	ymm11, ymm11, ymm15
-	LONG  $0xffdb85c5               // VPAND Y7, Y15, Y7                    // vpand	ymm7, ymm15, ymm7
-	LONG  $0xec64d5c5               // VPCMPGTB Y4, Y5, Y5                  // vpcmpgtb	ymm5, ymm5, ymm4
-	LONG  $0xefdbd5c5               // VPAND Y7, Y5, Y5                     // vpand	ymm5, ymm5, ymm7
-	LONG  $0xedebb5c5               // VPOR Y5, Y9, Y5                      // vpor	ymm5, ymm9, ymm5
-	LONG  $0xedeba5c5               // VPOR Y5, Y11, Y5                     // vpor	ymm5, ymm11, ymm5
-	LONG  $0xedeb9dc5               // VPOR Y5, Y12, Y5                     // vpor	ymm5, ymm12, ymm5
-	LONG  $0xddd7fdc5               // VPMOVMSKB Y5, BX                     // vpmovmskb	ebx, ymm5
-	WORD  $0xdb85                   // TESTL BX, BX                         // test	ebx, ebx
-	JNE   LBB1_14                   // <--                                  // jne	.LBB1_14
-	LEAQ  0(DI)(R10*1), BX          // <--                                  // lea	rbx, [rdi + r10]
-	ADDQ  $0x20, BX                 // <--                                  // add	rbx, 32
-	ADDQ  $0x20, R10                // <--                                  // add	r10, 32
-	CMPQ  BX, R11                   // <--                                  // cmp	rbx, r11
-	JB    LBB1_3                    // <--                                  // jb	.LBB1_3
-	ADDQ  DI, R10                   // <--                                  // add	r10, rdi
+	LONG         $0x6f7e21c4; WORD $0x1734 // VMOVDQU 0(DI)(R10*1), Y14            // vmovdqu	ymm14, ymmword ptr [rdi + r10]
+	LONG         $0x7105c1c4; WORD $0x04f6 // VPSLLW $0x4, Y14, Y15                // vpsllw	ymm15, ymm14, 4
+	VPAND        LCPI1_0<>(SB), Y15, Y15   // <--                                  // vpand	ymm15, ymm15, ymmword ptr [rip + .LCPI1_0]
+	LONG         $0x645d41c4; BYTE $0xff   // VPCMPGTB Y15, Y4, Y15                // vpcmpgtb	ymm15, ymm4, ymm15
+	LONG         $0xfedb05c5               // VPAND Y6, Y15, Y15                   // vpand	ymm15, ymm15, ymm6
+	LONG         $0x7155c1c4; WORD $0x03f6 // VPSLLW $0x3, Y14, Y5                 // vpsllw	ymm5, ymm14, 3
+	VPAND        LCPI1_2<>(SB), Y5, Y5     // <--                                  // vpand	ymm5, ymm5, ymmword ptr [rip + .LCPI1_2]
+	LONG         $0xed64ddc5               // VPCMPGTB Y5, Y4, Y5                  // vpcmpgtb	ymm5, ymm4, ymm5
+	LONG         $0xeddbbdc5               // VPAND Y5, Y8, Y5                     // vpand	ymm5, ymm8, ymm5
+	LONG         $0xedeb85c5               // VPOR Y5, Y15, Y5                     // vpor	ymm5, ymm15, ymm5
+	LONG         $0x7105c1c4; WORD $0x02f6 // VPSLLW $0x2, Y14, Y15                // vpsllw	ymm15, ymm14, 2
+	VPAND        LCPI1_4<>(SB), Y15, Y15   // <--                                  // vpand	ymm15, ymm15, ymmword ptr [rip + .LCPI1_4]
+	LONG         $0x645d41c4; BYTE $0xff   // VPCMPGTB Y15, Y4, Y15                // vpcmpgtb	ymm15, ymm4, ymm15
+	LONG         $0xdb0541c4; BYTE $0xf9   // VPAND Y9, Y15, Y15                   // vpand	ymm15, ymm15, ymm9
+	LONG         $0xedeb85c5               // VPOR Y5, Y15, Y5                     // vpor	ymm5, ymm15, ymm5
+	VPAND        LCPI1_6<>(SB), Y14, Y15   // <--                                  // vpand	ymm15, ymm14, ymmword ptr [rip + .LCPI1_6]
+	VPBROADCASTQ LCPI1_9<>(SB), Y7         // <--                                  // vpbroadcastq	ymm7, qword ptr [rip + .LCPI1_9]
+	LONG         $0x004542c4; BYTE $0xff   // VPSHUFB Y15, Y7, Y15                 // vpshufb	ymm15, ymm7, ymm15
+	LONG         $0xfc0dc1c4; BYTE $0xfe   // VPADDB Y14, Y14, Y7                  // vpaddb	ymm7, ymm14, ymm14
+	LONG         $0xff64ddc5               // VPCMPGTB Y7, Y4, Y7                  // vpcmpgtb	ymm7, ymm4, ymm7
+	LONG         $0x645d41c4; BYTE $0xd6   // VPCMPGTB Y14, Y4, Y10                // vpcmpgtb	ymm10, ymm4, ymm14
+	LONG         $0x006562c4; BYTE $0xdd   // VPSHUFB Y5, Y3, Y11                  // vpshufb	ymm11, ymm3, ymm5
+	LONG         $0x006d62c4; BYTE $0xe5   // VPSHUFB Y5, Y2, Y12                  // vpshufb	ymm12, ymm2, ymm5
+	LONG         $0x007562c4; BYTE $0xed   // VPSHUFB Y5, Y1, Y13                  // vpshufb	ymm13, ymm1, ymm5
+	LONG         $0x007de2c4; BYTE $0xed   // VPSHUFB Y5, Y0, Y5                   // vpshufb	ymm5, ymm0, ymm5
+	LONG         $0xdb2541c4; BYTE $0xdf   // VPAND Y15, Y11, Y11                  // vpand	ymm11, ymm11, ymm15
+	LONG         $0xdb1d41c4; BYTE $0xe7   // VPAND Y15, Y12, Y12                  // vpand	ymm12, ymm12, ymm15
+	LONG         $0xdb1541c4; BYTE $0xef   // VPAND Y15, Y13, Y13                  // vpand	ymm13, ymm13, ymm15
+	LONG         $0xeddb85c5               // VPAND Y5, Y15, Y5                    // vpand	ymm5, ymm15, ymm5
+	LONG         $0xdc7425c5               // VPCMPEQB Y4, Y11, Y11                // vpcmpeqb	ymm11, ymm11, ymm4
+	LONG         $0xffeb2dc5               // VPOR Y7, Y10, Y15                    // vpor	ymm15, ymm10, ymm7
+	LONG         $0xeb2541c4; BYTE $0xdf   // VPOR Y15, Y11, Y11                   // vpor	ymm11, ymm11, ymm15
+	LONG         $0xe4741dc5               // VPCMPEQB Y4, Y12, Y12                // vpcmpeqb	ymm12, ymm12, ymm4
+	VPXOR        LCPI1_8<>(SB), Y11, Y11   // <--                                  // vpxor	ymm11, ymm11, ymmword ptr [rip + .LCPI1_8]
+	LONG         $0xeb2d41c4; BYTE $0xe4   // VPOR Y12, Y10, Y12                   // vpor	ymm12, ymm10, ymm12
+	LONG         $0xe7df1dc5               // VPANDN Y7, Y12, Y12                  // vpandn	ymm12, ymm12, ymm7
+	LONG         $0xeb1d41c4; BYTE $0xdb   // VPOR Y11, Y12, Y11                   // vpor	ymm11, ymm12, ymm11
+	LONG         $0xe47415c5               // VPCMPEQB Y4, Y13, Y12                // vpcmpeqb	ymm12, ymm13, ymm4
+	LONG         $0xe7eb1dc5               // VPOR Y7, Y12, Y12                    // vpor	ymm12, ymm12, ymm7
+	LONG         $0xdf1d41c4; BYTE $0xe6   // VPANDN Y14, Y12, Y12                 // vpandn	ymm12, ymm12, ymm14
+	LONG         $0xec74d5c5               // VPCMPEQB Y4, Y5, Y5                  // vpcmpeqb	ymm5, ymm5, ymm4
+	LONG         $0xdf55c1c4; BYTE $0xea   // VPANDN Y10, Y5, Y5                   // vpandn	ymm5, ymm5, ymm10
+	LONG         $0xefdbd5c5               // VPAND Y7, Y5, Y5                     // vpand	ymm5, ymm5, ymm7
+	LONG         $0xedeb9dc5               // VPOR Y5, Y12, Y5                     // vpor	ymm5, ymm12, ymm5
+	LONG         $0xedeba5c5               // VPOR Y5, Y11, Y5                     // vpor	ymm5, ymm11, ymm5
+	LONG         $0xddd7fdc5               // VPMOVMSKB Y5, BX                     // vpmovmskb	ebx, ymm5
+	WORD         $0xdb85                   // TESTL BX, BX                         // test	ebx, ebx
+	JNE          LBB1_14                   // <--                                  // jne	.LBB1_14
+	LEAQ         0(DI)(R10*1), BX          // <--                                  // lea	rbx, [rdi + r10]
+	ADDQ         $0x20, BX                 // <--                                  // add	rbx, 32
+	ADDQ         $0x20, R10                // <--                                  // add	r10, 32
+	CMPQ         BX, R11                   // <--                                  // cmp	rbx, r11
+	JB           LBB1_3                    // <--                                  // jb	.LBB1_3
+	ADDQ         DI, R10                   // <--                                  // add	r10, rdi
 
 LBB1_6:
 	WORD $0x8548; BYTE $0xf6 // TESTQ SI, SI                         // test	rsi, rsi

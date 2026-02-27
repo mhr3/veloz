@@ -114,11 +114,13 @@ int64_t index_any_avx_bitset(unsigned char *data, uint64_t data_len,
     const __m256i mask01 = _mm256_set1_epi8(0x01);
     const __m256i mask02 = _mm256_set1_epi8(0x02);
     const __m256i mask04 = _mm256_set1_epi8(0x04);
+    const __m256i mask07 = _mm256_set1_epi8(0x07);
     const __m256i mask08 = _mm256_set1_epi8(0x08);
     const __m256i mask10 = _mm256_set1_epi8(0x10);
     const __m256i mask20 = _mm256_set1_epi8(0x20);
     const __m256i mask40 = _mm256_set1_epi8(0x40);
     const __m256i mask80 = _mm256_set1_epi8((char)0x80);
+    const __m256i bit_lut = broadcast_word_bytes(0x8040201008040201ULL);
 
     const __m256i table0 = broadcast_word_bytes(bitset0);
     const __m256i table1 = broadcast_word_bytes(bitset1);
@@ -136,11 +138,9 @@ int64_t index_any_avx_bitset(unsigned char *data, uint64_t data_len,
         __m256i idx2 = _mm256_and_si256(_mm256_cmpgt_epi8(_mm256_and_si256(low6, mask20), zero), mask04);
         __m256i byte_idx = _mm256_or_si256(_mm256_or_si256(idx0, idx1), idx2);
 
-        // bit_mask = 1 << (c & 7), computed branchlessly per byte
-        __m256i bit0 = _mm256_and_si256(_mm256_cmpgt_epi8(_mm256_and_si256(low6, mask01), zero), mask01);
-        __m256i bit1 = _mm256_and_si256(_mm256_cmpgt_epi8(_mm256_and_si256(low6, mask02), zero), mask02);
-        __m256i bit2 = _mm256_and_si256(_mm256_cmpgt_epi8(_mm256_and_si256(low6, mask04), zero), mask04);
-        __m256i bit_mask = _mm256_or_si256(_mm256_or_si256(bit0, bit1), bit2);
+        // bit_mask = 1 << (c & 7) via 8-byte LUT
+        __m256i bit_idx = _mm256_and_si256(low6, mask07);
+        __m256i bit_mask = _mm256_shuffle_epi8(bit_lut, bit_idx);
 
         // bucket masks from the top 2 bits: [00, 01, 10, 11]
         __m256i bit6 = _mm256_cmpgt_epi8(_mm256_and_si256(d, mask40), zero);
