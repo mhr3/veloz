@@ -6,7 +6,7 @@ import (
 
 var (
 	hasSSE41 = cpu.X86.HasSSE41
-	hasAVX2  = cpu.X86.HasAVX
+	hasAVX2  = cpu.X86.HasAVX2
 )
 
 func ValidString(s string) bool {
@@ -57,6 +57,9 @@ func IndexAny(s, chars string) int {
 func (bs ByteSet) IndexAny(s string) int {
 	if bs.bitset == [4]uint64{} {
 		return -1
+	}
+	if hasAVX2 && len(s) >= 32 {
+		return indexAnyAvxBitset(s, bs.bitset[0], bs.bitset[1], bs.bitset[2], bs.bitset[3])
 	}
 	return indexAnyGoBitset(s, &bs.bitset)
 }
