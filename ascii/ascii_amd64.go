@@ -49,19 +49,19 @@ func indexFoldRabinKarp(a, b string) int {
 
 // IndexAny finds the first occurrence of any byte from chars in data.
 func IndexAny(s, chars string) int {
-	return NewCharSet(chars).IndexAny(s)
+	return NewByteSet(chars).IndexAny(s)
 }
 
-// IndexAny returns the index of the first byte in s that is in the CharSet,
+// IndexAny returns the index of the first byte in s that is in the ByteSet,
 // or -1 if no such byte exists.
-func (cs CharSet) IndexAny(s string) int {
-	if cs.bitset == [4]uint64{} {
+func (bs ByteSet) IndexAny(s string) int {
+	if bs.bitset == [4]uint64{} {
 		return -1
 	}
-	return indexAnyGoBitset(s, &cs.bitset)
+	return indexAnyGoBitset(s, &bs.bitset)
 }
 
-// ContainsAny reports whether any byte in s is in the CharSet.
-func (cs CharSet) ContainsAny(s string) bool {
-	return cs.IndexAny(s) >= 0
+// ContainsAny reports whether any byte in s is in the ByteSet.
+func (bs ByteSet) ContainsAny(s string) bool {
+	return bs.IndexAny(s) >= 0
 }

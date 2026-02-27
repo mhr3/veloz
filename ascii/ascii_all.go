@@ -1,19 +1,27 @@
 package ascii
 
-// CharSet represents a precomputed character set for fast IndexAny lookups.
-// Build once with NewCharSet, then reuse with cs.IndexAny().
-type CharSet struct {
+// ByteSet represents a precomputed byte set for fast IndexAny lookups.
+// Build once with NewByteSet, then reuse with bs.IndexAny().
+type ByteSet struct {
 	bitset [4]uint64
 }
 
-// NewCharSet creates a CharSet from the given characters.
-func NewCharSet(chars string) CharSet {
-	var cs CharSet
+// CharSet is kept as an alias for backward compatibility.
+type CharSet = ByteSet
+
+// NewByteSet creates a ByteSet from the given characters.
+func NewByteSet(chars string) ByteSet {
+	var bs ByteSet
 	for i := 0; i < len(chars); i++ {
 		c := chars[i]
-		cs.bitset[c>>6] |= 1 << (c & 63)
+		bs.bitset[c>>6] |= 1 << (c & 63)
 	}
-	return cs
+	return bs
+}
+
+// NewCharSet is kept for backward compatibility.
+func NewCharSet(chars string) ByteSet {
+	return NewByteSet(chars)
 }
 
 // ContainsAny reports whether any byte from chars is in data.
