@@ -531,3 +531,80 @@ func FuzzIndexFold(f *testing.F) {
 		}
 	})
 }
+
+func TestSearcherCaseSensitive(t *testing.T) {
+	tests := []struct {
+		haystack, needle string
+		want             int
+	}{
+		{"", "", 0},
+		{"", "a", -1},
+		{"a", "", 0},
+		{"abc", "a", 0},
+		{"abc", "A", -1}, // case-sensitive: 'A' not found
+		{"abc", "b", 1},
+		{"abc", "B", -1}, // case-sensitive
+		{"abc", "c", 2},
+		{"abc", "d", -1},
+		{"hello world", "world", 6},
+		{"Hello World", "hello", -1}, // case-sensitive: 'hello' not found
+		{"Hello World", "Hello", 0},
+		{"The Quick Brown Fox", "Quick", 4},
+		{"The Quick Brown Fox", "quick", -1}, // case-sensitive
+		{"The Quick Brown Fox", "Fox", 16},
+		{"The Quick Brown Fox", "xyz", -1},
+		// Longer strings
+		{strings.Repeat("a", 100) + "NEEDLE" + strings.Repeat("b", 100), "NEEDLE", 100},
+		{strings.Repeat("a", 100) + "NEEDLE" + strings.Repeat("b", 100), "needle", -1}, // case-sensitive
+		{strings.Repeat("x", 1000) + "QuIcK", "QuIcK", 1000},
+		{strings.Repeat("x", 1000) + "QuIcK", "quick", -1}, // case-sensitive
+		// Edge cases
+		{strings.Repeat("x", 20) + "needle", "needle", 20},
+		{strings.Repeat("x", 17) + "QZ", "QZ", 17},
+		{strings.Repeat("x", 25) + "abc", "abc", 25},
+		{strings.Repeat("y", 31) + "z", "z", 31},
+	}
+
+	for _, tt := range tests {
+		s := NewSearcher(tt.needle, true) // case-sensitive
+		if got := s.Index(tt.haystack); got != tt.want {
+			t.Errorf("Searcher(%q, true).Index(%q) = %d, want %d", tt.needle, tt.haystack, got, tt.want)
+		}
+		// Verify against strings.Index
+		if want := strings.Index(tt.haystack, tt.needle); want != tt.want {
+			t.Errorf("strings.Index(%q, %q) = %d, want %d", tt.haystack, tt.needle, want, tt.want)
+		}
+	}
+}
+
+func TestSearcherCaseInsensitive(t *testing.T) {
+	tests := []struct {
+		haystack, needle string
+		want             int
+	}{
+		{"", "", 0},
+		{"", "a", -1},
+		{"a", "", 0},
+		{"abc", "a", 0},
+		{"abc", "A", 0},
+		{"abc", "b", 1},
+		{"abc", "B", 1},
+		{"hello world", "WORLD", 6},
+		{"Hello World", "hello", 0},
+		{"The Quick Brown Fox", "quick", 4},
+		// Longer strings
+		{strings.Repeat("a", 100) + "NEEDLE" + strings.Repeat("b", 100), "needle", 100},
+		{strings.Repeat("x", 1000) + "QuIcK", "quick", 1000},
+		// Edge cases
+		{strings.Repeat("x", 127) + "needle", "needle", 127},
+		{strings.Repeat("x", 128) + "needle", "needle", 128},
+		{strings.Repeat("x", 129) + "needle", "needle", 129},
+	}
+
+	for _, tt := range tests {
+		s := NewSearcher(tt.needle, false) // case-insensitive
+		if got := s.Index(tt.haystack); got != tt.want {
+			t.Errorf("Searcher(%q, false).Index(%q) = %d, want %d", tt.needle, tt.haystack, got, tt.want)
+		}
+	}
+}
