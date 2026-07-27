@@ -93,6 +93,115 @@ bool is_ascii_avx(unsigned char *src, uint64_t src_len)
     return (data32 & 0x80808080) ? false : true;
 }
 
+static inline __m256i broadcast_word_bytes(uint64_t word)
+{
+    __m128i lo = _mm_cvtsi64_si128((long long)word);
+    __m128i table = _mm_unpacklo_epi64(lo, lo);
+    return _mm256_broadcastsi128_si256(table);
+}
+
+// gocc: indexAnyAvxBitset(data string, bitset0 uint64, bitset1 uint64, bitset2 uint64, bitset3 uint64) int
+int64_t index_any_avx_bitset(unsigned char *data, uint64_t data_len,
+    uint64_t bitset0, uint64_t bitset1, uint64_t bitset2, uint64_t bitset3)
+{
+    if (data_len == 0) {
+        return -1;
+    }
+
+    const unsigned char *data_start = data;
+    const __m256i zero = _mm256_setzero_si256();
+    const __m256i all_ones = _mm256_set1_epi8((char)0xFF);
+
+    const __m256i mask01 = _mm256_set1_epi8(0x01);
+    const __m256i mask02 = _mm256_set1_epi8(0x02);
+    const __m256i mask04 = _mm256_set1_epi8(0x04);
+    const __m256i mask07 = _mm256_set1_epi8(0x07);
+    const __m256i mask08 = _mm256_set1_epi8(0x08);
+    const __m256i mask10 = _mm256_set1_epi8(0x10);
+    const __m256i mask20 = _mm256_set1_epi8(0x20);
+    const __m256i mask40 = _mm256_set1_epi8(0x40);
+    const __m256i mask80 = _mm256_set1_epi8((char)0x80);
+    const __m256i bit_lut = broadcast_word_bytes(0x8040201008040201ULL);
+
+    const __m256i table0 = broadcast_word_bytes(bitset0);
+    const __m256i table1 = broadcast_word_bytes(bitset1);
+    const __m256i table2 = broadcast_word_bytes(bitset2);
+    const __m256i table3 = broadcast_word_bytes(bitset3);
+
+    for (const unsigned char *data32_end = (data + data_len) - (data_len % 32); data < data32_end; data += 32)
+    {
+        __m256i d = _mm256_loadu_si256((const __m256i *)data);
+        __m256i low6 = _mm256_and_si256(d, _mm256_set1_epi8(0x3F));
+
+        // byte_idx = (c & 0x38) >> 3, computed branchlessly per byte
+        __m256i idx0 = _mm256_and_si256(_mm256_cmpgt_epi8(_mm256_and_si256(low6, mask08), zero), mask01);
+        __m256i idx1 = _mm256_and_si256(_mm256_cmpgt_epi8(_mm256_and_si256(low6, mask10), zero), mask02);
+        __m256i idx2 = _mm256_and_si256(_mm256_cmpgt_epi8(_mm256_and_si256(low6, mask20), zero), mask04);
+        __m256i byte_idx = _mm256_or_si256(_mm256_or_si256(idx0, idx1), idx2);
+
+        // bit_mask = 1 << (c & 7) via 8-byte LUT
+        __m256i bit_idx = _mm256_and_si256(low6, mask07);
+        __m256i bit_mask = _mm256_shuffle_epi8(bit_lut, bit_idx);
+
+        // bucket masks from the top 2 bits: [00, 01, 10, 11]
+        __m256i bit6 = _mm256_cmpgt_epi8(_mm256_and_si256(d, mask40), zero);
+        __m256i bit7 = _mm256_cmpgt_epi8(zero, _mm256_and_si256(d, mask80));
+        __m256i not6 = _mm256_xor_si256(bit6, all_ones);
+        __m256i not7 = _mm256_xor_si256(bit7, all_ones);
+
+        __m256i bucket0 = _mm256_and_si256(not6, not7);
+        __m256i bucket1 = _mm256_and_si256(bit6, not7);
+        __m256i bucket2 = _mm256_and_si256(not6, bit7);
+        __m256i bucket3 = _mm256_and_si256(bit6, bit7);
+
+        __m256i word_bytes0 = _mm256_shuffle_epi8(table0, byte_idx);
+        __m256i word_bytes1 = _mm256_shuffle_epi8(table1, byte_idx);
+        __m256i word_bytes2 = _mm256_shuffle_epi8(table2, byte_idx);
+        __m256i word_bytes3 = _mm256_shuffle_epi8(table3, byte_idx);
+
+        __m256i set0 = _mm256_and_si256(word_bytes0, bit_mask);
+        __m256i set1 = _mm256_and_si256(word_bytes1, bit_mask);
+        __m256i set2 = _mm256_and_si256(word_bytes2, bit_mask);
+        __m256i set3 = _mm256_and_si256(word_bytes3, bit_mask);
+
+        __m256i is_set0 = _mm256_xor_si256(_mm256_cmpeq_epi8(set0, zero), all_ones);
+        __m256i is_set1 = _mm256_xor_si256(_mm256_cmpeq_epi8(set1, zero), all_ones);
+        __m256i is_set2 = _mm256_xor_si256(_mm256_cmpeq_epi8(set2, zero), all_ones);
+        __m256i is_set3 = _mm256_xor_si256(_mm256_cmpeq_epi8(set3, zero), all_ones);
+
+        __m256i hit0 = _mm256_and_si256(is_set0, bucket0);
+        __m256i hit1 = _mm256_and_si256(is_set1, bucket1);
+        __m256i hit2 = _mm256_and_si256(is_set2, bucket2);
+        __m256i hit3 = _mm256_and_si256(is_set3, bucket3);
+
+        __m256i hits = _mm256_or_si256(_mm256_or_si256(hit0, hit1), _mm256_or_si256(hit2, hit3));
+        int hit_mask = _mm256_movemask_epi8(hits);
+        if (hit_mask != 0) {
+            return (data - data_start) + __builtin_ctz(hit_mask);
+        }
+    }
+
+    data_len %= 32;
+
+    // Scalar tail for remaining bytes
+    for (uint64_t i = 0; i < data_len; i++) {
+        unsigned char c = data[i];
+        uint64_t word;
+        switch (c >> 6) {
+            case 0: word = bitset0; break;
+            case 1: word = bitset1; break;
+            case 2: word = bitset2; break;
+            default: word = bitset3; break;
+        }
+        if (word & (1ULL << (c & 63))) {
+            return (data - data_start) + i;
+        }
+    }
+
+    return -1;
+}
+
+
 #include "ascii_scalar.c"
 
 // AVX2 helper: check if 32 bytes are equal (case-insensitive)

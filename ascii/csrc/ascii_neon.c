@@ -2,6 +2,84 @@
 #include <stdbool.h>
 #include <arm_neon.h>
 
+// IndexAny using 256-bit bitset approach.
+// Supports unlimited search chars with consistent O(n) performance.
+// The bitset is passed pre-built from Go to avoid stack arrays in C.
+//
+// gocc: indexAnyNeonBitset(data string, bitset0 uint64, bitset1 uint64, bitset2 uint64, bitset3 uint64) int
+int64_t index_any_neon_bitset(unsigned char *data, uint64_t data_len,
+    uint64_t bitset0, uint64_t bitset1, uint64_t bitset2, uint64_t bitset3)
+{
+    if (data_len == 0) {
+        return -1;
+    }
+
+    const uint64_t blockSize = 16;
+    const unsigned char *data_start = data;
+
+    // Build 256-bit bitset from 4 uint64s - fits in 2 NEON registers for TBL2
+    uint8x16x2_t bitset;
+    bitset.val[0] = vcombine_u8(vcreate_u8(bitset0), vcreate_u8(bitset1));
+    bitset.val[1] = vcombine_u8(vcreate_u8(bitset2), vcreate_u8(bitset3));
+
+    // Mask to extract bit position (0-7) and index (0-31)
+    const uint8x16_t mask7 = vdupq_n_u8(7);
+    const uint8x16_t mask31 = vdupq_n_u8(31);
+
+    // Bit position lookup table: 1<<0, 1<<1, ..., 1<<7 (repeated for 16 bytes)
+    // In little-endian: byte 0 = 0x01, byte 1 = 0x02, ..., byte 7 = 0x80
+    const uint8x16_t bit_lut = vcombine_u8(
+        vcreate_u8(0x8040201008040201ULL),
+        vcreate_u8(0x8040201008040201ULL)
+    );
+
+    // Process 16 bytes at a time
+    for (const unsigned char *data_end = (data + data_len) - (data_len % blockSize); data < data_end; data += blockSize)
+    {
+        uint8x16_t d = vld1q_u8(data);
+
+        // idx = d >> 3 (which byte in 32-byte bitset, masked to 0-31)
+        uint8x16_t idx = vandq_u8(vshrq_n_u8(d, 3), mask31);
+
+        // bit_pos = d & 7 (which bit within that byte)
+        uint8x16_t bit_pos = vandq_u8(d, mask7);
+
+        // Look up the bitset byte for each lane
+        uint8x16_t bitset_bytes = vqtbl2q_u8(bitset, idx);
+
+        // Look up the bit mask for each lane (bit_lut[bit_pos] = 1 << bit_pos)
+        uint8x16_t bit_masks = vqtbl1q_u8(bit_lut, bit_pos);
+
+        // Check if the bit is set: (bitset_bytes & bit_masks) != 0
+        uint8x16_t match = vtstq_u8(bitset_bytes, bit_masks);
+
+        // Check if any match found
+        uint64_t match64 = vget_lane_u64(vshrn_n_u16(match, 4), 0);
+        if (match64) {
+            int pos = __builtin_ctzll(match64) / 4;
+            return (data - data_start) + pos;
+        }
+    }
+    data_len %= blockSize;
+
+    // Handle remainder with scalar bitset lookup
+    for (uint64_t i = 0; i < data_len; i++) {
+        unsigned char c = data[i];
+        uint64_t word;
+        switch (c >> 6) {
+            case 0: word = bitset0; break;
+            case 1: word = bitset1; break;
+            case 2: word = bitset2; break;
+            default: word = bitset3; break;
+        }
+        if (word & (1ULL << (c & 63))) {
+            return (data - data_start) + i;
+        }
+    }
+
+    return -1;
+}
+
 // gocc: ValidString(data string) bool
 bool ascii_valid_string(unsigned char *data, uint64_t length)
 {

@@ -5,6 +5,9 @@ package ascii
 
 
 //go:noescape
+func indexAnyNeonBitset(data string, bitset0 uint64, bitset1 uint64, bitset2 uint64, bitset3 uint64) int
+
+//go:noescape
 func ValidString(data string) bool
 
 //go:noescape

@@ -573,3 +573,254 @@ func FuzzIndexFold(f *testing.F) {
 		}
 	})
 }
+
+func TestIndexAny(t *testing.T) {
+	tests := []struct {
+		s, chars string
+		want     int
+	}{
+		{"", "", -1},
+		{"", "a", -1},
+		{"a", "", -1},
+		{"abc", "a", 0},
+		{"abc", "b", 1},
+		{"abc", "c", 2},
+		{"abc", "d", -1},
+		{"abc", "cb", 1},
+		{"abc", "dc", 2},
+		{"abc", "xyz", -1},
+		{"abcdefghijklmnop", "p", 15},
+		{"abcdefghijklmnop", "op", 14},
+		{"abcdefghijklmnop", "xyz", -1},
+		{"hello world", " ", 5},
+		{"hello world", "\t\n ", 5},
+		{"hello\tworld", "\t\n ", 5},
+		{"hello\nworld", "\t\n ", 5},
+		// Longer strings to test SIMD paths
+		{strings.Repeat("x", 100) + "y", "y", 100},
+		{strings.Repeat("x", 100) + "y", "yz", 100},
+		{strings.Repeat("x", 1000) + "abc", "abc", 1000},
+		{strings.Repeat("x", 1000), "abc", -1},
+		// Multiple chars in set
+		{"the quick brown fox", "aeiou", 2}, // 'e' in 'the'
+		{"xyz", "aeiou", -1},
+		// Edge cases: duplicates in chars (should still work)
+		{"abc", "aaa", 0},
+		{"abc", "bbb", 1},
+		{"abc", "aaabbbccc", 0},
+		// Edge case: >16 chars
+		{"abcdefghijklmnopqrstuvwxyz", "1234567890!@#$%^&*()z", 25},
+		// Edge case: >64 chars (falls back to Go)
+		{"test", strings.Repeat("x", 65) + "t", 0},
+		// Edge case: single char strings
+		{"a", "a", 0},
+		{"a", "b", -1},
+		{"b", "abc", 0},
+		// Edge case: non-ASCII in haystack (should still find ASCII chars)
+		{"hello\x80world", " ", -1},
+		{"hello\x80world", "w", 6},
+		{"\xff\xfe\xfd", "abc", -1},
+		// Edge case: match at various positions within vector
+		{strings.Repeat("a", 15) + "x", "x", 15},
+		{strings.Repeat("a", 16) + "x", "x", 16},
+		{strings.Repeat("a", 17) + "x", "x", 17},
+		{strings.Repeat("a", 31) + "x", "x", 31},
+		{strings.Repeat("a", 32) + "x", "x", 32},
+		{strings.Repeat("a", 33) + "x", "x", 33},
+	}
+
+	for _, tt := range tests {
+		if got := IndexAny(tt.s, tt.chars); got != tt.want {
+			t.Errorf("IndexAny(%q, %q) = %d, want %d", tt.s, tt.chars, got, tt.want)
+		}
+	}
+}
+
+func TestByteSetIndexAny(t *testing.T) {
+	tests := []struct {
+		s, chars string
+		want     int
+	}{
+		{"", "", -1},
+		{"", "a", -1},
+		{"a", "", -1},
+		{"abc", "a", 0},
+		{"abc", "b", 1},
+		{"abc", "c", 2},
+		{"abc", "d", -1},
+		{"abc", "cb", 1},
+		{"abc", "dc", 2},
+		{"abc", "xyz", -1},
+		{"abcdefghijklmnop", "p", 15},
+		{"abcdefghijklmnop", "op", 14},
+		{"hello world", " ", 5},
+		// Small data (Go fallback path)
+		{"a", "a", 0},
+		{"ab", "b", 1},
+		{"abcdefghij", "j", 9},
+		{"abcdefghijklmno", "o", 14}, // exactly 15 bytes
+		// Larger data (NEON path)
+		{strings.Repeat("x", 100) + "y", "y", 100},
+		{strings.Repeat("x", 1000) + "abc", "abc", 1000},
+		{strings.Repeat("x", 1000), "abc", -1},
+	}
+
+	for _, tt := range tests {
+		bs := NewByteSet(tt.chars)
+		if got := bs.IndexAny(tt.s); got != tt.want {
+			t.Errorf("ByteSet(%q).IndexAny(%q) = %d, want %d", tt.chars, tt.s, got, tt.want)
+		}
+		// Verify matches IndexAny
+		if got := IndexAny(tt.s, tt.chars); got != tt.want {
+			t.Errorf("IndexAny(%q, %q) = %d, want %d", tt.s, tt.chars, got, tt.want)
+		}
+	}
+}
+
+func TestByteSetContainsAny(t *testing.T) {
+	tests := []struct {
+		s, chars string
+		want     bool
+	}{
+		{"", "", false},
+		{"", "a", false},
+		{"a", "", false},
+		{"abc", "a", true},
+		{"abc", "d", false},
+		{"hello world", " ", true},
+		{"helloworld", " ", false},
+	}
+
+	for _, tt := range tests {
+		bs := NewByteSet(tt.chars)
+		if got := bs.ContainsAny(tt.s); got != tt.want {
+			t.Errorf("ByteSet(%q).ContainsAny(%q) = %v, want %v", tt.chars, tt.s, got, tt.want)
+		}
+	}
+}
+
+func TestContainsAny(t *testing.T) {
+	tests := []struct {
+		s, chars string
+		want     bool
+	}{
+		{"", "", false},
+		{"", "a", false},
+		{"a", "", false},
+		{"abc", "a", true},
+		{"abc", "d", false},
+		{"hello world", " ", true},
+		{"helloworld", " ", false},
+	}
+
+	for _, tt := range tests {
+		if got := ContainsAny(tt.s, tt.chars); got != tt.want {
+			t.Errorf("ContainsAny(%q, %q) = %v, want %v", tt.s, tt.chars, got, tt.want)
+		}
+	}
+}
+
+func TestIndexNonASCII(t *testing.T) {
+	tests := []struct {
+		s    string
+		want int
+	}{
+		{"", -1},
+		{"hello", -1},
+		{"hello world", -1},
+		{"hello\x80world", 5},
+		{"\x80hello", 0},
+		{"hello\x80", 5},
+		{strings.Repeat("x", 100) + "\x80", 100},
+		{strings.Repeat("x", 1000) + "日本語", 1000},
+	}
+
+	for _, tt := range tests {
+		if got := IndexNonASCII(tt.s); got != tt.want {
+			t.Errorf("IndexNonASCII(%q) = %d, want %d", tt.s, got, tt.want)
+		}
+	}
+}
+
+func BenchmarkIndexAny(b *testing.B) {
+	chars := " \t\n\r"
+	bs := NewByteSet(chars)
+	for _, n := range []int{16, 64, 256, 1024} {
+		data := strings.Repeat("x", n-1) + " "
+
+		b.Run(fmt.Sprintf("stdlib-%d", n), func(b *testing.B) {
+			b.SetBytes(int64(len(data)))
+			for i := 0; i < b.N; i++ {
+				strings.IndexAny(data, chars)
+			}
+		})
+
+		b.Run(fmt.Sprintf("byteset-%d", n), func(b *testing.B) {
+			b.SetBytes(int64(len(data)))
+			for i := 0; i < b.N; i++ {
+				bs.IndexAny(data)
+			}
+		})
+
+		b.Run(fmt.Sprintf("indexany-%d", n), func(b *testing.B) {
+			b.SetBytes(int64(len(data)))
+			for i := 0; i < b.N; i++ {
+				IndexAny(data, chars)
+			}
+		})
+	}
+}
+
+func BenchmarkByteSetIndexAny(b *testing.B) {
+	chars := " \t\n\r"
+	bs := NewByteSet(chars)
+
+	for _, n := range []int{16, 64, 256, 1024} {
+		data := strings.Repeat("x", n-1) + " "
+
+		b.Run(fmt.Sprintf("per-call-%d", n), func(b *testing.B) {
+			b.SetBytes(int64(len(data)))
+			for i := 0; i < b.N; i++ {
+				IndexAny(data, chars)
+			}
+		})
+
+		b.Run(fmt.Sprintf("byteset-%d", n), func(b *testing.B) {
+			b.SetBytes(int64(len(data)))
+			for i := 0; i < b.N; i++ {
+				bs.IndexAny(data)
+			}
+		})
+	}
+}
+
+// indexAnyNaive is a trivially-correct reference for validating IndexAny.
+func indexAnyNaive(s, chars string) int {
+	for i := 0; i < len(s); i++ {
+		for j := 0; j < len(chars); j++ {
+			if s[i] == chars[j] {
+				return i
+			}
+		}
+	}
+	return -1
+}
+
+func FuzzIndexAny(f *testing.F) {
+	f.Add("hello world", " ")
+	f.Add("abcdefghij", "xyz")
+	f.Add(strings.Repeat("a", 100), "b")
+	// Edge cases for high bytes
+	f.Add("abc\x80def", "\x80")
+	f.Add("\xff\xfe\xfd", "\xfd")
+	f.Add(strings.Repeat("x", 17)+"\x00", "\x00")
+
+	f.Fuzz(func(t *testing.T, s, chars string) {
+		want := indexAnyNaive(s, chars)
+
+		got := IndexAny(s, chars)
+		if got != want {
+			t.Fatalf("IndexAny(%q, %q) = %d, want %d", s, chars, got, want)
+		}
+	})
+}
