@@ -30,20 +30,38 @@ func IndexMask(s string, mask byte) int {
 }
 
 func EqualFold(a, b string) bool {
-	if len(a) < 32 || !hasAVX2 {
-		return equalFoldGo(a, b)
+	if hasAVX2 && len(a) >= 32 {
+		return equalFoldAvx(a, b)
 	}
 
-	return equalFoldAvx(a, b)
+	if hasSSE41 && len(a) >= 16 {
+		return equalFoldSse(a, b)
+	}
+
+	return equalFoldGo(a, b)
 }
 
 func IndexFold(a, b string) int {
-	// TODO: implement acceleration for this
+	if hasAVX2 {
+		return indexFoldAvx(a, b)
+	}
+
+	if hasSSE41 {
+		return indexFoldSse(a, b)
+	}
+
 	return indexFoldGo(a, b)
 }
 
 func indexFoldRabinKarp(a, b string) int {
-	// FIXME: definitely not Rabin-Karp
+	if hasAVX2 {
+		return indexFoldRabinKarpAvx(a, b)
+	}
+
+	if hasSSE41 {
+		return indexFoldRabinKarpSse(a, b)
+	}
+
 	return indexFoldGo(a, b)
 }
 

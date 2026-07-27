@@ -276,52 +276,64 @@ static uint8_t uppercasingTable[32] = {
     32,32,32,32,32,32,32,32,32,32,32,0, 0, 0, 0, 0,
 };
 
+// Returns the bits in which a and b differ, ignoring differences that are just
+// ASCII case; zero means the two blocks are equal under case folding.
+//
+// Only one table lookup is needed for the pair: if a^b has nothing but bit 5
+// set then a is a letter exactly when b is, and (a & b) has that bit cleared,
+// so the index lands on 'A'..'Z' precisely when the difference is a case bit.
+// Every other index falls outside [0,31] and vqtbl2 returns 0 for those.
+static inline uint8x16_t equal_fold_diff16(uint8x16_t a, uint8x16_t b,
+    const uint8x16x2_t table, const uint8x16_t offset)
+{
+    const uint8x16_t allow = vqtbl2q_u8(table, vsubq_u8(vandq_u8(a, b), offset));
+    return vbicq_u8(veorq_u8(a, b), allow);
+}
+
+// same as above, but with just half the vector register
+static inline uint8x8_t equal_fold_diff8(uint8x8_t a, uint8x8_t b,
+    const uint8x16x2_t table, const uint8x8_t offset)
+{
+    const uint8x8_t allow = vqtbl2_u8(table, vsub_u8(vand_u8(a, b), offset));
+    return vbic_u8(veor_u8(a, b), allow);
+}
+
+// The difference vector holds raw bits rather than 0x00/0xFF lanes, so SHRN
+// can't test it - but only zero vs non-zero matters, so UMAXV can reduce over
+// 32-bit lanes instead of bytes. 4S is the widest arrangement the encoding
+// allows, and it halves the number of reduction stages compared to 16B.
+static inline bool equal_fold_has_diff(uint8x16_t diff)
+{
+    return vmaxvq_u32(vreinterpretq_u32_u8(diff)) != 0;
+}
+
+// One 16-byte block per iteration. index_fold inlines this at every candidate
+// it has to verify, so it's kept small; equal_fold_long adds the unrolled loop
+// for the call sites where the inputs are expected to be long.
 static inline bool equal_fold_core(unsigned char *a, unsigned char *b, int64_t length,
-    const uint8x16x2_t table, const uint8x16_t shift)
+    const uint8x16x2_t table)
 {
     const uint64_t blockSize = 16; // NEON can process 128 bits (16 bytes) at a time
+    // uppercasingTable is indexed by (a & b) - 0x40 here, not by the 0x60 shift
+    // the folding paths in this file use
+    const uint8x16_t offset = vdupq_n_u8(0x40);
 
     if (length < 0) return false;
 
     for (const unsigned char *data_bound = (a + length) - (length % blockSize); a < data_bound; a += blockSize, b += blockSize)
     {
-        uint8x16_t a_data = vld1q_u8(a); // Load 16 bytes of data
-        uint8x16_t b_data = vld1q_u8(b); // Load 16 bytes of data
-
-        a_data = vsubq_u8(a_data, shift);
-        a_data = vsubq_u8(a_data, vqtbl2q_u8(table, a_data));
-
-        b_data = vsubq_u8(b_data, shift);
-        b_data = vsubq_u8(b_data, vqtbl2q_u8(table, b_data));
-
-        // we should shift the data back, but we just need to compare, so we can skip that
-        const uint8x16_t result = vceqq_u8(a_data, b_data);
-
-        // SHRN can be faster than UMAXV
-        if (vget_lane_u64(vshrn_n_u16(result, 4), 0) != ~0ull)
+        uint8x16_t diff = equal_fold_diff16(vld1q_u8(a), vld1q_u8(b), table, offset);
+        if (equal_fold_has_diff(diff))
         {
             return false;
         }
     }
     length %= blockSize;
 
-    // same as above, but with just half the vector register
     if (length >= 8)
     {
-        uint8x8_t a_data = vld1_u8(a);
-        uint8x8_t b_data = vld1_u8(b);
-
-        a_data = vsub_u8(a_data, vget_low_u8(shift));
-        a_data = vsub_u8(a_data, vqtbl2_u8(table, a_data));
-
-        b_data = vsub_u8(b_data, vget_low_u8(shift));
-        b_data = vsub_u8(b_data, vqtbl2_u8(table, b_data));
-
-        // we should shift the data back, but we just need to compare, so we can skip that
-        const uint8x8_t result = vceq_u8(a_data, b_data);
-
-        // Check if there's any 0 bytes
-        if (vget_lane_u64(result, 0) != ~0ull)
+        uint8x8_t diff = equal_fold_diff8(vld1_u8(a), vld1_u8(b), table, vget_low_u8(offset));
+        if (vget_lane_u64(vreinterpret_u64_u8(diff), 0) != 0)
         {
             return false;
         }
@@ -374,25 +386,57 @@ static inline bool equal_fold_core(unsigned char *a, unsigned char *b, int64_t l
         break;
     }
 
-    uint8x8_t a_data = vcreate_u8(a_data64);
-    uint8x8_t b_data = vcreate_u8(b_data64);
+    uint8x8_t diff = equal_fold_diff8(vcreate_u8(a_data64), vcreate_u8(b_data64), table, vget_low_u8(offset));
 
-    a_data = vsub_u8(a_data, vget_low_u8(shift));
-    a_data = vsub_u8(a_data, vqtbl2_u8(table, a_data));
+    return vget_lane_u64(vreinterpret_u64_u8(diff), 0) == 0;
+}
 
-    b_data = vsub_u8(b_data, vget_low_u8(shift));
-    b_data = vsub_u8(b_data, vqtbl2_u8(table, b_data));
+// Chews through 64 bytes per iteration before handing the rest to
+// equal_fold_core. Worth it only once there's more than one such block.
+static inline bool equal_fold_long(unsigned char *a, unsigned char *b, int64_t length,
+    const uint8x16x2_t table)
+{
+#ifndef SKIP_LD1x4
+    const uint64_t blockSize = 16;
+    const uint64_t ld4BlockSize = blockSize * 4;
+    const uint8x16_t offset = vdupq_n_u8(0x40);
 
-    // we should shift the data back, but we just need to compare, so we can skip that
-    const uint8x8_t result = vceq_u8(a_data, b_data);
-
-    // Check if there's any 0 bytes
-    if (vget_lane_u64(result, 0) != ~0ull)
+    // the unrolled loop only reports a mismatch once per 64 bytes, so probe the
+    // first block on its own - mismatches tend to be near the start of the data.
+    // The comparison is unsigned so that negative lengths are handled in here
+    // too, which leaves equal_fold_core's own check for them provably dead.
+    if (__builtin_expect((uint64_t)length >= ld4BlockSize * 2, 0))
     {
-        return false;
-    }
+        if (length < 0) return false;
 
-    return true;
+        if (equal_fold_has_diff(equal_fold_diff16(vld1q_u8(a), vld1q_u8(b), table, offset)))
+        {
+            return false;
+        }
+        a += blockSize;
+        b += blockSize;
+        length -= blockSize;
+
+        // separate loads rather than vld1q_u8_x4: clang folds them into LDP,
+        // which is both faster and keeps fewer vectors live - loading all four
+        // at once pushed index_fold into spilling a callee-saved one
+        for (const unsigned char *data_bound = (a + length) - (length % ld4BlockSize); a < data_bound; a += ld4BlockSize, b += ld4BlockSize)
+        {
+            uint8x16_t diff = equal_fold_diff16(vld1q_u8(a), vld1q_u8(b), table, offset);
+            diff = vorrq_u8(diff, equal_fold_diff16(vld1q_u8(a + 16), vld1q_u8(b + 16), table, offset));
+            diff = vorrq_u8(diff, equal_fold_diff16(vld1q_u8(a + 32), vld1q_u8(b + 32), table, offset));
+            diff = vorrq_u8(diff, equal_fold_diff16(vld1q_u8(a + 48), vld1q_u8(b + 48), table, offset));
+
+            if (equal_fold_has_diff(diff))
+            {
+                return false;
+            }
+        }
+        length %= ld4BlockSize;
+    }
+#endif
+
+    return equal_fold_core(a, b, length, table);
 }
 
 // gocc: EqualFold(a, b string) bool
@@ -404,9 +448,8 @@ bool equal_fold(unsigned char *a, uint64_t a_len, unsigned char *b, uint64_t b_l
     }
 
     const uint8x16x2_t table = vld1q_u8_x2(uppercasingTable);
-    const uint8x16_t shift = vdupq_n_u8(0x60);
 
-    return equal_fold_core(a, b, a_len, table, shift);
+    return equal_fold_long(a, b, a_len, table);
 }
 
 // loads up to 16 bytes of data into a 128-bit register
@@ -537,7 +580,7 @@ static inline uint32_t rabin_karp_hash_string_fold(unsigned char *data, uint64_t
 }
 
 static inline int64_t index_fold_rabin_karp_core(unsigned char *haystack, const int64_t haystack_len, unsigned char *needle, const int64_t needle_len,
-    const uint8x16x2_t table, const uint8x16_t shift)
+    const uint8x16x2_t table)
 {
     const uint32_t PrimeRK = 16777619;
 
@@ -558,7 +601,7 @@ static inline int64_t index_fold_rabin_karp_core(unsigned char *haystack, const 
         hash = hash * PrimeRK + c;
     }
 
-    if (hash == hash_needle && equal_fold_core(haystack, needle, needle_len, table, shift))
+    if (hash == hash_needle && equal_fold_core(haystack, needle, needle_len, table))
     {
         return 0;
     }
@@ -581,7 +624,7 @@ static inline int64_t index_fold_rabin_karp_core(unsigned char *haystack, const 
         }
         hash -= pow * c;
 
-        if (hash == hash_needle && equal_fold_core(haystack + i - needle_len + 1, needle, needle_len, table, shift))
+        if (hash == hash_needle && equal_fold_core(haystack + i - needle_len + 1, needle, needle_len, table))
         {
             return i - needle_len + 1;
         }
@@ -728,12 +771,11 @@ int64_t index_fold_rabin_karp(unsigned char *haystack, const int64_t haystack_le
 {
     const uint64_t blockSize = 16; // NEON can process 128 bits (16 bytes) at a time
     const uint8x16x2_t table = vld1q_u8_x2(uppercasingTable);
-    const uint8x16_t shift = vdupq_n_u8(0x60);
 
     if (haystack_len < needle_len) return -1;
     if (needle_len == 0) return 0;
     if (haystack_len == needle_len) {
-        return equal_fold_core(haystack, needle, needle_len, table, shift) ? 0 : -1;
+        return equal_fold_long(haystack, needle, needle_len, table) ? 0 : -1;
     }
 
     switch (needle_len)
@@ -746,7 +788,7 @@ int64_t index_fold_rabin_karp(unsigned char *haystack, const int64_t haystack_le
         return index_fold_2_byte_needle(haystack, haystack_len, (uint16_t *)needle, table);
     }
 
-    return index_fold_rabin_karp_core(haystack, haystack_len, needle, needle_len, table, shift);
+    return index_fold_rabin_karp_core(haystack, haystack_len, needle, needle_len, table);
 }
 
 #define MIN(a, b) ((a) > (b) ? (b) : (a))
@@ -763,7 +805,7 @@ int64_t index_fold(unsigned char *haystack, int64_t haystack_len, unsigned char 
     if (haystack_len < needle_len) return -1;
     if (needle_len <= 0) return 0;
     if (haystack_len == needle_len) {
-        return equal_fold_core(haystack, needle, needle_len, table, shift) ? 0 : -1;
+        return equal_fold_long(haystack, needle, needle_len, table) ? 0 : -1;
     }
 
     switch (needle_len)
@@ -804,7 +846,7 @@ int64_t index_fold(unsigned char *haystack, int64_t haystack_len, unsigned char 
                 if (haystack == data_start && pos == 0) continue;
                 pos--;
 
-                if (equal_fold_core(haystack+pos+2, needle+2, MAX(needle_len-4, 0), table, shift))
+                if (equal_fold_core(haystack+pos+2, needle+2, MAX(needle_len-4, 0), table))
                 {
                     return haystack-data_start + pos;
                 }
@@ -816,7 +858,7 @@ int64_t index_fold(unsigned char *haystack, int64_t haystack_len, unsigned char 
                 haystack += advance;
                 int64_t curr_pos = haystack - data_start;
                 int64_t rem_len = haystack_len - curr_pos;
-                int64_t rk_pos = index_fold_rabin_karp_core(haystack, rem_len, needle, needle_len, table, shift);
+                int64_t rk_pos = index_fold_rabin_karp_core(haystack, rem_len, needle, needle_len, table);
                 if (rk_pos != -1) {
                     return curr_pos + rk_pos;
                 }
@@ -843,7 +885,7 @@ int64_t index_fold(unsigned char *haystack, int64_t haystack_len, unsigned char 
             if (haystack == data_start && pos == 0) continue;
             pos--;
 
-            if (haystack+pos < data_bound && equal_fold_core(haystack+pos+2, needle+2, MAX(needle_len-4, 0), table, shift))
+            if (haystack+pos < data_bound && equal_fold_core(haystack+pos+2, needle+2, MAX(needle_len-4, 0), table))
             {
                 return (haystack-data_start) + pos;
             }

@@ -78,10 +78,14 @@ func main() {
 
 | Function           | CPU        | naive (MB/s) | veloz (MB/s) | Speedup |
 |--------------------|------------|--------------|--------------|---------|
-| ascii.ValidString  | Graviton 2 | 4,903        | 33,684       | 6.9x    |
-| ascii.EqualFold    | Graviton 2 |   879        | 7,566        | 8.6x    |
-| ascii.IndexFold    | Graviton 2 | 2,652        | 7,947        | 3.0x    |
-| utf8.ValidString   | Graviton 2 |   618        | 3,090        | 5.0x    |
+| ascii.ValidString  | AMD Zen 3  | 8,715        | 117,592      | 13.5x   |
+| ascii.EqualFold    | AMD Zen 3  | 5,333        | 32,775       | 6.1x    |
+| ascii.IndexFold    | AMD Zen 3  | 5,828        | 19,372       | 3.3x    |
+| utf8.ValidString   | AMD Zen 3  | 1,184        | 11,291       | 9.5x    |
+| ascii.ValidString  | Graviton 2 | 4,902        | 33,642       | 6.9x    |
+| ascii.EqualFold    | Graviton 2 | 3,017        | 10,848       | 3.6x    |
+| ascii.IndexFold    | Graviton 2 | 2,728        | 8,431        | 3.1x    |
+| utf8.ValidString   | Graviton 2 |   618        | 3,091        | 5.0x    |
 | ascii.ValidString  | Apple M2   | 12,256       | 89,227       | 7.3x    |
 | ascii.EqualFold    | Apple M2   | 2,336        | 21,254       | 9.1x    |
 | ascii.IndexFold    | Apple M2   | 7,117        | 29,046       | 4.1x    |
