@@ -42,12 +42,20 @@ func IndexFold(a, b string) int {
 		return indexFoldAvx(a, b)
 	}
 
+	if hasSSE41 {
+		return indexFoldSse(a, b)
+	}
+
 	return indexFoldGo(a, b)
 }
 
 func indexFoldRabinKarp(a, b string) int {
 	if hasAVX2 {
 		return indexFoldRabinKarpAvx(a, b)
+	}
+
+	if hasSSE41 {
+		return indexFoldRabinKarpSse(a, b)
 	}
 
 	return indexFoldGo(a, b)
