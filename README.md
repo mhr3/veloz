@@ -78,10 +78,10 @@ func main() {
 
 | Function           | CPU        | naive (MB/s) | veloz (MB/s) | Speedup |
 |--------------------|------------|--------------|--------------|---------|
-| ascii.ValidString  | AMD Zen 3  | 8,844        | 118,394      | 13.4x   |
-| ascii.EqualFold    | AMD Zen 3  | 5,457        | 33,108       | 6.1x    |
-| ascii.IndexFold    | AMD Zen 3  | 5,981        | 15,384       | 2.6x    |
-| utf8.ValidString   | AMD Zen 3  | 1,187        | 11,280       | 9.5x    |
+| ascii.ValidString  | AMD Zen 3  | 8,715        | 117,592      | 13.5x   |
+| ascii.EqualFold    | AMD Zen 3  | 5,333        | 32,775       | 6.1x    |
+| ascii.IndexFold    | AMD Zen 3  | 5,828        | 19,372       | 3.3x    |
+| utf8.ValidString   | AMD Zen 3  | 1,184        | 11,291       | 9.5x    |
 | ascii.ValidString  | Graviton 2 | 4,902        | 33,642       | 6.9x    |
 | ascii.EqualFold    | Graviton 2 | 3,017        | 10,848       | 3.6x    |
 | ascii.IndexFold    | Graviton 2 | 2,728        | 8,431        | 3.1x    |
