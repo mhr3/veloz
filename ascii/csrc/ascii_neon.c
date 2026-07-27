@@ -220,6 +220,15 @@ static inline uint8x8_t equal_fold_diff8(uint8x8_t a, uint8x8_t b,
     return vbic_u8(veor_u8(a, b), allow);
 }
 
+// The difference vector holds raw bits rather than 0x00/0xFF lanes, so SHRN
+// can't test it - but only zero vs non-zero matters, so UMAXV can reduce over
+// 32-bit lanes instead of bytes. 4S is the widest arrangement the encoding
+// allows, and it halves the number of reduction stages compared to 16B.
+static inline bool equal_fold_has_diff(uint8x16_t diff)
+{
+    return vmaxvq_u32(vreinterpretq_u32_u8(diff)) != 0;
+}
+
 // One 16-byte block per iteration. index_fold inlines this at every candidate
 // it has to verify, so it's kept small; equal_fold_long adds the unrolled loop
 // for the call sites where the inputs are expected to be long.
@@ -236,7 +245,7 @@ static inline bool equal_fold_core(unsigned char *a, unsigned char *b, int64_t l
     for (const unsigned char *data_bound = (a + length) - (length % blockSize); a < data_bound; a += blockSize, b += blockSize)
     {
         uint8x16_t diff = equal_fold_diff16(vld1q_u8(a), vld1q_u8(b), table, offset);
-        if (vmaxvq_u8(diff) != 0)
+        if (equal_fold_has_diff(diff))
         {
             return false;
         }
@@ -322,7 +331,7 @@ static inline bool equal_fold_long(unsigned char *a, unsigned char *b, int64_t l
     {
         if (length < 0) return false;
 
-        if (vmaxvq_u8(equal_fold_diff16(vld1q_u8(a), vld1q_u8(b), table, offset)) != 0)
+        if (equal_fold_has_diff(equal_fold_diff16(vld1q_u8(a), vld1q_u8(b), table, offset)))
         {
             return false;
         }
@@ -340,9 +349,7 @@ static inline bool equal_fold_long(unsigned char *a, unsigned char *b, int64_t l
             diff = vorrq_u8(diff, equal_fold_diff16(vld1q_u8(a + 32), vld1q_u8(b + 32), table, offset));
             diff = vorrq_u8(diff, equal_fold_diff16(vld1q_u8(a + 48), vld1q_u8(b + 48), table, offset));
 
-            // the difference vector holds raw bits rather than 0x00/0xFF lanes,
-            // so SHRN can't be used to test it - UMAXV can
-            if (vmaxvq_u8(diff) != 0)
+            if (equal_fold_has_diff(diff))
             {
                 return false;
             }

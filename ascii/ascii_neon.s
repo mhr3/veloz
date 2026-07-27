@@ -325,7 +325,7 @@ LBB2_4:
 	VADD  V2.B16, V5.B16, V5.B16           // <--                                  // add	v5.16b, v5.16b, v2.16b
 	VTBL  V5.B16, [V0.B16, V1.B16], V5.B16 // <--                                  // tbl	v5.16b, { v0.16b, v1.16b }, v5.16b
 	WORD  $0x4e651c63                      // VBIC V5.B16, V3.B16, V3.B16          // bic	v3.16b, v3.16b, v5.16b
-	WORD  $0x6e30a863                      // VUMAXV V3.B16, V3                    // umaxv	b3, v3.16b
+	WORD  $0x6eb0a863                      // VUMAXV V3.S4, V3                     // umaxv	s3, v3.4s
 	FMOVS F3, R10                          // <--                                  // fmov	w10, s3
 	CBNZW R10, LBB2_8                      // <--                                  // cbnz	w10, .LBB2_8
 	ADD   $16, R0, R0                      // <--                                  // add	x0, x0, #16
@@ -434,7 +434,7 @@ LBB2_21:
 	VADD  V4.B16, V5.B16, V4.B16           // <--                                  // add	v4.16b, v5.16b, v4.16b
 	VTBL  V4.B16, [V0.B16, V1.B16], V4.B16 // <--                                  // tbl	v4.16b, { v0.16b, v1.16b }, v4.16b
 	WORD  $0x4e641c42                      // VBIC V4.B16, V2.B16, V2.B16          // bic	v2.16b, v2.16b, v4.16b
-	WORD  $0x6e30a842                      // VUMAXV V2.B16, V2                    // umaxv	b2, v2.16b
+	WORD  $0x6eb0a842                      // VUMAXV V2.S4, V2                     // umaxv	s2, v2.4s
 	FMOVS F2, R8                           // <--                                  // fmov	w8, s2
 	CBZW  R8, LBB2_24                      // <--                                  // cbz	w8, .LBB2_24
 	MOVW  ZR, R0                           // <--                                  // mov	w0, wzr
@@ -481,7 +481,7 @@ LBB2_26:
 	VORR  V3.B16, V4.B16, V3.B16             // <--                                  // orr	v3.16b, v4.16b, v3.16b
 	VORR  V6.B16, V5.B16, V4.B16             // <--                                  // orr	v4.16b, v5.16b, v6.16b
 	VORR  V4.B16, V3.B16, V3.B16             // <--                                  // orr	v3.16b, v3.16b, v4.16b
-	WORD  $0x6e30a863                        // VUMAXV V3.B16, V3                    // umaxv	b3, v3.16b
+	WORD  $0x6eb0a863                        // VUMAXV V3.S4, V3                     // umaxv	s3, v3.4s
 	FMOVS F3, R9                             // <--                                  // fmov	w9, s3
 	CBNZW R9, LBB2_8                         // <--                                  // cbnz	w9, .LBB2_8
 	ADD   $64, R0, R0                        // <--                                  // add	x0, x0, #64
@@ -537,7 +537,7 @@ LBB3_8:
 	VADD  V2.B16, V5.B16, V5.B16           // <--                                  // add	v5.16b, v5.16b, v2.16b
 	VTBL  V5.B16, [V0.B16, V1.B16], V5.B16 // <--                                  // tbl	v5.16b, { v0.16b, v1.16b }, v5.16b
 	WORD  $0x4e651c63                      // VBIC V5.B16, V3.B16, V3.B16          // bic	v3.16b, v3.16b, v5.16b
-	WORD  $0x6e30a863                      // VUMAXV V3.B16, V3                    // umaxv	b3, v3.16b
+	WORD  $0x6eb0a863                      // VUMAXV V3.S4, V3                     // umaxv	s3, v3.4s
 	FMOVS F3, R10                          // <--                                  // fmov	w10, s3
 	CBNZW R10, LBB3_132                    // <--                                  // cbnz	w10, .LBB3_132
 	ADD   $16, R0, R0                      // <--                                  // add	x0, x0, #16
@@ -799,7 +799,7 @@ LBB3_61:
 	VADD  V2.B16, V5.B16, V5.B16           // <--                                  // add	v5.16b, v5.16b, v2.16b
 	VTBL  V5.B16, [V0.B16, V1.B16], V5.B16 // <--                                  // tbl	v5.16b, { v0.16b, v1.16b }, v5.16b
 	WORD  $0x4e651c63                      // VBIC V5.B16, V3.B16, V3.B16          // bic	v3.16b, v3.16b, v5.16b
-	WORD  $0x6e30a863                      // VUMAXV V3.B16, V3                    // umaxv	b3, v3.16b
+	WORD  $0x6eb0a863                      // VUMAXV V3.S4, V3                     // umaxv	s3, v3.4s
 	FMOVS F3, R16                          // <--                                  // fmov	w16, s3
 	CBNZW R16, LBB3_105                    // <--                                  // cbnz	w16, .LBB3_105
 	ADD   $16, R13, R13                    // <--                                  // add	x13, x13, #16
@@ -1135,7 +1135,7 @@ LBB3_114:
 	VADD  V2.B16, V6.B16, V6.B16           // <--                                  // add	v6.16b, v6.16b, v2.16b
 	VTBL  V6.B16, [V0.B16, V1.B16], V6.B16 // <--                                  // tbl	v6.16b, { v0.16b, v1.16b }, v6.16b
 	WORD  $0x4e661c84                      // VBIC V6.B16, V4.B16, V4.B16          // bic	v4.16b, v4.16b, v6.16b
-	WORD  $0x6e30a884                      // VUMAXV V4.B16, V4                    // umaxv	b4, v4.16b
+	WORD  $0x6eb0a884                      // VUMAXV V4.S4, V4                     // umaxv	s4, v4.4s
 	FMOVS F4, R19                          // <--                                  // fmov	w19, s4
 	CBNZW R19, LBB3_109                    // <--                                  // cbnz	w19, .LBB3_109
 	ADD   $16, R6, R6                      // <--                                  // add	x6, x6, #16
@@ -1225,7 +1225,7 @@ LBB3_130:
 	VADD  V4.B16, V5.B16, V4.B16           // <--                                  // add	v4.16b, v5.16b, v4.16b
 	VTBL  V4.B16, [V0.B16, V1.B16], V4.B16 // <--                                  // tbl	v4.16b, { v0.16b, v1.16b }, v4.16b
 	WORD  $0x4e641c42                      // VBIC V4.B16, V2.B16, V2.B16          // bic	v2.16b, v2.16b, v4.16b
-	WORD  $0x6e30a842                      // VUMAXV V2.B16, V2                    // umaxv	b2, v2.16b
+	WORD  $0x6eb0a842                      // VUMAXV V2.S4, V2                     // umaxv	s2, v2.4s
 	FMOVS F2, R8                           // <--                                  // fmov	w8, s2
 	CBZW  R8, LBB3_133                     // <--                                  // cbz	w8, .LBB3_133
 
@@ -1277,7 +1277,7 @@ LBB3_135:
 	VORR  V3.B16, V4.B16, V3.B16             // <--                                  // orr	v3.16b, v4.16b, v3.16b
 	VORR  V6.B16, V5.B16, V4.B16             // <--                                  // orr	v4.16b, v5.16b, v6.16b
 	VORR  V4.B16, V3.B16, V3.B16             // <--                                  // orr	v3.16b, v3.16b, v4.16b
-	WORD  $0x6e30a863                        // VUMAXV V3.B16, V3                    // umaxv	b3, v3.16b
+	WORD  $0x6eb0a863                        // VUMAXV V3.S4, V3                     // umaxv	s3, v3.4s
 	FMOVS F3, R9                             // <--                                  // fmov	w9, s3
 	CBNZW R9, LBB3_132                       // <--                                  // cbnz	w9, .LBB3_132
 	ADD   $64, R0, R0                        // <--                                  // add	x0, x0, #64
@@ -1337,7 +1337,7 @@ LBB4_7:
 	VADD  V2.B16, V5.B16, V5.B16           // <--                                  // add	v5.16b, v5.16b, v2.16b
 	VTBL  V5.B16, [V0.B16, V1.B16], V5.B16 // <--                                  // tbl	v5.16b, { v0.16b, v1.16b }, v5.16b
 	WORD  $0x4e651c63                      // VBIC V5.B16, V3.B16, V3.B16          // bic	v3.16b, v3.16b, v5.16b
-	WORD  $0x6e30a863                      // VUMAXV V3.B16, V3                    // umaxv	b3, v3.16b
+	WORD  $0x6eb0a863                      // VUMAXV V3.S4, V3                     // umaxv	s3, v3.4s
 	FMOVS F3, R10                          // <--                                  // fmov	w10, s3
 	CBNZW R10, LBB4_1                      // <--                                  // cbnz	w10, .LBB4_1
 	ADD   $16, R0, R0                      // <--                                  // add	x0, x0, #16
@@ -1659,7 +1659,7 @@ LBB4_64:
 	VADD  V16.B16, V20.B16, V20.B16          // <--                                  // add	v20.16b, v20.16b, v16.16b
 	VTBL  V20.B16, [V0.B16, V1.B16], V20.B16 // <--                                  // tbl	v20.16b, { v0.16b, v1.16b }, v20.16b
 	WORD  $0x4e741e52                        // VBIC V20.B16, V18.B16, V18.B16       // bic	v18.16b, v18.16b, v20.16b
-	WORD  $0x6e30aa52                        // VUMAXV V18.B16, V18                  // umaxv	b18, v18.16b
+	WORD  $0x6eb0aa52                        // VUMAXV V18.S4, V18                   // umaxv	s18, v18.4s
 	FMOVS F18, R23                           // <--                                  // fmov	w23, s18
 	CBNZW R23, LBB4_58                       // <--                                  // cbnz	w23, .LBB4_58
 	ADD   $16, R21, R21                      // <--                                  // add	x21, x21, #16
@@ -1804,7 +1804,7 @@ LBB4_90:
 	VADD  V2.B16, V5.B16, V5.B16           // <--                                  // add	v5.16b, v5.16b, v2.16b
 	VTBL  V5.B16, [V0.B16, V1.B16], V5.B16 // <--                                  // tbl	v5.16b, { v0.16b, v1.16b }, v5.16b
 	WORD  $0x4e651c63                      // VBIC V5.B16, V3.B16, V3.B16          // bic	v3.16b, v3.16b, v5.16b
-	WORD  $0x6e30a863                      // VUMAXV V3.B16, V3                    // umaxv	b3, v3.16b
+	WORD  $0x6eb0a863                      // VUMAXV V3.S4, V3                     // umaxv	s3, v3.4s
 	FMOVS F3, R16                          // <--                                  // fmov	w16, s3
 	CBNZW R16, LBB4_212                    // <--                                  // cbnz	w16, .LBB4_212
 	ADD   $16, R4, R4                      // <--                                  // add	x4, x4, #16
@@ -2112,7 +2112,7 @@ LBB4_153:
 	VADD  V16.B16, V20.B16, V20.B16          // <--                                  // add	v20.16b, v20.16b, v16.16b
 	VTBL  V20.B16, [V0.B16, V1.B16], V20.B16 // <--                                  // tbl	v20.16b, { v0.16b, v1.16b }, v20.16b
 	WORD  $0x4e741c84                        // VBIC V20.B16, V4.B16, V4.B16         // bic	v4.16b, v4.16b, v20.16b
-	WORD  $0x6e30a884                        // VUMAXV V4.B16, V4                    // umaxv	b4, v4.16b
+	WORD  $0x6eb0a884                        // VUMAXV V4.S4, V4                     // umaxv	s4, v4.4s
 	FMOVS F4, R20                            // <--                                  // fmov	w20, s4
 	CBNZW R20, LBB4_147                      // <--                                  // cbnz	w20, .LBB4_147
 	ADD   $16, R7, R7                        // <--                                  // add	x7, x7, #16
@@ -2388,7 +2388,7 @@ LBB4_204:
 	VADD  V4.B16, V5.B16, V4.B16           // <--                                  // add	v4.16b, v5.16b, v4.16b
 	VTBL  V4.B16, [V0.B16, V1.B16], V4.B16 // <--                                  // tbl	v4.16b, { v0.16b, v1.16b }, v4.16b
 	WORD  $0x4e641c42                      // VBIC V4.B16, V2.B16, V2.B16          // bic	v2.16b, v2.16b, v4.16b
-	WORD  $0x6e30a842                      // VUMAXV V2.B16, V2                    // umaxv	b2, v2.16b
+	WORD  $0x6eb0a842                      // VUMAXV V2.S4, V2                     // umaxv	s2, v2.4s
 	FMOVS F2, R8                           // <--                                  // fmov	w8, s2
 	CBNZW R8, LBB4_1                       // <--                                  // cbnz	w8, .LBB4_1
 	ADDW  $48, R1, R8                      // <--                                  // add	w8, w1, #48
@@ -2429,7 +2429,7 @@ LBB4_207:
 	VORR  V3.B16, V4.B16, V3.B16             // <--                                  // orr	v3.16b, v4.16b, v3.16b
 	VORR  V6.B16, V5.B16, V4.B16             // <--                                  // orr	v4.16b, v5.16b, v6.16b
 	VORR  V4.B16, V3.B16, V3.B16             // <--                                  // orr	v3.16b, v3.16b, v4.16b
-	WORD  $0x6e30a863                        // VUMAXV V3.B16, V3                    // umaxv	b3, v3.16b
+	WORD  $0x6eb0a863                        // VUMAXV V3.S4, V3                     // umaxv	s3, v3.4s
 	FMOVS F3, R9                             // <--                                  // fmov	w9, s3
 	CBNZW R9, LBB4_1                         // <--                                  // cbnz	w9, .LBB4_1
 	ADD   $64, R0, R0                        // <--                                  // add	x0, x0, #64
@@ -2536,7 +2536,7 @@ LBB4_220:
 	VADD  V2.B16, V6.B16, V6.B16           // <--                                  // add	v6.16b, v6.16b, v2.16b
 	VTBL  V6.B16, [V0.B16, V1.B16], V6.B16 // <--                                  // tbl	v6.16b, { v0.16b, v1.16b }, v6.16b
 	WORD  $0x4e661c84                      // VBIC V6.B16, V4.B16, V4.B16          // bic	v4.16b, v4.16b, v6.16b
-	WORD  $0x6e30a884                      // VUMAXV V4.B16, V4                    // umaxv	b4, v4.16b
+	WORD  $0x6eb0a884                      // VUMAXV V4.S4, V4                     // umaxv	s4, v4.4s
 	FMOVS F4, R21                          // <--                                  // fmov	w21, s4
 	CBNZW R21, LBB4_216                    // <--                                  // cbnz	w21, .LBB4_216
 	ADD   $16, R19, R19                    // <--                                  // add	x19, x19, #16
