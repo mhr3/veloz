@@ -197,6 +197,48 @@ func TestContainsFold(t *testing.T) {
 	}
 }
 
+// Periodic inputs make the first2/last2 prefilter produce a candidate at almost
+// every position while each verification runs the length of the needle, which is
+// what drives the SIMD implementations onto their Rabin-Karp fallback.
+//
+// The leading run is kept shorter than the needle so no candidate in it can
+// succeed, and a genuine occurrence is planted in the trailing run - the
+// fallback has to find it and report it in the original coordinates.
+func TestIndexFoldPeriodic(t *testing.T) {
+	for _, period := range []string{"ab", "abc", "aBcD", "abcdefg"} {
+		for _, reps := range []int{2, 3, 5, 17, 64} {
+			needle := strings.Repeat(period, reps)
+
+			for _, lead := range []int{0, 1, 2, reps - 1} {
+				if lead < 0 {
+					continue
+				}
+				head := strings.Repeat(period, lead)
+
+				for _, poison := range []string{"\x00", "123", strings.Repeat("z", 40)} {
+					for _, hay := range []string{
+						// match reachable only after the poison
+						head + poison + strings.Repeat(period, reps),
+						head + poison + strings.Repeat(strings.ToUpper(period), reps+8),
+						// no match at all
+						head + poison + strings.Repeat(period, reps-1),
+						// poison in the middle of every otherwise matching window
+						head + needle[:len(needle)/2] + poison + needle[len(needle)/2:] + head,
+					} {
+						want := indexFoldGo(hay, needle)
+						if idx := IndexFold(hay, needle); idx != want {
+							t.Fatalf("IndexFold(%q, %q) = %v, want %v", hay, needle, idx, want)
+						}
+						if idx := indexFoldRabinKarp(hay, needle); idx != want {
+							t.Fatalf("indexFoldRabinKarp(%q, %q) = %v, want %v", hay, needle, idx, want)
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
 func TestEqualFold(t *testing.T) {
 	equalFoldTests := []struct {
 		s, t string

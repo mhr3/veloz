@@ -12,3 +12,9 @@ func equalFoldAvx(a string, b string) bool
 
 //go:noescape
 func indexMaskAvx(data string, mask byte) int
+
+//go:noescape
+func indexFoldRabinKarpAvx(a string, b string) int
+
+//go:noescape
+func indexFoldAvx(a string, b string) int

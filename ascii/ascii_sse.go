@@ -6,3 +6,12 @@ package ascii
 
 //go:noescape
 func isAsciiSse(src string) bool
+
+//go:noescape
+func equalFoldSse(a string, b string) bool
+
+//go:noescape
+func indexFoldRabinKarpSse(a string, b string) int
+
+//go:noescape
+func indexFoldSse(a string, b string) int
