@@ -689,6 +689,96 @@ static inline uint32_t index_fold_block_128(
     return (uint32_t)((valid_even << 1) | valid_odd);
 }
 
+#define PRIME_RK 16777619
+
+// Maps 'a'..'z' and 'A'..'Z' onto the same value so the rolling hash below
+// ignores case. The wraparound on non-letters is harmless as long as both the
+// needle and the haystack go through it.
+static inline uint8_t rabin_karp_fold_byte(uint8_t c)
+{
+    return (c >= 'a' && c <= 'z') ? c - 0x80 : c - 0x60;
+}
+
+static inline uint32_t rabin_karp_hash_fold(const unsigned char *data, int64_t data_len,
+                                           uint32_t *pow_ret)
+{
+    uint32_t hash = 0;
+    for (int64_t i = 0; i < data_len; i++)
+    {
+        hash = hash * PRIME_RK + rabin_karp_fold_byte(data[i]);
+    }
+
+    uint32_t sq = PRIME_RK;
+    uint32_t pow = 1;
+    for (uint64_t i = data_len; i > 0; i >>= 1)
+    {
+        if (i & 1) pow *= sq;
+        sq *= sq;
+    }
+
+    *pow_ret = pow;
+    return hash;
+}
+
+// Rolling-hash search. Unlike the anchor filter in index_fold_avx2 this touches
+// every haystack byte a fixed number of times, so it can't degenerate.
+//
+// Verification is deliberately scalar: it only runs on a 32-bit hash collision,
+// and index_fold_avx2 inlines this whole function, where any extra vector
+// constant would spill an XMM register. Spilled XMM slots need a 16-byte
+// aligned frame, which makes clang emit a real "and rsp, -16" that gocc cannot
+// reconcile with a Go stack frame.
+static inline int64_t index_fold_rabin_karp_core(const unsigned char *haystack, int64_t haystack_len,
+                                                const unsigned char *needle, int64_t needle_len)
+{
+    uint32_t pow;
+    const uint32_t hash_needle = rabin_karp_hash_fold(needle, needle_len, &pow);
+
+    uint32_t hash = 0;
+    for (int64_t i = 0; i < needle_len; i++)
+    {
+        hash = hash * PRIME_RK + rabin_karp_fold_byte(haystack[i]);
+    }
+
+    if (hash == hash_needle && equal_fold_scalar(haystack, needle, needle_len))
+    {
+        return 0;
+    }
+
+    for (int64_t i = needle_len; i < haystack_len; i++)
+    {
+        hash = hash * PRIME_RK + rabin_karp_fold_byte(haystack[i]);
+        hash -= pow * rabin_karp_fold_byte(haystack[i - needle_len]);
+
+        const int64_t pos = i - needle_len + 1;
+        if (hash == hash_needle && equal_fold_scalar(haystack + pos, needle, needle_len))
+        {
+            return pos;
+        }
+    }
+
+    return -1;
+}
+
+// gocc: indexFoldRabinKarpAvx(a, b string) int
+int64_t index_fold_rabin_karp_avx2(unsigned char *haystack, int64_t haystack_len,
+                                   unsigned char *needle, int64_t needle_len) {
+    if (haystack_len < needle_len) return -1;
+    if (needle_len <= 0) return 0;
+    if (haystack_len == needle_len) {
+        return equal_fold_scalar(haystack, needle, needle_len) ? 0 : -1;
+    }
+
+    switch (needle_len) {
+    case 1:
+        return index_fold_1_byte_avx2(haystack, haystack_len, needle[0]);
+    case 2:
+        return index_fold_2_byte_avx2(haystack, haystack_len, (const uint16_t *)needle);
+    }
+
+    return index_fold_rabin_karp_core(haystack, haystack_len, needle, needle_len);
+}
+
 // gocc: indexFoldAvx(a, b string) int
 int64_t index_fold_avx2(unsigned char *haystack, int64_t haystack_len,
                         unsigned char *needle, int64_t needle_len) {
@@ -719,6 +809,7 @@ int64_t index_fold_avx2(unsigned char *haystack, int64_t haystack_len,
     const int64_t checked_len = haystack_len - needle_len;
     __m128i prev_data = _mm_setzero_si128();
     __m128i prev_data_end = _mm_setzero_si128();
+    int64_t failures = 0;
 
     // Process 16 bytes at a time
     // Continue until we've checked all positions (shifted comparison needs extra iterations)
@@ -743,19 +834,37 @@ int64_t index_fold_avx2(unsigned char *haystack, int64_t haystack_len,
             candidates &= ~1u;
         }
 
-        while (candidates) {
-            int pos = __builtin_ctz(candidates);
-            candidates &= candidates - 1;
+        // Blocks without a candidate are the common case, so the bailout below
+        // stays out of their way.
+        if (candidates) {
+            while (candidates) {
+                int pos = __builtin_ctz(candidates);
+                candidates &= candidates - 1;
 
-            int64_t match_pos = i + pos - 1;
-            if (match_pos < 0 || match_pos > checked_len) continue;
+                int64_t match_pos = i + pos - 1;
+                if (match_pos < 0 || match_pos > checked_len) continue;
 
-            // Verify the middle part of the needle (skip first2 and last2)
-            if (needle_len <= 4 ||
-                equal_fold_scalar((const uint8_t *)(haystack + match_pos + 2),
-                                  (const uint8_t *)(needle + 2),
-                                  needle_len - 4)) {
-                return match_pos;
+                // Verify the middle part of the needle (skip first2 and last2)
+                if (needle_len <= 4 ||
+                    equal_fold_scalar((const uint8_t *)(haystack + match_pos + 2),
+                                      (const uint8_t *)(needle + 2),
+                                      needle_len - 4)) {
+                    return match_pos;
+                }
+                failures++;
+            }
+
+            // Periodic inputs can make first2/last2 match at nearly every
+            // position while every verification runs the length of the needle.
+            // Once the failures outweigh the ground covered, hand the rest to
+            // Rabin-Karp. Bit 15 of the block reported position i + 14, so
+            // i + 15 is the first position still unchecked.
+            const int64_t rk_start = i + 15;
+            if (failures > 4 + (rk_start >> 4) && rk_start < checked_len) {
+                const int64_t rk_pos = index_fold_rabin_karp_core(haystack + rk_start,
+                                                                 haystack_len - rk_start,
+                                                                 needle, needle_len);
+                return rk_pos < 0 ? -1 : rk_start + rk_pos;
             }
         }
     }

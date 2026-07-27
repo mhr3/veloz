@@ -6,7 +6,7 @@ import (
 
 var (
 	hasSSE41 = cpu.X86.HasSSE41
-	hasAVX2  = cpu.X86.HasAVX
+	hasAVX2  = cpu.X86.HasAVX2
 )
 
 func ValidString(s string) bool {
@@ -30,11 +30,11 @@ func IndexMask(s string, mask byte) int {
 }
 
 func EqualFold(a, b string) bool {
-	if len(a) < 32 || !hasAVX2 {
-		return equalFoldGo(a, b)
+	if hasAVX2 && len(a) >= 32 {
+		return equalFoldAvx(a, b)
 	}
 
-	return equalFoldAvx(a, b)
+	return equalFoldGo(a, b)
 }
 
 func IndexFold(a, b string) int {
@@ -46,6 +46,9 @@ func IndexFold(a, b string) int {
 }
 
 func indexFoldRabinKarp(a, b string) int {
-	// FIXME: definitely not Rabin-Karp
+	if hasAVX2 {
+		return indexFoldRabinKarpAvx(a, b)
+	}
+
 	return indexFoldGo(a, b)
 }
