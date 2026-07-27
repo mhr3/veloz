@@ -429,7 +429,7 @@ func BenchmarkAsciiEqualFold(b *testing.B) {
 		b.Run(fmt.Sprintf("go-%d", n), func(b *testing.B) {
 			b.SetBytes(int64(len(s1)))
 			for i := 0; i < b.N; i++ {
-				equalFoldGo(s1, s2)
+				strings.EqualFold(s1, s2)
 			}
 		})
 
