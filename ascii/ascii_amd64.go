@@ -34,6 +34,10 @@ func EqualFold(a, b string) bool {
 		return equalFoldAvx(a, b)
 	}
 
+	if hasSSE41 && len(a) >= 16 {
+		return equalFoldSse(a, b)
+	}
+
 	return equalFoldGo(a, b)
 }
 

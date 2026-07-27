@@ -86,6 +86,100 @@ bool is_ascii_sse(unsigned char *src, uint64_t src_len)
 
 #include "ascii_scalar.c"
 
+// Returns mask where 0xFF = match, 0x00 = mismatch under ASCII case folding.
+static inline __m128i equal_fold_vec(__m128i va, __m128i vb,
+                                     __m128i v_0x20, __m128i v_0x1f,
+                                     __m128i v_0x9a, __m128i v_0x01) {
+    // diff = a ^ b (0x00 if equal, 0x20 if case differs, other if mismatch)
+    __m128i diff = _mm_xor_si128(va, vb);
+
+    // mask_0x20 = (diff == 0x20) - potential case difference
+    __m128i mask_0x20 = _mm_cmpeq_epi8(diff, v_0x20);
+
+    // Check if character is ASCII letter [A-Za-z]
+    // Force to lowercase: tmp = a | 0x20
+    __m128i tmp = _mm_or_si128(va, v_0x20);
+    // Shift range: tmp = tmp + 0x1f  (now 'a'=0x80, 'z'=0x99)
+    tmp = _mm_add_epi8(tmp, v_0x1f);
+    // is_alpha = (0x9a > tmp) signed - true for 0x80-0x99
+    __m128i is_alpha = _mm_cmpgt_epi8(v_0x9a, tmp);
+
+    // acceptable_diff = is_alpha & mask_0x20 & 0x01, then 0x01 -> 0x20
+    __m128i acceptable = _mm_and_si128(is_alpha, mask_0x20);
+    acceptable = _mm_and_si128(acceptable, v_0x01);
+    acceptable = _mm_slli_epi16(acceptable, 5);
+
+    // Match if diff == acceptable (both 0, or both 0x20 for a valid case bit)
+    return _mm_cmpeq_epi8(diff, acceptable);
+}
+
+// ASCII case-insensitive string comparison using SSE4.1
+// gocc: equalFoldSse(a, b string) bool
+bool equal_fold_sse(const char *a, uint64_t a_len, const char *b, uint64_t b_len) {
+    if (a_len != b_len)
+        return false;
+
+    size_t len = a_len;
+
+    if (len < 16) return equal_fold_scalar((const uint8_t *)a, (const uint8_t *)b, len);
+
+    const __m128i v_0x20 = _mm_set1_epi8(0x20);
+    const __m128i v_0x1f = _mm_set1_epi8(0x1f);
+    const __m128i v_0x9a = _mm_set1_epi8((char)0x9a);
+    const __m128i v_0x01 = _mm_set1_epi8(0x01);
+    const __m128i all_ones = _mm_set1_epi8((char)0xFF);
+
+    // Process 64 bytes at a time (4 x 16) for better ILP
+    for (const char *end = (a + len) - (len % 64); a < end; a += 64, b += 64) {
+        __m128i a0 = _mm_loadu_si128((const __m128i *)a);
+        __m128i a1 = _mm_loadu_si128((const __m128i *)(a + 16));
+        __m128i a2 = _mm_loadu_si128((const __m128i *)(a + 32));
+        __m128i a3 = _mm_loadu_si128((const __m128i *)(a + 48));
+        __m128i b0 = _mm_loadu_si128((const __m128i *)b);
+        __m128i b1 = _mm_loadu_si128((const __m128i *)(b + 16));
+        __m128i b2 = _mm_loadu_si128((const __m128i *)(b + 32));
+        __m128i b3 = _mm_loadu_si128((const __m128i *)(b + 48));
+
+        __m128i eq0 = equal_fold_vec(a0, b0, v_0x20, v_0x1f, v_0x9a, v_0x01);
+        __m128i eq1 = equal_fold_vec(a1, b1, v_0x20, v_0x1f, v_0x9a, v_0x01);
+        __m128i eq2 = equal_fold_vec(a2, b2, v_0x20, v_0x1f, v_0x9a, v_0x01);
+        __m128i eq3 = equal_fold_vec(a3, b3, v_0x20, v_0x1f, v_0x9a, v_0x01);
+        __m128i combined = _mm_and_si128(_mm_and_si128(eq0, eq1),
+                                         _mm_and_si128(eq2, eq3));
+
+        // PTEST: testc returns 1 if (~combined & all_ones) == 0
+        if (!_mm_testc_si128(combined, all_ones)) {
+            return false;
+        }
+    }
+    len %= 64;
+
+    // Process remaining 16-byte chunks
+    for (const char *end = (a + len) - (len % 16); a < end; a += 16, b += 16) {
+        __m128i va = _mm_loadu_si128((const __m128i *)a);
+        __m128i vb = _mm_loadu_si128((const __m128i *)b);
+        __m128i eq = equal_fold_vec(va, vb, v_0x20, v_0x1f, v_0x9a, v_0x01);
+
+        if (!_mm_testc_si128(eq, all_ones)) {
+            return false;
+        }
+    }
+    len %= 16;
+
+    if (len == 0)
+        return true;
+
+    // Overlapped tail load for final 1-15 bytes (safe: caller ensured len >= 16)
+    const char *aEnd = (a + len) - 16;
+    const char *bEnd = (b + len) - 16;
+
+    __m128i va = _mm_loadu_si128((const __m128i *)aEnd);
+    __m128i vb = _mm_loadu_si128((const __m128i *)bEnd);
+    __m128i eq = equal_fold_vec(va, vb, v_0x20, v_0x1f, v_0x9a, v_0x01);
+
+    return _mm_testc_si128(eq, all_ones);
+}
+
 // Fold a 128-bit vector to uppercase (a-z -> A-Z)
 static inline __m128i fold_to_upper_vec(__m128i v,
                                         __m128i v_0x20, __m128i v_0x1f,
