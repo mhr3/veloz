@@ -748,6 +748,13 @@ func BenchmarkIndexAny(b *testing.B) {
 	for _, n := range []int{16, 64, 256, 1024} {
 		data := strings.Repeat("x", n-1) + " "
 
+		b.Run(fmt.Sprintf("stdlib-%d", n), func(b *testing.B) {
+			b.SetBytes(int64(len(data)))
+			for i := 0; i < b.N; i++ {
+				strings.IndexAny(data, chars)
+			}
+		})
+
 		b.Run(fmt.Sprintf("byteset-%d", n), func(b *testing.B) {
 			b.SetBytes(int64(len(data)))
 			for i := 0; i < b.N; i++ {
