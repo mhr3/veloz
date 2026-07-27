@@ -6,9 +6,6 @@ type ByteSet struct {
 	bitset [4]uint64
 }
 
-// CharSet is kept as an alias for backward compatibility.
-type CharSet = ByteSet
-
 // NewByteSet creates a ByteSet from the given characters.
 func NewByteSet(chars string) ByteSet {
 	var bs ByteSet
@@ -17,11 +14,6 @@ func NewByteSet(chars string) ByteSet {
 		bs.bitset[c>>6] |= 1 << (c & 63)
 	}
 	return bs
-}
-
-// NewCharSet is kept for backward compatibility.
-func NewCharSet(chars string) ByteSet {
-	return NewByteSet(chars)
 }
 
 // ContainsAny reports whether any byte from chars is in data.

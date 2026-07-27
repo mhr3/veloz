@@ -636,7 +636,7 @@ func TestIndexAny(t *testing.T) {
 	}
 }
 
-func TestCharSetIndexAny(t *testing.T) {
+func TestByteSetIndexAny(t *testing.T) {
 	tests := []struct {
 		s, chars string
 		want     int
@@ -666,9 +666,9 @@ func TestCharSetIndexAny(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		cs := NewCharSet(tt.chars)
-		if got := cs.IndexAny(tt.s); got != tt.want {
-			t.Errorf("CharSet(%q).IndexAny(%q) = %d, want %d", tt.chars, tt.s, got, tt.want)
+		bs := NewByteSet(tt.chars)
+		if got := bs.IndexAny(tt.s); got != tt.want {
+			t.Errorf("ByteSet(%q).IndexAny(%q) = %d, want %d", tt.chars, tt.s, got, tt.want)
 		}
 		// Verify matches IndexAny
 		if got := IndexAny(tt.s, tt.chars); got != tt.want {
@@ -677,7 +677,7 @@ func TestCharSetIndexAny(t *testing.T) {
 	}
 }
 
-func TestCharSetContainsAny(t *testing.T) {
+func TestByteSetContainsAny(t *testing.T) {
 	tests := []struct {
 		s, chars string
 		want     bool
@@ -692,9 +692,9 @@ func TestCharSetContainsAny(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		cs := NewCharSet(tt.chars)
-		if got := cs.ContainsAny(tt.s); got != tt.want {
-			t.Errorf("CharSet(%q).ContainsAny(%q) = %v, want %v", tt.chars, tt.s, got, tt.want)
+		bs := NewByteSet(tt.chars)
+		if got := bs.ContainsAny(tt.s); got != tt.want {
+			t.Errorf("ByteSet(%q).ContainsAny(%q) = %v, want %v", tt.chars, tt.s, got, tt.want)
 		}
 	}
 }
@@ -744,14 +744,14 @@ func TestIndexNonASCII(t *testing.T) {
 
 func BenchmarkIndexAny(b *testing.B) {
 	chars := " \t\n\r"
-	cs := NewCharSet(chars)
+	bs := NewByteSet(chars)
 	for _, n := range []int{16, 64, 256, 1024} {
 		data := strings.Repeat("x", n-1) + " "
 
-		b.Run(fmt.Sprintf("charset-%d", n), func(b *testing.B) {
+		b.Run(fmt.Sprintf("byteset-%d", n), func(b *testing.B) {
 			b.SetBytes(int64(len(data)))
 			for i := 0; i < b.N; i++ {
-				cs.IndexAny(data)
+				bs.IndexAny(data)
 			}
 		})
 
@@ -764,9 +764,9 @@ func BenchmarkIndexAny(b *testing.B) {
 	}
 }
 
-func BenchmarkCharSetIndexAny(b *testing.B) {
+func BenchmarkByteSetIndexAny(b *testing.B) {
 	chars := " \t\n\r"
-	cs := NewCharSet(chars)
+	bs := NewByteSet(chars)
 
 	for _, n := range []int{16, 64, 256, 1024} {
 		data := strings.Repeat("x", n-1) + " "
@@ -778,10 +778,10 @@ func BenchmarkCharSetIndexAny(b *testing.B) {
 			}
 		})
 
-		b.Run(fmt.Sprintf("charset-%d", n), func(b *testing.B) {
+		b.Run(fmt.Sprintf("byteset-%d", n), func(b *testing.B) {
 			b.SetBytes(int64(len(data)))
 			for i := 0; i < b.N; i++ {
-				cs.IndexAny(data)
+				bs.IndexAny(data)
 			}
 		})
 	}
