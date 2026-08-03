@@ -1,7 +1,7 @@
 package ascii
 
-// ByteSet represents a precomputed byte set for fast IndexAny lookups.
-// Build once with NewByteSet, then reuse with bs.IndexAny().
+// ByteSet represents a precomputed byte set for fast lookups.
+// Build once with NewByteSet, then reuse with bs.Index().
 type ByteSet struct {
 	bitset [4]uint64
 }

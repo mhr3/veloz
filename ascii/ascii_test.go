@@ -636,7 +636,7 @@ func TestIndexAny(t *testing.T) {
 	}
 }
 
-func TestByteSetIndexAny(t *testing.T) {
+func TestByteSetIndex(t *testing.T) {
 	tests := []struct {
 		s, chars string
 		want     int
@@ -667,8 +667,8 @@ func TestByteSetIndexAny(t *testing.T) {
 
 	for _, tt := range tests {
 		bs := NewByteSet(tt.chars)
-		if got := bs.IndexAny(tt.s); got != tt.want {
-			t.Errorf("ByteSet(%q).IndexAny(%q) = %d, want %d", tt.chars, tt.s, got, tt.want)
+		if got := bs.Index(tt.s); got != tt.want {
+			t.Errorf("ByteSet(%q).Index(%q) = %d, want %d", tt.chars, tt.s, got, tt.want)
 		}
 		// Verify matches IndexAny
 		if got := IndexAny(tt.s, tt.chars); got != tt.want {
@@ -677,7 +677,7 @@ func TestByteSetIndexAny(t *testing.T) {
 	}
 }
 
-func TestByteSetContainsAny(t *testing.T) {
+func TestByteSetMatch(t *testing.T) {
 	tests := []struct {
 		s, chars string
 		want     bool
@@ -693,8 +693,8 @@ func TestByteSetContainsAny(t *testing.T) {
 
 	for _, tt := range tests {
 		bs := NewByteSet(tt.chars)
-		if got := bs.ContainsAny(tt.s); got != tt.want {
-			t.Errorf("ByteSet(%q).ContainsAny(%q) = %v, want %v", tt.chars, tt.s, got, tt.want)
+		if got := bs.Match(tt.s); got != tt.want {
+			t.Errorf("ByteSet(%q).Match(%q) = %v, want %v", tt.chars, tt.s, got, tt.want)
 		}
 	}
 }
@@ -758,7 +758,7 @@ func BenchmarkIndexAny(b *testing.B) {
 		b.Run(fmt.Sprintf("byteset-%d", n), func(b *testing.B) {
 			b.SetBytes(int64(len(data)))
 			for i := 0; i < b.N; i++ {
-				bs.IndexAny(data)
+				bs.Index(data)
 			}
 		})
 
@@ -771,7 +771,7 @@ func BenchmarkIndexAny(b *testing.B) {
 	}
 }
 
-func BenchmarkByteSetIndexAny(b *testing.B) {
+func BenchmarkByteSetIndex(b *testing.B) {
 	chars := " \t\n\r"
 	bs := NewByteSet(chars)
 
@@ -788,7 +788,7 @@ func BenchmarkByteSetIndexAny(b *testing.B) {
 		b.Run(fmt.Sprintf("byteset-%d", n), func(b *testing.B) {
 			b.SetBytes(int64(len(data)))
 			for i := 0; i < b.N; i++ {
-				bs.IndexAny(data)
+				bs.Index(data)
 			}
 		})
 	}
