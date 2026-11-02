@@ -846,47 +846,53 @@ DATA LCPI4_2<>+0x10(SB)/8, $0xe0e0e0e0e0e0e0e0
 DATA LCPI4_2<>+0x18(SB)/8, $0xe0e0e0e0e0e0e0e0
 GLOBL LCPI4_2<>(SB), (RODATA|NOPTR), $32
 
-DATA LCPI4_3<>+0x00(SB)/8, $0x1f1f1f1f1f1f1f1f
-DATA LCPI4_3<>+0x08(SB)/8, $0x1f1f1f1f1f1f1f1f
-GLOBL LCPI4_3<>(SB), (RODATA|NOPTR), $16
+DATA LCPI4_3<>+0x00(SB)/8, $0x0706050403020100
+DATA LCPI4_3<>+0x08(SB)/8, $0x0f0e0d0c0b0a0908
+DATA LCPI4_3<>+0x10(SB)/8, $0x1716151413121110
+DATA LCPI4_3<>+0x18(SB)/8, $0x1f1e1d1c1b1a1918
+GLOBL LCPI4_3<>(SB), (RODATA|NOPTR), $32
 
-DATA LCPI4_4<>+0x00(SB)/8, $0x9999999999999999
-DATA LCPI4_4<>+0x08(SB)/8, $0x9999999999999999
+DATA LCPI4_4<>+0x00(SB)/8, $0x1f1f1f1f1f1f1f1f
+DATA LCPI4_4<>+0x08(SB)/8, $0x1f1f1f1f1f1f1f1f
 GLOBL LCPI4_4<>(SB), (RODATA|NOPTR), $16
 
-DATA LCPI4_5<>+0x00(SB)/8, $0xe0e0e0e0e0e0e0e0
-DATA LCPI4_5<>+0x08(SB)/8, $0xe0e0e0e0e0e0e0e0
+DATA LCPI4_5<>+0x00(SB)/8, $0x9999999999999999
+DATA LCPI4_5<>+0x08(SB)/8, $0x9999999999999999
 GLOBL LCPI4_5<>(SB), (RODATA|NOPTR), $16
 
-DATA LCPI4_6<>+0x00(SB)/8, $0x7f7f7f7f7f7f7f7f
-DATA LCPI4_6<>+0x08(SB)/8, $0x7f7f7f7f7f7f7f7f
+DATA LCPI4_6<>+0x00(SB)/8, $0xe0e0e0e0e0e0e0e0
+DATA LCPI4_6<>+0x08(SB)/8, $0xe0e0e0e0e0e0e0e0
 GLOBL LCPI4_6<>(SB), (RODATA|NOPTR), $16
 
-DATA LCPI4_7<>+0x00(SB)/8, $0xfafafafafafafafa
-DATA LCPI4_7<>+0x08(SB)/8, $0xfafafafafafafafa
+DATA LCPI4_7<>+0x00(SB)/8, $0x7f7f7f7f7f7f7f7f
+DATA LCPI4_7<>+0x08(SB)/8, $0x7f7f7f7f7f7f7f7f
 GLOBL LCPI4_7<>(SB), (RODATA|NOPTR), $16
 
-DATA LCPI4_8<>+0x00(SB)/8, $0x2020202020202020
-DATA LCPI4_8<>+0x08(SB)/8, $0x2020202020202020
+DATA LCPI4_8<>+0x00(SB)/8, $0xfafafafafafafafa
+DATA LCPI4_8<>+0x08(SB)/8, $0xfafafafafafafafa
 GLOBL LCPI4_8<>(SB), (RODATA|NOPTR), $16
 
-DATA LCPI4_9<>+0x00(SB)/1, $0x1f
-GLOBL LCPI4_9<>(SB), (RODATA|NOPTR), $1
+DATA LCPI4_9<>+0x00(SB)/8, $0x2020202020202020
+DATA LCPI4_9<>+0x08(SB)/8, $0x2020202020202020
+GLOBL LCPI4_9<>(SB), (RODATA|NOPTR), $16
 
-DATA LCPI4_10<>+0x00(SB)/1, $0x99
+DATA LCPI4_10<>+0x00(SB)/1, $0x1f
 GLOBL LCPI4_10<>(SB), (RODATA|NOPTR), $1
 
-DATA LCPI4_11<>+0x00(SB)/1, $0xe0
+DATA LCPI4_11<>+0x00(SB)/1, $0x99
 GLOBL LCPI4_11<>(SB), (RODATA|NOPTR), $1
 
-DATA LCPI4_12<>+0x00(SB)/1, $0x7f
+DATA LCPI4_12<>+0x00(SB)/1, $0xe0
 GLOBL LCPI4_12<>(SB), (RODATA|NOPTR), $1
 
-DATA LCPI4_13<>+0x00(SB)/1, $0xfa
+DATA LCPI4_13<>+0x00(SB)/1, $0x7f
 GLOBL LCPI4_13<>(SB), (RODATA|NOPTR), $1
 
-DATA LCPI4_14<>+0x00(SB)/1, $0x20
+DATA LCPI4_14<>+0x00(SB)/1, $0xfa
 GLOBL LCPI4_14<>(SB), (RODATA|NOPTR), $1
+
+DATA LCPI4_15<>+0x00(SB)/1, $0x20
+GLOBL LCPI4_15<>(SB), (RODATA|NOPTR), $1
 
 TEXT ·indexFoldRabinKarpAvx(SB), 0, $8-40
 	MOVQ haystack+0(FP), DI
@@ -904,13 +910,13 @@ TEXT ·indexFoldRabinKarpAvx(SB), 0, $8-40
 	MOVQ AX, 0(SP)              // <--                                  // push	rax
 	MOVQ $-0x1, AX              // <--                                  // mov	rax, -1
 	CMPQ SI, CX                 // <--                                  // cmp	rsi, rcx
-	JL   LBB4_115               // <--                                  // jl	.LBB4_115
+	JL   LBB4_117               // <--                                  // jl	.LBB4_117
 	WORD $0x8548; BYTE $0xc9    // TESTQ CX, CX                         // test	rcx, rcx
 	JLE  LBB4_9                 // <--                                  // jle	.LBB4_9
 	CMPQ SI, CX                 // <--                                  // cmp	rsi, rcx
 	JNE  LBB4_10                // <--                                  // jne	.LBB4_10
 	CMPQ SI, $0x8               // <--                                  // cmp	rsi, 8
-	JAE  LBB4_57                // <--                                  // jae	.LBB4_57
+	JAE  LBB4_59                // <--                                  // jae	.LBB4_59
 	XORL CX, CX                 // <--                                  // xor	ecx, ecx
 
 LBB4_5:
@@ -931,7 +937,7 @@ LBB4_6:
 	LONG $0xd3b60f45             // MOVZX R11, R10                       // movzx	r10d, r11b
 	LONG $0xd0430f45             // CMOVAE R8, R10                       // cmovae	r10d, r8d
 	CMPB R9, R10                 // <--                                  // cmp	r9b, r10b
-	JNE  LBB4_115                // <--                                  // jne	.LBB4_115
+	JNE  LBB4_117                // <--                                  // jne	.LBB4_117
 	INCQ CX                      // <--                                  // inc	rcx
 	CMPQ SI, CX                  // <--                                  // cmp	rsi, rcx
 	JNE  LBB4_6                  // <--                                  // jne	.LBB4_6
@@ -939,7 +945,7 @@ LBB4_6:
 LBB4_9:
 	XORL AX, AX // <--                                  // xor	eax, eax
 
-LBB4_115:
+LBB4_117:
 	NOP                 // (skipped)                            // lea	rsp, [rbp - 40]
 	NOP                 // (skipped)                            // pop	rbx
 	NOP                 // (skipped)                            // pop	r12
@@ -953,193 +959,54 @@ LBB4_115:
 
 LBB4_10:
 	CMPQ         CX, $0x1                // <--                                  // cmp	rcx, 1
-	JE           LBB4_62                 // <--                                  // je	.LBB4_62
+	JE           LBB4_64                 // <--                                  // je	.LBB4_64
 	CMPQ         CX, $0x2                // <--                                  // cmp	rcx, 2
-	JNE          LBB4_70                 // <--                                  // jne	.LBB4_70
+	JNE          LBB4_72                 // <--                                  // jne	.LBB4_72
 	CMPQ         SI, $0x2                // <--                                  // cmp	rsi, 2
-	JL           LBB4_115                // <--                                  // jl	.LBB4_115
+	JL           LBB4_117                // <--                                  // jl	.LBB4_117
 	LONG         $0x797de2c4; BYTE $0x02 // VPBROADCASTW 0(DX), Y0               // vpbroadcastw	ymm0, word ptr [rdx]
 	VPADDB       LCPI4_0<>(SB), Y0, Y1   // <--                                  // vpaddb	ymm1, ymm0, ymmword ptr [rip + .LCPI4_0]
 	VPCMPGTB     LCPI4_1<>(SB), Y1, Y1   // <--                                  // vpcmpgtb	ymm1, ymm1, ymmword ptr [rip + .LCPI4_1]
 	VPANDN       LCPI4_2<>(SB), Y1, Y1   // <--                                  // vpandn	ymm1, ymm1, ymmword ptr [rip + .LCPI4_2]
-	LONG         $0xe4efd9c5             // VPXOR X4, X4, X4                     // vpxor	xmm4, xmm4, xmm4
+	LONG         $0xedefd1c5             // VPXOR X5, X5, X5                     // vpxor	xmm5, xmm5, xmm5
 	LONG         $0xc0fcf5c5             // VPADDB Y0, Y1, Y0                    // vpaddb	ymm0, ymm1, ymm0
 	XORL         DX, DX                  // <--                                  // xor	edx, edx
-	VPBROADCASTB LCPI4_9<>(SB), Y1       // <--                                  // vpbroadcastb	ymm1, byte ptr [rip + .LCPI4_9]
-	VPBROADCASTB LCPI4_10<>(SB), Y2      // <--                                  // vpbroadcastb	ymm2, byte ptr [rip + .LCPI4_10]
-	VPBROADCASTB LCPI4_11<>(SB), Y3      // <--                                  // vpbroadcastb	ymm3, byte ptr [rip + .LCPI4_11]
+	VPBROADCASTB LCPI4_10<>(SB), Y1      // <--                                  // vpbroadcastb	ymm1, byte ptr [rip + .LCPI4_10]
+	VPBROADCASTB LCPI4_11<>(SB), Y2      // <--                                  // vpbroadcastb	ymm2, byte ptr [rip + .LCPI4_11]
+	VPBROADCASTB LCPI4_12<>(SB), Y3      // <--                                  // vpbroadcastb	ymm3, byte ptr [rip + .LCPI4_12]
+	VMOVDQA      LCPI4_3<>(SB), Y4       // <--                                  // vmovdqa	ymm4, ymmword ptr [rip + .LCPI4_3]
 
 LBB4_14:
 	MOVQ SI, AX                  // <--                                  // mov	rax, rsi
 	SUBQ DX, AX                  // <--                                  // sub	rax, rdx
-	JLE  LBB4_114                // <--                                  // jle	.LBB4_114
+	JLE  LBB4_116                // <--                                  // jle	.LBB4_116
 	LEAQ 0(DI)(DX*1), R8         // <--                                  // lea	r8, [rdi + rdx]
 	CMPQ AX, $0x20               // <--                                  // cmp	rax, 32
 	JB   LBB4_17                 // <--                                  // jb	.LBB4_17
-	LONG $0x6f7ec1c4; BYTE $0x28 // VMOVDQU 0(R8), Y5                    // vmovdqu	ymm5, ymmword ptr [r8]
-	JMP  LBB4_53                 // <--                                  // jmp	.LBB4_53
+	LONG $0x6f7ec1c4; BYTE $0x30 // VMOVDQU 0(R8), Y6                    // vmovdqu	ymm6, ymmword ptr [r8]
+	JMP  LBB4_19                 // <--                                  // jmp	.LBB4_19
 
 LBB4_17:
-	CMPQ AX, $0x8                  // <--                                  // cmp	rax, 8
-	JB   LBB4_22                   // <--                                  // jb	.LBB4_22
-	MOVQ 0(R8), R9                 // <--                                  // mov	r9, qword ptr [r8]
-	CMPQ AX, $0xf                  // <--                                  // cmp	rax, 15
-	JBE  LBB4_24                   // <--                                  // jbe	.LBB4_24
-	LONG $0x7e7ac1c4; WORD $0x0868 // VMOVQ 0x8(R8), X5                    // vmovq	xmm5, qword ptr [r8 + 8]
-	CMPQ AX, $0x17                 // <--                                  // cmp	rax, 23
-	JBE  LBB4_32                   // <--                                  // jbe	.LBB4_32
-	LONG $0x04c6f640               // TESTB $0x4, SI                       // test	sil, 4
-	JNE  LBB4_40                   // <--                                  // jne	.LBB4_40
-	XORL AX, AX                    // <--                                  // xor	eax, eax
-	XORL R10, R10                  // <--                                  // xor	r10d, r10d
-	JMP  LBB4_41                   // <--                                  // jmp	.LBB4_41
+	WORD $0x8944; BYTE $0xc1       // MOVL R8, CX                          // mov	ecx, r8d
+	LONG $0x0fffe181; WORD $0x0000 // ANDL $index_fold_rabin_karp_avx2+2015(SB), CX // and	ecx, 4095
+	LONG $0x0fe0f981; WORD $0x0000 // CMPL CX, $index_fold_rabin_karp_avx2+1984(SB) // cmp	ecx, 4064
+	JA   LBB4_23                   // <--                                  // ja	.LBB4_23
+	LONG $0xf06ef9c5               // VMOVD AX, X6                         // vmovd	xmm6, eax
+	LONG $0x787de2c4; BYTE $0xf6   // VPBROADCASTB X6, Y6                  // vpbroadcastb	ymm6, xmm6
+	LONG $0xf464cdc5               // VPCMPGTB Y4, Y6, Y6                  // vpcmpgtb	ymm6, ymm6, ymm4
+	LONG $0xdb4dc1c4; BYTE $0x30   // VPAND 0(R8), Y6, Y6                  // vpand	ymm6, ymm6, ymmword ptr [r8]
 
-LBB4_22:
-	LONG $0x04c6f640 // TESTB $0x4, SI                       // test	sil, 4
-	JNE  LBB4_26     // <--                                  // jne	.LBB4_26
-	XORL AX, AX      // <--                                  // xor	eax, eax
-	XORL R9, R9      // <--                                  // xor	r9d, r9d
-	JMP  LBB4_27     // <--                                  // jmp	.LBB4_27
-
-LBB4_24:
-	LONG $0x04c6f640 // TESTB $0x4, SI                       // test	sil, 4
-	JNE  LBB4_34     // <--                                  // jne	.LBB4_34
-	XORL AX, AX      // <--                                  // xor	eax, eax
-	XORL R10, R10    // <--                                  // xor	r10d, r10d
-	JMP  LBB4_35     // <--                                  // jmp	.LBB4_35
-
-LBB4_26:
-	WORD $0x8b45; BYTE $0x08     // MOVL 0(R8), R9                       // mov	r9d, dword ptr [r8]
-	LONG $0x000004b8; BYTE $0x00 // MOVL $0x4, AX                        // mov	eax, 4
-
-LBB4_27:
-	LONG $0x02c6f640                           // TESTB $0x2, SI                       // test	sil, 2
-	JE   LBB4_29                               // <--                                  // je	.LBB4_29
-	LONG $0x14b70f45; BYTE $0x00               // MOVZX 0(R8)(AX*1), R10               // movzx	r10d, word ptr [r8 + rax]
-	LONG $0x00c50c8d; WORD $0x0000; BYTE $0x00 // LEAL 0(AX*8), CX                     // lea	ecx, [8*rax]
-	SHLQ CL, R10                               // <--                                  // shl	r10, cl
-	ORQ  R10, R9                               // <--                                  // or	r9, r10
-	ORQ  $0x2, AX                              // <--                                  // or	rax, 2
-
-LBB4_29:
-	LONG $0x01c6f640             // TESTB $0x1, SI                       // test	sil, 1
-	JE   LBB4_31                 // <--                                  // je	.LBB4_31
-	LONG $0x04b60f45; BYTE $0x00 // MOVZX 0(R8)(AX*1), R8                // movzx	r8d, byte ptr [r8 + rax]
-	WORD $0xe0c1; BYTE $0x03     // SHLL $0x3, AX                        // shl	eax, 3
-	WORD $0xc189                 // MOVL AX, CX                          // mov	ecx, eax
-	SHLQ CL, R8                  // <--                                  // shl	r8, cl
-	ORQ  R8, R9                  // <--                                  // or	r9, r8
-
-LBB4_31:
-	LONG $0x6ef9c1c4; BYTE $0xe9 // VMOVQ R9, X5                         // vmovq	xmm5, r9
-	JMP  LBB4_53                 // <--                                  // jmp	.LBB4_53
-
-LBB4_32:
-	LONG $0x04c6f640 // TESTB $0x4, SI                       // test	sil, 4
-	JNE  LBB4_46     // <--                                  // jne	.LBB4_46
-	XORL AX, AX      // <--                                  // xor	eax, eax
-	XORL R10, R10    // <--                                  // xor	r10d, r10d
-	JMP  LBB4_47     // <--                                  // jmp	.LBB4_47
-
-LBB4_34:
-	LONG $0x08508b45             // MOVL 0x8(R8), R10                    // mov	r10d, dword ptr [r8 + 8]
-	LONG $0x000004b8; BYTE $0x00 // MOVL $0x4, AX                        // mov	eax, 4
-
-LBB4_35:
-	LONG $0x02c6f640                           // TESTB $0x2, SI                       // test	sil, 2
-	JE   LBB4_37                               // <--                                  // je	.LBB4_37
-	LONG $0x5cb70f45; WORD $0x0800             // MOVZX 0x8(R8)(AX*1), R11             // movzx	r11d, word ptr [r8 + rax + 8]
-	LONG $0x00c50c8d; WORD $0x0000; BYTE $0x00 // LEAL 0(AX*8), CX                     // lea	ecx, [8*rax]
-	SHLQ CL, R11                               // <--                                  // shl	r11, cl
-	ORQ  R11, R10                              // <--                                  // or	r10, r11
-	ORQ  $0x2, AX                              // <--                                  // or	rax, 2
-
-LBB4_37:
-	LONG $0x01c6f640               // TESTB $0x1, SI                       // test	sil, 1
-	JE   LBB4_39                   // <--                                  // je	.LBB4_39
-	LONG $0x44b60f45; WORD $0x0800 // MOVZX 0x8(R8)(AX*1), R8              // movzx	r8d, byte ptr [r8 + rax + 8]
-	WORD $0xe0c1; BYTE $0x03       // SHLL $0x3, AX                        // shl	eax, 3
-	WORD $0xc189                   // MOVL AX, CX                          // mov	ecx, eax
-	SHLQ CL, R8                    // <--                                  // shl	r8, cl
-	ORQ  R8, R10                   // <--                                  // or	r10, r8
-
-LBB4_39:
-	LONG $0x6ef9c1c4; BYTE $0xea // VMOVQ R10, X5                        // vmovq	xmm5, r10
-	LONG $0x6ef9c1c4; BYTE $0xf1 // VMOVQ R9, X6                         // vmovq	xmm6, r9
-	LONG $0xed6cc9c5             // VPUNPCKLQDQ X5, X6, X5               // vpunpcklqdq	xmm5, xmm6, xmm5
-	JMP  LBB4_53                 // <--                                  // jmp	.LBB4_53
-
-LBB4_40:
-	LONG $0x18508b45             // MOVL 0x18(R8), R10                   // mov	r10d, dword ptr [r8 + 24]
-	LONG $0x000004b8; BYTE $0x00 // MOVL $0x4, AX                        // mov	eax, 4
-
-LBB4_41:
-	LONG $0x02c6f640                           // TESTB $0x2, SI                       // test	sil, 2
-	JE   LBB4_43                               // <--                                  // je	.LBB4_43
-	LONG $0x5cb70f45; WORD $0x1800             // MOVZX 0x18(R8)(AX*1), R11            // movzx	r11d, word ptr [r8 + rax + 24]
-	LONG $0x00c50c8d; WORD $0x0000; BYTE $0x00 // LEAL 0(AX*8), CX                     // lea	ecx, [8*rax]
-	SHLQ CL, R11                               // <--                                  // shl	r11, cl
-	ORQ  R11, R10                              // <--                                  // or	r10, r11
-	ORQ  $0x2, AX                              // <--                                  // or	rax, 2
-
-LBB4_43:
-	LONG $0x01c6f640               // TESTB $0x1, SI                       // test	sil, 1
-	JE   LBB4_45                   // <--                                  // je	.LBB4_45
-	LONG $0x5cb60f45; WORD $0x1800 // MOVZX 0x18(R8)(AX*1), R11            // movzx	r11d, byte ptr [r8 + rax + 24]
-	WORD $0xe0c1; BYTE $0x03       // SHLL $0x3, AX                        // shl	eax, 3
-	WORD $0xc189                   // MOVL AX, CX                          // mov	ecx, eax
-	SHLQ CL, R11                   // <--                                  // shl	r11, cl
-	ORQ  R11, R10                  // <--                                  // or	r10, r11
-
-LBB4_45:
-	LONG $0x6ef9c1c4; BYTE $0xf2   // VMOVQ R10, X6                        // vmovq	xmm6, r10
-	LONG $0x7e7ac1c4; WORD $0x1078 // VMOVQ 0x10(R8), X7                   // vmovq	xmm7, qword ptr [r8 + 16]
-	LONG $0xf66cc1c5               // VPUNPCKLQDQ X6, X7, X6               // vpunpcklqdq	xmm6, xmm7, xmm6
-	LONG $0x6ef9c1c4; BYTE $0xf9   // VMOVQ R9, X7                         // vmovq	xmm7, r9
-	LONG $0xed6cc1c5               // VPUNPCKLQDQ X5, X7, X5               // vpunpcklqdq	xmm5, xmm7, xmm5
-	JMP  LBB4_52                   // <--                                  // jmp	.LBB4_52
-
-LBB4_46:
-	LONG $0x10508b45             // MOVL 0x10(R8), R10                   // mov	r10d, dword ptr [r8 + 16]
-	LONG $0x000004b8; BYTE $0x00 // MOVL $0x4, AX                        // mov	eax, 4
-
-LBB4_47:
-	LONG $0x02c6f640                           // TESTB $0x2, SI                       // test	sil, 2
-	JE   LBB4_49                               // <--                                  // je	.LBB4_49
-	LONG $0x5cb70f45; WORD $0x1000             // MOVZX 0x10(R8)(AX*1), R11            // movzx	r11d, word ptr [r8 + rax + 16]
-	LONG $0x00c50c8d; WORD $0x0000; BYTE $0x00 // LEAL 0(AX*8), CX                     // lea	ecx, [8*rax]
-	SHLQ CL, R11                               // <--                                  // shl	r11, cl
-	ORQ  R11, R10                              // <--                                  // or	r10, r11
-	ORQ  $0x2, AX                              // <--                                  // or	rax, 2
-
-LBB4_49:
-	LONG $0x01c6f640               // TESTB $0x1, SI                       // test	sil, 1
-	JE   LBB4_51                   // <--                                  // je	.LBB4_51
-	LONG $0x44b60f45; WORD $0x1000 // MOVZX 0x10(R8)(AX*1), R8             // movzx	r8d, byte ptr [r8 + rax + 16]
-	WORD $0xe0c1; BYTE $0x03       // SHLL $0x3, AX                        // shl	eax, 3
-	WORD $0xc189                   // MOVL AX, CX                          // mov	ecx, eax
-	SHLQ CL, R8                    // <--                                  // shl	r8, cl
-	ORQ  R8, R10                   // <--                                  // or	r10, r8
-
-LBB4_51:
-	LONG $0x6ef9c1c4; BYTE $0xf1 // VMOVQ R9, X6                         // vmovq	xmm6, r9
-	LONG $0xed6cc9c5             // VPUNPCKLQDQ X5, X6, X5               // vpunpcklqdq	xmm5, xmm6, xmm5
-	LONG $0x6ef9c1c4; BYTE $0xf2 // VMOVQ R10, X6                        // vmovq	xmm6, r10
-
-LBB4_52:
-	LONG $0x3855e3c4; WORD $0x01ee // VINSERTI128 $0x1, X6, Y5, Y5         // vinserti128	ymm5, ymm5, xmm6, 1
-
-LBB4_53:
-	LONG $0xf1fcd5c5                           // VPADDB Y1, Y5, Y6                    // vpaddb	ymm6, ymm5, ymm1
-	LONG $0xf264cdc5                           // VPCMPGTB Y2, Y6, Y6                  // vpcmpgtb	ymm6, ymm6, ymm2
-	LONG $0xf3dfcdc5                           // VPANDN Y3, Y6, Y6                    // vpandn	ymm6, ymm6, ymm3
-	LONG $0xedfccdc5                           // VPADDB Y5, Y6, Y5                    // vpaddb	ymm5, ymm6, ymm5
-	LONG $0xf075d5c5                           // VPCMPEQW Y0, Y5, Y6                  // vpcmpeqw	ymm6, ymm5, ymm0
-	LONG $0x465de3c4; WORD $0x21e5             // VPERM2I128 $0x21, Y5, Y4, Y4         // vperm2i128	ymm4, ymm4, ymm5, 33
-	LONG $0x0f55e3c4; WORD $0x0fe4             // VPALIGNR $0xf, Y4, Y5, Y4            // vpalignr	ymm4, ymm5, ymm4, 15
-	LONG $0xe075ddc5                           // VPCMPEQW Y0, Y4, Y4                  // vpcmpeqw	ymm4, ymm4, ymm0
-	LONG $0xc6d7fdc5                           // VPMOVMSKB Y6, AX                     // vpmovmskb	eax, ymm6
-	LONG $0xccd7fdc5                           // VPMOVMSKB Y4, CX                     // vpmovmskb	ecx, ymm4
+LBB4_19:
+	LONG $0xf9fccdc5                           // VPADDB Y1, Y6, Y7                    // vpaddb	ymm7, ymm6, ymm1
+	LONG $0xfa64c5c5                           // VPCMPGTB Y2, Y7, Y7                  // vpcmpgtb	ymm7, ymm7, ymm2
+	LONG $0xfbdfc5c5                           // VPANDN Y3, Y7, Y7                    // vpandn	ymm7, ymm7, ymm3
+	LONG $0xf6fcc5c5                           // VPADDB Y6, Y7, Y6                    // vpaddb	ymm6, ymm7, ymm6
+	LONG $0xf875cdc5                           // VPCMPEQW Y0, Y6, Y7                  // vpcmpeqw	ymm7, ymm6, ymm0
+	LONG $0x4655e3c4; WORD $0x21ee             // VPERM2I128 $0x21, Y6, Y5, Y5         // vperm2i128	ymm5, ymm5, ymm6, 33
+	LONG $0x0f4de3c4; WORD $0x0fed             // VPALIGNR $0xf, Y5, Y6, Y5            // vpalignr	ymm5, ymm6, ymm5, 15
+	LONG $0xe875d5c5                           // VPCMPEQW Y0, Y5, Y5                  // vpcmpeqw	ymm5, ymm5, ymm0
+	LONG $0xc7d7fdc5                           // VPMOVMSKB Y7, AX                     // vpmovmskb	eax, ymm7
+	LONG $0xcdd7fdc5                           // VPMOVMSKB Y5, CX                     // vpmovmskb	ecx, ymm5
 	WORD $0x8941; BYTE $0xc8                   // MOVL CX, R8                          // mov	r8d, ecx
 	WORD $0xd141; BYTE $0xe8                   // SHRL $0x1, R8                        // shr	r8d
 	WORD $0x2141; BYTE $0xc8                   // ANDL CX, R8                          // and	r8d, ecx
@@ -1153,9 +1020,9 @@ LBB4_53:
 	WORD $0x8548; BYTE $0xd2                   // TESTQ DX, DX                         // test	rdx, rdx
 	LONG $0xc9450f41                           // CMOVNE R9, CX                        // cmovne	ecx, r9d
 
-LBB4_54:
+LBB4_20:
 	WORD $0xc985             // TESTL CX, CX                         // test	ecx, ecx
-	JE   LBB4_56             // <--                                  // je	.LBB4_56
+	JE   LBB4_22             // <--                                  // je	.LBB4_22
 	LONG $0xc1bc0ff3         // TZCNT CX, AX                         // rep		bsf	eax, ecx
 	LONG $0xff418d44         // LEAL -0x1(CX), R8                    // lea	r8d, [rcx - 1]
 	WORD $0x2141; BYTE $0xc8 // ANDL CX, R8                          // and	r8d, ecx
@@ -1165,38 +1032,189 @@ LBB4_54:
 	LONG $0xc19d0f41         // SETGE R9                             // setge	r9b
 	WORD $0x0841; BYTE $0xc9 // ORL CL, R9                           // or	r9b, cl
 	WORD $0x8944; BYTE $0xc1 // MOVL R8, CX                          // mov	ecx, r8d
-	JNE  LBB4_54             // <--                                  // jne	.LBB4_54
-	JMP  LBB4_88             // <--                                  // jmp	.LBB4_88
+	JNE  LBB4_20             // <--                                  // jne	.LBB4_20
+	JMP  LBB4_90             // <--                                  // jmp	.LBB4_90
 
-LBB4_56:
+LBB4_22:
 	LEAQ 0x20(DX), AX // <--                                  // lea	rax, [rdx + 32]
 	ORQ  $0x2, DX     // <--                                  // or	rdx, 2
-	LONG $0xe56ffdc5  // VMOVDQA Y5, Y4                       // vmovdqa	ymm4, ymm5
+	LONG $0xee6ffdc5  // VMOVDQA Y6, Y5                       // vmovdqa	ymm5, ymm6
 	CMPQ DX, SI       // <--                                  // cmp	rdx, rsi
 	MOVQ AX, DX       // <--                                  // mov	rdx, rax
 	JLE  LBB4_14      // <--                                  // jle	.LBB4_14
-	JMP  LBB4_114     // <--                                  // jmp	.LBB4_114
+	JMP  LBB4_116     // <--                                  // jmp	.LBB4_116
+
+LBB4_23:
+	CMPQ AX, $0x8                  // <--                                  // cmp	rax, 8
+	JB   LBB4_28                   // <--                                  // jb	.LBB4_28
+	MOVQ 0(R8), R9                 // <--                                  // mov	r9, qword ptr [r8]
+	CMPQ AX, $0xf                  // <--                                  // cmp	rax, 15
+	JBE  LBB4_30                   // <--                                  // jbe	.LBB4_30
+	LONG $0x7e7ac1c4; WORD $0x0870 // VMOVQ 0x8(R8), X6                    // vmovq	xmm6, qword ptr [r8 + 8]
+	CMPQ AX, $0x17                 // <--                                  // cmp	rax, 23
+	JBE  LBB4_38                   // <--                                  // jbe	.LBB4_38
+	LONG $0x04c6f640               // TESTB $0x4, SI                       // test	sil, 4
+	JNE  LBB4_46                   // <--                                  // jne	.LBB4_46
+	XORL AX, AX                    // <--                                  // xor	eax, eax
+	XORL R10, R10                  // <--                                  // xor	r10d, r10d
+	JMP  LBB4_47                   // <--                                  // jmp	.LBB4_47
+
+LBB4_28:
+	LONG $0x04c6f640 // TESTB $0x4, SI                       // test	sil, 4
+	JNE  LBB4_32     // <--                                  // jne	.LBB4_32
+	XORL AX, AX      // <--                                  // xor	eax, eax
+	XORL R9, R9      // <--                                  // xor	r9d, r9d
+	JMP  LBB4_33     // <--                                  // jmp	.LBB4_33
+
+LBB4_30:
+	LONG $0x04c6f640 // TESTB $0x4, SI                       // test	sil, 4
+	JNE  LBB4_40     // <--                                  // jne	.LBB4_40
+	XORL AX, AX      // <--                                  // xor	eax, eax
+	XORL R10, R10    // <--                                  // xor	r10d, r10d
+	JMP  LBB4_41     // <--                                  // jmp	.LBB4_41
+
+LBB4_32:
+	WORD $0x8b45; BYTE $0x08     // MOVL 0(R8), R9                       // mov	r9d, dword ptr [r8]
+	LONG $0x000004b8; BYTE $0x00 // MOVL $0x4, AX                        // mov	eax, 4
+
+LBB4_33:
+	LONG $0x02c6f640                           // TESTB $0x2, SI                       // test	sil, 2
+	JE   LBB4_35                               // <--                                  // je	.LBB4_35
+	LONG $0x14b70f45; BYTE $0x00               // MOVZX 0(R8)(AX*1), R10               // movzx	r10d, word ptr [r8 + rax]
+	LONG $0x00c50c8d; WORD $0x0000; BYTE $0x00 // LEAL 0(AX*8), CX                     // lea	ecx, [8*rax]
+	SHLQ CL, R10                               // <--                                  // shl	r10, cl
+	ORQ  R10, R9                               // <--                                  // or	r9, r10
+	ORQ  $0x2, AX                              // <--                                  // or	rax, 2
+
+LBB4_35:
+	LONG $0x01c6f640             // TESTB $0x1, SI                       // test	sil, 1
+	JE   LBB4_37                 // <--                                  // je	.LBB4_37
+	LONG $0x04b60f45; BYTE $0x00 // MOVZX 0(R8)(AX*1), R8                // movzx	r8d, byte ptr [r8 + rax]
+	WORD $0xe0c1; BYTE $0x03     // SHLL $0x3, AX                        // shl	eax, 3
+	WORD $0xc189                 // MOVL AX, CX                          // mov	ecx, eax
+	SHLQ CL, R8                  // <--                                  // shl	r8, cl
+	ORQ  R8, R9                  // <--                                  // or	r9, r8
+
+LBB4_37:
+	LONG $0x6ef9c1c4; BYTE $0xf1 // VMOVQ R9, X6                         // vmovq	xmm6, r9
+	JMP  LBB4_19                 // <--                                  // jmp	.LBB4_19
+
+LBB4_38:
+	LONG $0x04c6f640 // TESTB $0x4, SI                       // test	sil, 4
+	JNE  LBB4_52     // <--                                  // jne	.LBB4_52
+	XORL AX, AX      // <--                                  // xor	eax, eax
+	XORL R10, R10    // <--                                  // xor	r10d, r10d
+	JMP  LBB4_53     // <--                                  // jmp	.LBB4_53
+
+LBB4_40:
+	LONG $0x08508b45             // MOVL 0x8(R8), R10                    // mov	r10d, dword ptr [r8 + 8]
+	LONG $0x000004b8; BYTE $0x00 // MOVL $0x4, AX                        // mov	eax, 4
+
+LBB4_41:
+	LONG $0x02c6f640                           // TESTB $0x2, SI                       // test	sil, 2
+	JE   LBB4_43                               // <--                                  // je	.LBB4_43
+	LONG $0x5cb70f45; WORD $0x0800             // MOVZX 0x8(R8)(AX*1), R11             // movzx	r11d, word ptr [r8 + rax + 8]
+	LONG $0x00c50c8d; WORD $0x0000; BYTE $0x00 // LEAL 0(AX*8), CX                     // lea	ecx, [8*rax]
+	SHLQ CL, R11                               // <--                                  // shl	r11, cl
+	ORQ  R11, R10                              // <--                                  // or	r10, r11
+	ORQ  $0x2, AX                              // <--                                  // or	rax, 2
+
+LBB4_43:
+	LONG $0x01c6f640               // TESTB $0x1, SI                       // test	sil, 1
+	JE   LBB4_45                   // <--                                  // je	.LBB4_45
+	LONG $0x44b60f45; WORD $0x0800 // MOVZX 0x8(R8)(AX*1), R8              // movzx	r8d, byte ptr [r8 + rax + 8]
+	WORD $0xe0c1; BYTE $0x03       // SHLL $0x3, AX                        // shl	eax, 3
+	WORD $0xc189                   // MOVL AX, CX                          // mov	ecx, eax
+	SHLQ CL, R8                    // <--                                  // shl	r8, cl
+	ORQ  R8, R10                   // <--                                  // or	r10, r8
+
+LBB4_45:
+	LONG $0x6ef9c1c4; BYTE $0xf2 // VMOVQ R10, X6                        // vmovq	xmm6, r10
+	LONG $0x6ef9c1c4; BYTE $0xf9 // VMOVQ R9, X7                         // vmovq	xmm7, r9
+	LONG $0xf66cc1c5             // VPUNPCKLQDQ X6, X7, X6               // vpunpcklqdq	xmm6, xmm7, xmm6
+	JMP  LBB4_19                 // <--                                  // jmp	.LBB4_19
+
+LBB4_46:
+	LONG $0x18508b45             // MOVL 0x18(R8), R10                   // mov	r10d, dword ptr [r8 + 24]
+	LONG $0x000004b8; BYTE $0x00 // MOVL $0x4, AX                        // mov	eax, 4
+
+LBB4_47:
+	LONG $0x02c6f640                           // TESTB $0x2, SI                       // test	sil, 2
+	JE   LBB4_49                               // <--                                  // je	.LBB4_49
+	LONG $0x5cb70f45; WORD $0x1800             // MOVZX 0x18(R8)(AX*1), R11            // movzx	r11d, word ptr [r8 + rax + 24]
+	LONG $0x00c50c8d; WORD $0x0000; BYTE $0x00 // LEAL 0(AX*8), CX                     // lea	ecx, [8*rax]
+	SHLQ CL, R11                               // <--                                  // shl	r11, cl
+	ORQ  R11, R10                              // <--                                  // or	r10, r11
+	ORQ  $0x2, AX                              // <--                                  // or	rax, 2
+
+LBB4_49:
+	LONG $0x01c6f640               // TESTB $0x1, SI                       // test	sil, 1
+	JE   LBB4_51                   // <--                                  // je	.LBB4_51
+	LONG $0x5cb60f45; WORD $0x1800 // MOVZX 0x18(R8)(AX*1), R11            // movzx	r11d, byte ptr [r8 + rax + 24]
+	WORD $0xe0c1; BYTE $0x03       // SHLL $0x3, AX                        // shl	eax, 3
+	WORD $0xc189                   // MOVL AX, CX                          // mov	ecx, eax
+	SHLQ CL, R11                   // <--                                  // shl	r11, cl
+	ORQ  R11, R10                  // <--                                  // or	r10, r11
+
+LBB4_51:
+	LONG $0x6ef9c1c4; BYTE $0xfa   // VMOVQ R10, X7                        // vmovq	xmm7, r10
+	LONG $0x7e7a41c4; WORD $0x1040 // VMOVQ 0x10(R8), X8                   // vmovq	xmm8, qword ptr [r8 + 16]
+	LONG $0xff6cb9c5               // VPUNPCKLQDQ X7, X8, X7               // vpunpcklqdq	xmm7, xmm8, xmm7
+	LONG $0x6ef941c4; BYTE $0xc1   // VMOVQ R9, X8                         // vmovq	xmm8, r9
+	LONG $0xf66cb9c5               // VPUNPCKLQDQ X6, X8, X6               // vpunpcklqdq	xmm6, xmm8, xmm6
+	JMP  LBB4_58                   // <--                                  // jmp	.LBB4_58
+
+LBB4_52:
+	LONG $0x10508b45             // MOVL 0x10(R8), R10                   // mov	r10d, dword ptr [r8 + 16]
+	LONG $0x000004b8; BYTE $0x00 // MOVL $0x4, AX                        // mov	eax, 4
+
+LBB4_53:
+	LONG $0x02c6f640                           // TESTB $0x2, SI                       // test	sil, 2
+	JE   LBB4_55                               // <--                                  // je	.LBB4_55
+	LONG $0x5cb70f45; WORD $0x1000             // MOVZX 0x10(R8)(AX*1), R11            // movzx	r11d, word ptr [r8 + rax + 16]
+	LONG $0x00c50c8d; WORD $0x0000; BYTE $0x00 // LEAL 0(AX*8), CX                     // lea	ecx, [8*rax]
+	SHLQ CL, R11                               // <--                                  // shl	r11, cl
+	ORQ  R11, R10                              // <--                                  // or	r10, r11
+	ORQ  $0x2, AX                              // <--                                  // or	rax, 2
+
+LBB4_55:
+	LONG $0x01c6f640               // TESTB $0x1, SI                       // test	sil, 1
+	JE   LBB4_57                   // <--                                  // je	.LBB4_57
+	LONG $0x44b60f45; WORD $0x1000 // MOVZX 0x10(R8)(AX*1), R8             // movzx	r8d, byte ptr [r8 + rax + 16]
+	WORD $0xe0c1; BYTE $0x03       // SHLL $0x3, AX                        // shl	eax, 3
+	WORD $0xc189                   // MOVL AX, CX                          // mov	ecx, eax
+	SHLQ CL, R8                    // <--                                  // shl	r8, cl
+	ORQ  R8, R10                   // <--                                  // or	r10, r8
 
 LBB4_57:
-	XORL         R8, R8             // <--                                  // xor	r8d, r8d
-	VPBROADCASTB LCPI4_12<>(SB), X0 // <--                                  // vpbroadcastb	xmm0, byte ptr [rip + .LCPI4_12]
-	VPBROADCASTB LCPI4_13<>(SB), X1 // <--                                  // vpbroadcastb	xmm1, byte ptr [rip + .LCPI4_13]
-	VPBROADCASTB LCPI4_9<>(SB), X2  // <--                                  // vpbroadcastb	xmm2, byte ptr [rip + .LCPI4_9]
-	VPBROADCASTB LCPI4_14<>(SB), X3 // <--                                  // vpbroadcastb	xmm3, byte ptr [rip + .LCPI4_14]
-	JMP          LBB4_59            // <--                                  // jmp	.LBB4_59
+	LONG $0x6ef9c1c4; BYTE $0xf9 // VMOVQ R9, X7                         // vmovq	xmm7, r9
+	LONG $0xf66cc1c5             // VPUNPCKLQDQ X6, X7, X6               // vpunpcklqdq	xmm6, xmm7, xmm6
+	LONG $0x6ef9c1c4; BYTE $0xfa // VMOVQ R10, X7                        // vmovq	xmm7, r10
 
 LBB4_58:
+	LONG $0x384de3c4; WORD $0x01f7 // VINSERTI128 $0x1, X7, Y6, Y6         // vinserti128	ymm6, ymm6, xmm7, 1
+	JMP  LBB4_19                   // <--                                  // jmp	.LBB4_19
+
+LBB4_59:
+	XORL         R8, R8             // <--                                  // xor	r8d, r8d
+	VPBROADCASTB LCPI4_13<>(SB), X0 // <--                                  // vpbroadcastb	xmm0, byte ptr [rip + .LCPI4_13]
+	VPBROADCASTB LCPI4_14<>(SB), X1 // <--                                  // vpbroadcastb	xmm1, byte ptr [rip + .LCPI4_14]
+	VPBROADCASTB LCPI4_10<>(SB), X2 // <--                                  // vpbroadcastb	xmm2, byte ptr [rip + .LCPI4_10]
+	VPBROADCASTB LCPI4_15<>(SB), X3 // <--                                  // vpbroadcastb	xmm3, byte ptr [rip + .LCPI4_15]
+	JMP          LBB4_61            // <--                                  // jmp	.LBB4_61
+
+LBB4_60:
 	LEAQ 0x8(R8), CX // <--                                  // lea	rcx, [r8 + 8]
 	ADDQ $0x10, R8   // <--                                  // add	r8, 16
 	CMPQ R8, SI      // <--                                  // cmp	r8, rsi
 	MOVQ CX, R8      // <--                                  // mov	r8, rcx
 	JA   LBB4_5      // <--                                  // ja	.LBB4_5
 
-LBB4_59:
+LBB4_61:
 	MOVQ 0(DI)(R8*1), CX         // <--                                  // mov	rcx, qword ptr [rdi + r8]
 	MOVQ 0(DX)(R8*1), R9         // <--                                  // mov	r9, qword ptr [rdx + r8]
 	CMPQ CX, R9                  // <--                                  // cmp	rcx, r9
-	JE   LBB4_58                 // <--                                  // je	.LBB4_58
+	JE   LBB4_60                 // <--                                  // je	.LBB4_60
 	LONG $0x6ef9c1c4; BYTE $0xe1 // VMOVQ R9, X4                         // vmovq	xmm4, r9
 	LONG $0x6ef9e1c4; BYTE $0xe9 // VMOVQ CX, X5                         // vmovq	xmm5, rcx
 	LONG $0xe46cd1c5             // VPUNPCKLQDQ X4, X5, X4               // vpunpcklqdq	xmm4, xmm5, xmm4
@@ -1212,10 +1230,10 @@ LBB4_59:
 	LONG $0x2959e2c4; BYTE $0xe5 // VPCMPEQQ X5, X4, X4                  // vpcmpeqq	xmm4, xmm4, xmm5
 	LONG $0xe17ef9c5             // VMOVD X4, CX                         // vmovd	ecx, xmm4
 	WORD $0xc1f6; BYTE $0x01     // TESTL $0x1, CL                       // test	cl, 1
-	JNE  LBB4_58                 // <--                                  // jne	.LBB4_58
-	JMP  LBB4_115                // <--                                  // jmp	.LBB4_115
+	JNE  LBB4_60                 // <--                                  // jne	.LBB4_60
+	JMP  LBB4_117                // <--                                  // jmp	.LBB4_117
 
-LBB4_62:
+LBB4_64:
 	WORD         $0xb60f; BYTE $0x0a     // MOVZX 0(DX), CX                      // movzx	ecx, byte ptr [rdx]
 	WORD         $0x418d; BYTE $0x9f     // LEAL -0x61(CX), AX                   // lea	eax, [rcx - 97]
 	WORD         $0x518d; BYTE $0xe0     // LEAL -0x20(CX), DX                   // lea	edx, [rcx - 32]
@@ -1231,15 +1249,15 @@ LBB4_62:
 	SUBQ         SI, DX                  // <--                                  // sub	rdx, rsi
 	MOVQ         DI, CX                  // <--                                  // mov	rcx, rdi
 	CMPQ         DX, DI                  // <--                                  // cmp	rdx, rdi
-	JBE          LBB4_67                 // <--                                  // jbe	.LBB4_67
+	JBE          LBB4_69                 // <--                                  // jbe	.LBB4_69
 	LONG         $0xc06ef9c5             // VMOVD AX, X0                         // vmovd	xmm0, eax
 	LONG         $0x787de2c4; BYTE $0xc0 // VPBROADCASTB X0, Y0                  // vpbroadcastb	ymm0, xmm0
 	XORL         CX, CX                  // <--                                  // xor	ecx, ecx
-	VPBROADCASTB LCPI4_9<>(SB), Y1       // <--                                  // vpbroadcastb	ymm1, byte ptr [rip + .LCPI4_9]
-	VPBROADCASTB LCPI4_10<>(SB), Y2      // <--                                  // vpbroadcastb	ymm2, byte ptr [rip + .LCPI4_10]
-	VPBROADCASTB LCPI4_11<>(SB), Y3      // <--                                  // vpbroadcastb	ymm3, byte ptr [rip + .LCPI4_11]
+	VPBROADCASTB LCPI4_10<>(SB), Y1      // <--                                  // vpbroadcastb	ymm1, byte ptr [rip + .LCPI4_10]
+	VPBROADCASTB LCPI4_11<>(SB), Y2      // <--                                  // vpbroadcastb	ymm2, byte ptr [rip + .LCPI4_11]
+	VPBROADCASTB LCPI4_12<>(SB), Y3      // <--                                  // vpbroadcastb	ymm3, byte ptr [rip + .LCPI4_12]
 
-LBB4_64:
+LBB4_66:
 	LONG $0x246ffec5; BYTE $0x0f // VMOVDQU 0(DI)(CX*1), Y4              // vmovdqu	ymm4, ymmword ptr [rdi + rcx]
 	LONG $0xe9fcddc5             // VPADDB Y1, Y4, Y5                    // vpaddb	ymm5, ymm4, ymm1
 	LONG $0xea64d5c5             // VPCMPGTB Y2, Y5, Y5                  // vpcmpgtb	ymm5, ymm5, ymm2
@@ -1248,44 +1266,44 @@ LBB4_64:
 	LONG $0xe074ddc5             // VPCMPEQB Y0, Y4, Y4                  // vpcmpeqb	ymm4, ymm4, ymm0
 	LONG $0xc4d77dc5             // VPMOVMSKB Y4, R8                     // vpmovmskb	r8d, ymm4
 	WORD $0x8545; BYTE $0xc0     // TESTL R8, R8                         // test	r8d, r8d
-	JNE  LBB4_91                 // <--                                  // jne	.LBB4_91
+	JNE  LBB4_93                 // <--                                  // jne	.LBB4_93
 	LEAQ 0(DI)(CX*1), R8         // <--                                  // lea	r8, [rdi + rcx]
 	ADDQ $0x20, R8               // <--                                  // add	r8, 32
 	ADDQ $0x20, CX               // <--                                  // add	rcx, 32
 	CMPQ R8, DX                  // <--                                  // cmp	r8, rdx
-	JB   LBB4_64                 // <--                                  // jb	.LBB4_64
+	JB   LBB4_66                 // <--                                  // jb	.LBB4_66
 	ADDQ DI, CX                  // <--                                  // add	rcx, rdi
 
-LBB4_67:
+LBB4_69:
 	CMPQ     SI, $0x10               // <--                                  // cmp	rsi, 16
-	JL       LBB4_110                // <--                                  // jl	.LBB4_110
+	JL       LBB4_112                // <--                                  // jl	.LBB4_112
 	LONG     $0x016ffac5             // VMOVDQU 0(CX), X0                    // vmovdqu	xmm0, xmmword ptr [rcx]
-	VPADDB   LCPI4_3<>(SB), X0, X1   // <--                                  // vpaddb	xmm1, xmm0, xmmword ptr [rip + .LCPI4_3]
-	VPCMPGTB LCPI4_4<>(SB), X1, X1   // <--                                  // vpcmpgtb	xmm1, xmm1, xmmword ptr [rip + .LCPI4_4]
+	VPADDB   LCPI4_4<>(SB), X0, X1   // <--                                  // vpaddb	xmm1, xmm0, xmmword ptr [rip + .LCPI4_4]
+	VPCMPGTB LCPI4_5<>(SB), X1, X1   // <--                                  // vpcmpgtb	xmm1, xmm1, xmmword ptr [rip + .LCPI4_5]
 	LONG     $0xd06ef9c5             // VMOVD AX, X2                         // vmovd	xmm2, eax
-	VPANDN   LCPI4_5<>(SB), X1, X1   // <--                                  // vpandn	xmm1, xmm1, xmmword ptr [rip + .LCPI4_5]
+	VPANDN   LCPI4_6<>(SB), X1, X1   // <--                                  // vpandn	xmm1, xmm1, xmmword ptr [rip + .LCPI4_6]
 	LONG     $0xc0fcf1c5             // VPADDB X0, X1, X0                    // vpaddb	xmm0, xmm1, xmm0
 	LONG     $0x7879e2c4; BYTE $0xca // VPBROADCASTB X2, X1                  // vpbroadcastb	xmm1, xmm2
 	LONG     $0xc174f9c5             // VPCMPEQB X1, X0, X0                  // vpcmpeqb	xmm0, xmm0, xmm1
 	LONG     $0xd0d7f9c5             // VPMOVMSKB X0, DX                     // vpmovmskb	edx, xmm0
 	WORD     $0xd285                 // TESTL DX, DX                         // test	edx, edx
-	JE       LBB4_109                // <--                                  // je	.LBB4_109
+	JE       LBB4_111                // <--                                  // je	.LBB4_111
 	SUBQ     DI, CX                  // <--                                  // sub	rcx, rdi
 	LONG     $0xc2bc0ff3             // TZCNT DX, AX                         // rep		bsf	eax, edx
 	ADDQ     CX, AX                  // <--                                  // add	rax, rcx
-	JMP      LBB4_115                // <--                                  // jmp	.LBB4_115
+	JMP      LBB4_117                // <--                                  // jmp	.LBB4_117
 
-LBB4_70:
+LBB4_72:
 	QUAD $0xfffffffffffeb848; WORD $0x7fff // MOVQ $0x7ffffffffffffffe, AX         // movabs	rax, 9223372036854775806
 	MOVQ CX, R10                           // <--                                  // mov	r10, rcx
 	DECQ R10                               // <--                                  // dec	r10
-	JE   LBB4_89                           // <--                                  // je	.LBB4_89
+	JE   LBB4_91                           // <--                                  // je	.LBB4_91
 	MOVQ CX, R11                           // <--                                  // mov	r11, rcx
 	ANDQ AX, R11                           // <--                                  // and	r11, rax
 	XORL R9, R9                            // <--                                  // xor	r9d, r9d
 	XORL R8, R8                            // <--                                  // xor	r8d, r8d
 
-LBB4_72:
+LBB4_74:
 	LONG $0x93c06945; WORD $0x0001; BYTE $0x01 // IMULL $0x1000193, R8, R8             // imul	r8d, r8d, 16777619
 	LONG $0x1cb60f42; BYTE $0x0a               // MOVZX 0(DX)(R9*1), BX                // movzx	ebx, byte ptr [rdx + r9]
 	LONG $0x74b60f46; WORD $0x010a             // MOVZX 0x1(DX)(R9*1), R14             // movzx	r14d, byte ptr [rdx + r9 + 1]
@@ -1308,12 +1326,12 @@ LBB4_72:
 	WORD $0x0141; BYTE $0xd8                   // ADDL BX, R8                          // add	r8d, ebx
 	ADDQ $0x2, R9                              // <--                                  // add	r9, 2
 	CMPQ R11, R9                               // <--                                  // cmp	r11, r9
-	JNE  LBB4_72                               // <--                                  // jne	.LBB4_72
+	JNE  LBB4_74                               // <--                                  // jne	.LBB4_74
 	LONG $0x93d86945; WORD $0x0001; BYTE $0x01 // IMULL $0x1000193, R8, R11            // imul	r11d, r8d, 16777619
 	WORD $0xc1f6; BYTE $0x01                   // TESTL $0x1, CL                       // test	cl, 1
-	JE   LBB4_75                               // <--                                  // je	.LBB4_75
+	JE   LBB4_77                               // <--                                  // je	.LBB4_77
 
-LBB4_74:
+LBB4_76:
 	LONG $0x04b60f46; BYTE $0x0a // MOVZX 0(DX)(R9*1), R8                // movzx	r8d, byte ptr [rdx + r9]
 	LONG $0x9f488d45             // LEAL -0x61(R8), R9                   // lea	r9d, [r8 - 97]
 	CMPB R9, $0x1a               // <--                                  // cmp	r9b, 26
@@ -1325,14 +1343,14 @@ LBB4_74:
 	WORD $0x0145; BYTE $0xc3     // ADDL R8, R11                         // add	r11d, r8d
 	WORD $0x8945; BYTE $0xd8     // MOVL R11, R8                         // mov	r8d, r11d
 
-LBB4_75:
+LBB4_77:
 	LONG $0x0193bb41; WORD $0x0100 // MOVL $0x1000193, R11                 // mov	r11d, 16777619
 	LONG $0x000001bb; BYTE $0x00   // MOVL $0x1, BX                        // mov	ebx, 1
 	MOVQ CX, R14                   // <--                                  // mov	r14, rcx
 	LONG $0x0001b941; WORD $0x0000 // MOVL $0x1, R9                        // mov	r9d, 1
 	MOVQ CX, R15                   // <--                                  // mov	r15, rcx
 
-LBB4_76:
+LBB4_78:
 	LONG $0x01c6f641         // TESTB $0x1, R14                      // test	r14b, 1
 	WORD $0x8945; BYTE $0xdc // MOVL R11, R12                        // mov	r12d, r11d
 	LONG $0xe3440f44         // CMOVE BX, R12                        // cmove	r12d, ebx
@@ -1341,14 +1359,14 @@ LBB4_76:
 	SHRQ $0x1, R15           // <--                                  // shr	r15
 	CMPQ R14, $0x1           // <--                                  // cmp	r14, 1
 	MOVQ R15, R14            // <--                                  // mov	r14, r15
-	JA   LBB4_76             // <--                                  // ja	.LBB4_76
+	JA   LBB4_78             // <--                                  // ja	.LBB4_78
 	WORD $0x854d; BYTE $0xd2 // TESTQ R10, R10                       // test	r10, r10
-	JE   LBB4_90             // <--                                  // je	.LBB4_90
+	JE   LBB4_92             // <--                                  // je	.LBB4_92
 	ANDQ CX, AX              // <--                                  // and	rax, rcx
 	XORL R11, R11            // <--                                  // xor	r11d, r11d
 	XORL R10, R10            // <--                                  // xor	r10d, r10d
 
-LBB4_79:
+LBB4_81:
 	LONG $0x93d26945; WORD $0x0001; BYTE $0x01 // IMULL $0x1000193, R10, R10           // imul	r10d, r10d, 16777619
 	LONG $0x1cb60f42; BYTE $0x1f               // MOVZX 0(DI)(R11*1), BX               // movzx	ebx, byte ptr [rdi + r11]
 	LONG $0x74b60f46; WORD $0x011f             // MOVZX 0x1(DI)(R11*1), R14            // movzx	r14d, byte ptr [rdi + r11 + 1]
@@ -1371,12 +1389,12 @@ LBB4_79:
 	WORD $0x0141; BYTE $0xda                   // ADDL BX, R10                         // add	r10d, ebx
 	ADDQ $0x2, R11                             // <--                                  // add	r11, 2
 	CMPQ AX, R11                               // <--                                  // cmp	rax, r11
-	JNE  LBB4_79                               // <--                                  // jne	.LBB4_79
+	JNE  LBB4_81                               // <--                                  // jne	.LBB4_81
 	LONG $0x93c26941; WORD $0x0001; BYTE $0x01 // IMULL $0x1000193, R10, AX            // imul	eax, r10d, 16777619
 	WORD $0xc1f6; BYTE $0x01                   // TESTL $0x1, CL                       // test	cl, 1
-	JE   LBB4_82                               // <--                                  // je	.LBB4_82
+	JE   LBB4_84                               // <--                                  // je	.LBB4_84
 
-LBB4_81:
+LBB4_83:
 	LONG $0x14b60f46; BYTE $0x1f // MOVZX 0(DI)(R11*1), R10              // movzx	r10d, byte ptr [rdi + r11]
 	LONG $0x9f5a8d45             // LEAL -0x61(R10), R11                 // lea	r11d, [r10 - 97]
 	CMPB R11, $0x1a              // <--                                  // cmp	r11b, 26
@@ -1388,19 +1406,19 @@ LBB4_81:
 	WORD $0x0144; BYTE $0xd0     // ADDL R10, AX                         // add	eax, r10d
 	WORD $0x8941; BYTE $0xc2     // MOVL AX, R10                         // mov	r10d, eax
 
-LBB4_82:
+LBB4_84:
 	CMPL R10, R8  // <--                                  // cmp	r10d, r8d
-	JNE  LBB4_96  // <--                                  // jne	.LBB4_96
+	JNE  LBB4_98  // <--                                  // jne	.LBB4_98
 	CMPQ CX, $0x8 // <--                                  // cmp	rcx, 8
-	JAE  LBB4_92  // <--                                  // jae	.LBB4_92
+	JAE  LBB4_94  // <--                                  // jae	.LBB4_94
 	XORL R11, R11 // <--                                  // xor	r11d, r11d
 
-LBB4_85:
+LBB4_87:
 	XORL AX, AX   // <--                                  // xor	eax, eax
 	CMPQ R11, CX  // <--                                  // cmp	r11, rcx
-	JAE  LBB4_115 // <--                                  // jae	.LBB4_115
+	JAE  LBB4_117 // <--                                  // jae	.LBB4_117
 
-LBB4_86:
+LBB4_88:
 	LONG $0x1cb60f42; BYTE $0x1f // MOVZX 0(DI)(R11*1), BX               // movzx	ebx, byte ptr [rdi + r11]
 	LONG $0x9f738d44             // LEAL -0x61(BX), R14                  // lea	r14d, [rbx - 97]
 	LONG $0xe07b8d44             // LEAL -0x20(BX), R15                  // lea	r15d, [rbx - 32]
@@ -1414,55 +1432,55 @@ LBB4_86:
 	LONG $0xfcb60f45             // MOVZX R12, R15                       // movzx	r15d, r12b
 	LONG $0xfb430f44             // CMOVAE BX, R15                       // cmovae	r15d, ebx
 	CMPB R14, R15                // <--                                  // cmp	r14b, r15b
-	JNE  LBB4_96                 // <--                                  // jne	.LBB4_96
+	JNE  LBB4_98                 // <--                                  // jne	.LBB4_98
 	INCQ R11                     // <--                                  // inc	r11
 	CMPQ CX, R11                 // <--                                  // cmp	rcx, r11
-	JNE  LBB4_86                 // <--                                  // jne	.LBB4_86
-	JMP  LBB4_115                // <--                                  // jmp	.LBB4_115
+	JNE  LBB4_88                 // <--                                  // jne	.LBB4_88
+	JMP  LBB4_117                // <--                                  // jmp	.LBB4_117
 
-LBB4_88:
+LBB4_90:
 	DECQ AX       // <--                                  // dec	rax
-	JMP  LBB4_115 // <--                                  // jmp	.LBB4_115
+	JMP  LBB4_117 // <--                                  // jmp	.LBB4_117
 
-LBB4_89:
+LBB4_91:
 	XORL R9, R9              // <--                                  // xor	r9d, r9d
 	XORL R11, R11            // <--                                  // xor	r11d, r11d
 	WORD $0xc1f6; BYTE $0x01 // TESTL $0x1, CL                       // test	cl, 1
-	JNE  LBB4_74             // <--                                  // jne	.LBB4_74
-	JMP  LBB4_75             // <--                                  // jmp	.LBB4_75
+	JNE  LBB4_76             // <--                                  // jne	.LBB4_76
+	JMP  LBB4_77             // <--                                  // jmp	.LBB4_77
 
-LBB4_90:
+LBB4_92:
 	XORL R11, R11            // <--                                  // xor	r11d, r11d
 	XORL AX, AX              // <--                                  // xor	eax, eax
 	WORD $0xc1f6; BYTE $0x01 // TESTL $0x1, CL                       // test	cl, 1
-	JNE  LBB4_81             // <--                                  // jne	.LBB4_81
-	JMP  LBB4_82             // <--                                  // jmp	.LBB4_82
-
-LBB4_91:
-	LONG $0xbc0f41f3; BYTE $0xc0 // TZCNT R8, AX                         // rep		bsf	eax, r8d
-	ADDQ CX, AX                  // <--                                  // add	rax, rcx
-	JMP  LBB4_115                // <--                                  // jmp	.LBB4_115
-
-LBB4_92:
-	XORL         AX, AX             // <--                                  // xor	eax, eax
-	VPBROADCASTB LCPI4_12<>(SB), X0 // <--                                  // vpbroadcastb	xmm0, byte ptr [rip + .LCPI4_12]
-	VPBROADCASTB LCPI4_13<>(SB), X1 // <--                                  // vpbroadcastb	xmm1, byte ptr [rip + .LCPI4_13]
-	VPBROADCASTB LCPI4_9<>(SB), X2  // <--                                  // vpbroadcastb	xmm2, byte ptr [rip + .LCPI4_9]
-	VPBROADCASTB LCPI4_14<>(SB), X3 // <--                                  // vpbroadcastb	xmm3, byte ptr [rip + .LCPI4_14]
-	JMP          LBB4_94            // <--                                  // jmp	.LBB4_94
+	JNE  LBB4_83             // <--                                  // jne	.LBB4_83
+	JMP  LBB4_84             // <--                                  // jmp	.LBB4_84
 
 LBB4_93:
+	LONG $0xbc0f41f3; BYTE $0xc0 // TZCNT R8, AX                         // rep		bsf	eax, r8d
+	ADDQ CX, AX                  // <--                                  // add	rax, rcx
+	JMP  LBB4_117                // <--                                  // jmp	.LBB4_117
+
+LBB4_94:
+	XORL         AX, AX             // <--                                  // xor	eax, eax
+	VPBROADCASTB LCPI4_13<>(SB), X0 // <--                                  // vpbroadcastb	xmm0, byte ptr [rip + .LCPI4_13]
+	VPBROADCASTB LCPI4_14<>(SB), X1 // <--                                  // vpbroadcastb	xmm1, byte ptr [rip + .LCPI4_14]
+	VPBROADCASTB LCPI4_10<>(SB), X2 // <--                                  // vpbroadcastb	xmm2, byte ptr [rip + .LCPI4_10]
+	VPBROADCASTB LCPI4_15<>(SB), X3 // <--                                  // vpbroadcastb	xmm3, byte ptr [rip + .LCPI4_15]
+	JMP          LBB4_96            // <--                                  // jmp	.LBB4_96
+
+LBB4_95:
 	LEAQ 0x8(AX), R11 // <--                                  // lea	r11, [rax + 8]
 	ADDQ $0x10, AX    // <--                                  // add	rax, 16
 	CMPQ AX, CX       // <--                                  // cmp	rax, rcx
 	MOVQ R11, AX      // <--                                  // mov	rax, r11
-	JA   LBB4_85      // <--                                  // ja	.LBB4_85
+	JA   LBB4_87      // <--                                  // ja	.LBB4_87
 
-LBB4_94:
+LBB4_96:
 	MOVQ 0(DI)(AX*1), R11        // <--                                  // mov	r11, qword ptr [rdi + rax]
 	MOVQ 0(DX)(AX*1), BX         // <--                                  // mov	rbx, qword ptr [rdx + rax]
 	CMPQ R11, BX                 // <--                                  // cmp	r11, rbx
-	JE   LBB4_93                 // <--                                  // je	.LBB4_93
+	JE   LBB4_95                 // <--                                  // je	.LBB4_95
 	LONG $0x6ef9e1c4; BYTE $0xe3 // VMOVQ BX, X4                         // vmovq	xmm4, rbx
 	LONG $0x6ef9c1c4; BYTE $0xeb // VMOVQ R11, X5                        // vmovq	xmm5, r11
 	LONG $0xe46cd1c5             // VPUNPCKLQDQ X4, X5, X4               // vpunpcklqdq	xmm4, xmm5, xmm4
@@ -1478,27 +1496,27 @@ LBB4_94:
 	LONG $0x2959e2c4; BYTE $0xe5 // VPCMPEQQ X5, X4, X4                  // vpcmpeqq	xmm4, xmm4, xmm5
 	LONG $0x7e79c1c4; BYTE $0xe3 // VMOVD X4, R11                        // vmovd	r11d, xmm4
 	LONG $0x01c3f641             // TESTB $0x1, R11                      // test	r11b, 1
-	JNE  LBB4_93                 // <--                                  // jne	.LBB4_93
-
-LBB4_96:
-	CMPQ         CX, SI             // <--                                  // cmp	rcx, rsi
-	JGE          LBB4_114           // <--                                  // jge	.LBB4_114
-	LEAQ         0x1(DI), R11       // <--                                  // lea	r11, [rdi + 1]
-	VPBROADCASTB LCPI4_12<>(SB), X0 // <--                                  // vpbroadcastb	xmm0, byte ptr [rip + .LCPI4_12]
-	VPBROADCASTB LCPI4_13<>(SB), X1 // <--                                  // vpbroadcastb	xmm1, byte ptr [rip + .LCPI4_13]
-	VPBROADCASTB LCPI4_9<>(SB), X2  // <--                                  // vpbroadcastb	xmm2, byte ptr [rip + .LCPI4_9]
-	VPBROADCASTB LCPI4_14<>(SB), X3 // <--                                  // vpbroadcastb	xmm3, byte ptr [rip + .LCPI4_14]
-	MOVQ         CX, BX             // <--                                  // mov	rbx, rcx
-	JMP          LBB4_99            // <--                                  // jmp	.LBB4_99
+	JNE  LBB4_95                 // <--                                  // jne	.LBB4_95
 
 LBB4_98:
+	CMPQ         CX, SI             // <--                                  // cmp	rcx, rsi
+	JGE          LBB4_116           // <--                                  // jge	.LBB4_116
+	LEAQ         0x1(DI), R11       // <--                                  // lea	r11, [rdi + 1]
+	VPBROADCASTB LCPI4_13<>(SB), X0 // <--                                  // vpbroadcastb	xmm0, byte ptr [rip + .LCPI4_13]
+	VPBROADCASTB LCPI4_14<>(SB), X1 // <--                                  // vpbroadcastb	xmm1, byte ptr [rip + .LCPI4_14]
+	VPBROADCASTB LCPI4_10<>(SB), X2 // <--                                  // vpbroadcastb	xmm2, byte ptr [rip + .LCPI4_10]
+	VPBROADCASTB LCPI4_15<>(SB), X3 // <--                                  // vpbroadcastb	xmm3, byte ptr [rip + .LCPI4_15]
+	MOVQ         CX, BX             // <--                                  // mov	rbx, rcx
+	JMP          LBB4_101           // <--                                  // jmp	.LBB4_101
+
+LBB4_100:
 	MOVQ 0(SP), BX // <--                                  // mov	rbx, qword ptr [rsp]
 	INCQ BX        // <--                                  // inc	rbx
 	INCQ R11       // <--                                  // inc	r11
 	CMPQ BX, SI    // <--                                  // cmp	rbx, rsi
-	JE   LBB4_114  // <--                                  // je	.LBB4_114
+	JE   LBB4_116  // <--                                  // je	.LBB4_116
 
-LBB4_99:
+LBB4_101:
 	LONG $0x93c26941; WORD $0x0001; BYTE $0x01 // IMULL $0x1000193, R10, AX            // imul	eax, r10d, 16777619
 	LONG $0x14b60f44; BYTE $0x1f               // MOVZX 0(DI)(BX*1), R10               // movzx	r10d, byte ptr [rdi + rbx]
 	LONG $0x9f728d45                           // LEAL -0x61(R10), R14                 // lea	r14d, [r10 - 97]
@@ -1523,17 +1541,17 @@ LBB4_99:
 	LONG $0xf1af0f45                           // IMULL R9, R14                        // imul	r14d, r9d
 	WORD $0x2945; BYTE $0xf2                   // SUBL R14, R10                        // sub	r10d, r14d
 	CMPL R10, R8                               // <--                                  // cmp	r10d, r8d
-	JNE  LBB4_98                               // <--                                  // jne	.LBB4_98
+	JNE  LBB4_100                              // <--                                  // jne	.LBB4_100
 	CMPQ CX, $0x8                              // <--                                  // cmp	rcx, 8
-	JAE  LBB4_105                              // <--                                  // jae	.LBB4_105
+	JAE  LBB4_107                              // <--                                  // jae	.LBB4_107
 	XORL R14, R14                              // <--                                  // xor	r14d, r14d
 
-LBB4_102:
+LBB4_104:
 	INCQ AX       // <--                                  // inc	rax
 	CMPQ R14, CX  // <--                                  // cmp	r14, rcx
-	JAE  LBB4_115 // <--                                  // jae	.LBB4_115
+	JAE  LBB4_117 // <--                                  // jae	.LBB4_117
 
-LBB4_103:
+LBB4_105:
 	LONG $0x3cb60f47; BYTE $0x33 // MOVZX 0(R11)(R14*1), R15             // movzx	r15d, byte ptr [r11 + r14]
 	LONG $0x9f678d45             // LEAL -0x61(R15), R12                 // lea	r12d, [r15 - 97]
 	LONG $0xe06f8d45             // LEAL -0x20(R15), R13                 // lea	r13d, [r15 - 32]
@@ -1547,28 +1565,28 @@ LBB4_103:
 	WORD $0xb60f; BYTE $0xdb     // MOVZX BL, BX                         // movzx	ebx, bl
 	LONG $0xdf430f41             // CMOVAE R15, BX                       // cmovae	ebx, r15d
 	CMPB R12, BL                 // <--                                  // cmp	r12b, bl
-	JNE  LBB4_98                 // <--                                  // jne	.LBB4_98
+	JNE  LBB4_100                // <--                                  // jne	.LBB4_100
 	INCQ R14                     // <--                                  // inc	r14
 	CMPQ CX, R14                 // <--                                  // cmp	rcx, r14
-	JNE  LBB4_103                // <--                                  // jne	.LBB4_103
-	JMP  LBB4_115                // <--                                  // jmp	.LBB4_115
+	JNE  LBB4_105                // <--                                  // jne	.LBB4_105
+	JMP  LBB4_117                // <--                                  // jmp	.LBB4_117
 
-LBB4_105:
+LBB4_107:
 	XORL R15, R15 // <--                                  // xor	r15d, r15d
-	JMP  LBB4_107 // <--                                  // jmp	.LBB4_107
+	JMP  LBB4_109 // <--                                  // jmp	.LBB4_109
 
-LBB4_106:
+LBB4_108:
 	LEAQ 0x8(R15), R14 // <--                                  // lea	r14, [r15 + 8]
 	ADDQ $0x10, R15    // <--                                  // add	r15, 16
 	CMPQ R15, CX       // <--                                  // cmp	r15, rcx
 	MOVQ R14, R15      // <--                                  // mov	r15, r14
-	JA   LBB4_102      // <--                                  // ja	.LBB4_102
+	JA   LBB4_104      // <--                                  // ja	.LBB4_104
 
-LBB4_107:
+LBB4_109:
 	MOVQ 0(R11)(R15*1), R14      // <--                                  // mov	r14, qword ptr [r11 + r15]
 	MOVQ 0(DX)(R15*1), R12       // <--                                  // mov	r12, qword ptr [rdx + r15]
 	CMPQ R14, R12                // <--                                  // cmp	r14, r12
-	JE   LBB4_106                // <--                                  // je	.LBB4_106
+	JE   LBB4_108                // <--                                  // je	.LBB4_108
 	LONG $0x6ef9c1c4; BYTE $0xe4 // VMOVQ R12, X4                        // vmovq	xmm4, r12
 	LONG $0x6ef9c1c4; BYTE $0xee // VMOVQ R14, X5                        // vmovq	xmm5, r14
 	LONG $0xe46cd1c5             // VPUNPCKLQDQ X4, X5, X4               // vpunpcklqdq	xmm4, xmm5, xmm4
@@ -1584,19 +1602,19 @@ LBB4_107:
 	LONG $0x2959e2c4; BYTE $0xe5 // VPCMPEQQ X5, X4, X4                  // vpcmpeqq	xmm4, xmm4, xmm5
 	LONG $0x7e79c1c4; BYTE $0xe6 // VMOVD X4, R14                        // vmovd	r14d, xmm4
 	LONG $0x01c6f641             // TESTB $0x1, R14                      // test	r14b, 1
-	JNE  LBB4_106                // <--                                  // jne	.LBB4_106
-	JMP  LBB4_98                 // <--                                  // jmp	.LBB4_98
+	JNE  LBB4_108                // <--                                  // jne	.LBB4_108
+	JMP  LBB4_100                // <--                                  // jmp	.LBB4_100
 
-LBB4_109:
+LBB4_111:
 	ADDQ $0x10, CX  // <--                                  // add	rcx, 16
 	ADDQ $-0x10, SI // <--                                  // add	rsi, -16
 
-LBB4_110:
+LBB4_112:
 	WORD $0x8548; BYTE $0xf6 // TESTQ SI, SI                         // test	rsi, rsi
-	JLE  LBB4_114            // <--                                  // jle	.LBB4_114
+	JLE  LBB4_116            // <--                                  // jle	.LBB4_116
 	XORL DX, DX              // <--                                  // xor	edx, edx
 
-LBB4_112:
+LBB4_114:
 	LONG $0x04b60f44; BYTE $0x11 // MOVZX 0(CX)(DX*1), R8                // movzx	r8d, byte ptr [rcx + rdx]
 	LONG $0x9f488d45             // LEAL -0x61(R8), R9                   // lea	r9d, [r8 - 97]
 	LONG $0xe0508d45             // LEAL -0x20(R8), R10                  // lea	r10d, [r8 - 32]
@@ -1604,20 +1622,20 @@ LBB4_112:
 	LONG $0xcab60f45             // MOVZX R10, R9                        // movzx	r9d, r10b
 	LONG $0xc8430f45             // CMOVAE R8, R9                        // cmovae	r9d, r8d
 	CMPB R9, AL                  // <--                                  // cmp	r9b, al
-	JE   LBB4_116                // <--                                  // je	.LBB4_116
+	JE   LBB4_118                // <--                                  // je	.LBB4_118
 	INCQ DX                      // <--                                  // inc	rdx
 	CMPQ SI, DX                  // <--                                  // cmp	rsi, rdx
-	JNE  LBB4_112                // <--                                  // jne	.LBB4_112
-
-LBB4_114:
-	MOVQ $-0x1, AX // <--                                  // mov	rax, -1
-	JMP  LBB4_115  // <--                                  // jmp	.LBB4_115
+	JNE  LBB4_114                // <--                                  // jne	.LBB4_114
 
 LBB4_116:
+	MOVQ $-0x1, AX // <--                                  // mov	rax, -1
+	JMP  LBB4_117  // <--                                  // jmp	.LBB4_117
+
+LBB4_118:
 	SUBQ DI, CX   // <--                                  // sub	rcx, rdi
 	ADDQ DX, CX   // <--                                  // add	rcx, rdx
 	MOVQ CX, AX   // <--                                  // mov	rax, rcx
-	JMP  LBB4_115 // <--                                  // jmp	.LBB4_115
+	JMP  LBB4_117 // <--                                  // jmp	.LBB4_117
 
 DATA LCPI5_0<>+0x00(SB)/8, $0x1f1f1f1f1f1f1f1f
 DATA LCPI5_0<>+0x08(SB)/8, $0x1f1f1f1f1f1f1f1f
@@ -1637,62 +1655,68 @@ DATA LCPI5_2<>+0x10(SB)/8, $0xe0e0e0e0e0e0e0e0
 DATA LCPI5_2<>+0x18(SB)/8, $0xe0e0e0e0e0e0e0e0
 GLOBL LCPI5_2<>(SB), (RODATA|NOPTR), $32
 
-DATA LCPI5_6<>+0x00(SB)/8, $0x9a9a9a9a9a9a9a9a
-DATA LCPI5_6<>+0x08(SB)/8, $0x9a9a9a9a9a9a9a9a
-DATA LCPI5_6<>+0x10(SB)/8, $0x9a9a9a9a9a9a9a9a
-DATA LCPI5_6<>+0x18(SB)/8, $0x9a9a9a9a9a9a9a9a
-GLOBL LCPI5_6<>(SB), (RODATA|NOPTR), $32
+DATA LCPI5_3<>+0x00(SB)/8, $0x0706050403020100
+DATA LCPI5_3<>+0x08(SB)/8, $0x0f0e0d0c0b0a0908
+DATA LCPI5_3<>+0x10(SB)/8, $0x1716151413121110
+DATA LCPI5_3<>+0x18(SB)/8, $0x1f1e1d1c1b1a1918
+GLOBL LCPI5_3<>(SB), (RODATA|NOPTR), $32
 
-DATA LCPI5_7<>+0x00(SB)/8, $0x0000000000000000
-DATA LCPI5_7<>+0x08(SB)/8, $0x0000000000000000
-DATA LCPI5_7<>+0x10(SB)/8, $0x0000000000000000
-DATA LCPI5_7<>+0x18(SB)/8, $0xe000000000000000
+DATA LCPI5_7<>+0x00(SB)/8, $0x9a9a9a9a9a9a9a9a
+DATA LCPI5_7<>+0x08(SB)/8, $0x9a9a9a9a9a9a9a9a
+DATA LCPI5_7<>+0x10(SB)/8, $0x9a9a9a9a9a9a9a9a
+DATA LCPI5_7<>+0x18(SB)/8, $0x9a9a9a9a9a9a9a9a
 GLOBL LCPI5_7<>(SB), (RODATA|NOPTR), $32
 
-DATA LCPI5_3<>+0x00(SB)/8, $0x1f1f1f1f1f1f1f1f
-DATA LCPI5_3<>+0x08(SB)/8, $0x1f1f1f1f1f1f1f1f
-GLOBL LCPI5_3<>(SB), (RODATA|NOPTR), $16
+DATA LCPI5_8<>+0x00(SB)/8, $0x0000000000000000
+DATA LCPI5_8<>+0x08(SB)/8, $0x0000000000000000
+DATA LCPI5_8<>+0x10(SB)/8, $0x0000000000000000
+DATA LCPI5_8<>+0x18(SB)/8, $0xe000000000000000
+GLOBL LCPI5_8<>(SB), (RODATA|NOPTR), $32
 
-DATA LCPI5_4<>+0x00(SB)/8, $0x9999999999999999
-DATA LCPI5_4<>+0x08(SB)/8, $0x9999999999999999
+DATA LCPI5_4<>+0x00(SB)/8, $0x1f1f1f1f1f1f1f1f
+DATA LCPI5_4<>+0x08(SB)/8, $0x1f1f1f1f1f1f1f1f
 GLOBL LCPI5_4<>(SB), (RODATA|NOPTR), $16
 
-DATA LCPI5_5<>+0x00(SB)/8, $0xe0e0e0e0e0e0e0e0
-DATA LCPI5_5<>+0x08(SB)/8, $0xe0e0e0e0e0e0e0e0
+DATA LCPI5_5<>+0x00(SB)/8, $0x9999999999999999
+DATA LCPI5_5<>+0x08(SB)/8, $0x9999999999999999
 GLOBL LCPI5_5<>(SB), (RODATA|NOPTR), $16
 
-DATA LCPI5_8<>+0x00(SB)/8, $0x7f7f7f7f7f7f7f7f
-DATA LCPI5_8<>+0x08(SB)/8, $0x7f7f7f7f7f7f7f7f
-GLOBL LCPI5_8<>(SB), (RODATA|NOPTR), $16
+DATA LCPI5_6<>+0x00(SB)/8, $0xe0e0e0e0e0e0e0e0
+DATA LCPI5_6<>+0x08(SB)/8, $0xe0e0e0e0e0e0e0e0
+GLOBL LCPI5_6<>(SB), (RODATA|NOPTR), $16
 
-DATA LCPI5_9<>+0x00(SB)/8, $0xfafafafafafafafa
-DATA LCPI5_9<>+0x08(SB)/8, $0xfafafafafafafafa
+DATA LCPI5_9<>+0x00(SB)/8, $0x7f7f7f7f7f7f7f7f
+DATA LCPI5_9<>+0x08(SB)/8, $0x7f7f7f7f7f7f7f7f
 GLOBL LCPI5_9<>(SB), (RODATA|NOPTR), $16
 
-DATA LCPI5_10<>+0x00(SB)/8, $0x2020202020202020
-DATA LCPI5_10<>+0x08(SB)/8, $0x2020202020202020
+DATA LCPI5_10<>+0x00(SB)/8, $0xfafafafafafafafa
+DATA LCPI5_10<>+0x08(SB)/8, $0xfafafafafafafafa
 GLOBL LCPI5_10<>(SB), (RODATA|NOPTR), $16
 
-DATA LCPI5_11<>+0x00(SB)/1, $0x1f
-GLOBL LCPI5_11<>(SB), (RODATA|NOPTR), $1
+DATA LCPI5_11<>+0x00(SB)/8, $0x2020202020202020
+DATA LCPI5_11<>+0x08(SB)/8, $0x2020202020202020
+GLOBL LCPI5_11<>(SB), (RODATA|NOPTR), $16
 
-DATA LCPI5_12<>+0x00(SB)/1, $0x99
+DATA LCPI5_12<>+0x00(SB)/1, $0x1f
 GLOBL LCPI5_12<>(SB), (RODATA|NOPTR), $1
 
-DATA LCPI5_13<>+0x00(SB)/1, $0xe0
+DATA LCPI5_13<>+0x00(SB)/1, $0x99
 GLOBL LCPI5_13<>(SB), (RODATA|NOPTR), $1
 
-DATA LCPI5_14<>+0x00(SB)/1, $0x7f
+DATA LCPI5_14<>+0x00(SB)/1, $0xe0
 GLOBL LCPI5_14<>(SB), (RODATA|NOPTR), $1
 
-DATA LCPI5_15<>+0x00(SB)/1, $0xfa
+DATA LCPI5_15<>+0x00(SB)/1, $0x7f
 GLOBL LCPI5_15<>(SB), (RODATA|NOPTR), $1
 
-DATA LCPI5_16<>+0x00(SB)/1, $0x20
+DATA LCPI5_16<>+0x00(SB)/1, $0xfa
 GLOBL LCPI5_16<>(SB), (RODATA|NOPTR), $1
 
-DATA LCPI5_17<>+0x00(SB)/1, $0x9a
+DATA LCPI5_17<>+0x00(SB)/1, $0x20
 GLOBL LCPI5_17<>(SB), (RODATA|NOPTR), $1
+
+DATA LCPI5_18<>+0x00(SB)/1, $0x9a
+GLOBL LCPI5_18<>(SB), (RODATA|NOPTR), $1
 
 TEXT ·indexFoldAvx(SB), 0, $72-40
 	MOVQ haystack+0(FP), DI
@@ -1710,7 +1734,7 @@ TEXT ·indexFoldAvx(SB), 0, $72-40
 	NOP                         // (skipped)                            // sub	rsp, 72
 	MOVQ $-0x1, AX              // <--                                  // mov	rax, -1
 	CMPQ SI, CX                 // <--                                  // cmp	rsi, rcx
-	JL   LBB5_180               // <--                                  // jl	.LBB5_180
+	JL   LBB5_189               // <--                                  // jl	.LBB5_189
 	WORD $0x8548; BYTE $0xc9    // TESTQ CX, CX                         // test	rcx, rcx
 	JLE  LBB5_9                 // <--                                  // jle	.LBB5_9
 	MOVQ SI, R11                // <--                                  // mov	r11, rsi
@@ -1738,7 +1762,7 @@ LBB5_6:
 	LONG $0xd3b60f45             // MOVZX R11, R10                       // movzx	r10d, r11b
 	LONG $0xd0430f45             // CMOVAE R8, R10                       // cmovae	r10d, r8d
 	CMPB R9, R10                 // <--                                  // cmp	r9b, r10b
-	JNE  LBB5_180                // <--                                  // jne	.LBB5_180
+	JNE  LBB5_189                // <--                                  // jne	.LBB5_189
 	INCQ CX                      // <--                                  // inc	rcx
 	CMPQ SI, CX                  // <--                                  // cmp	rsi, rcx
 	JNE  LBB5_6                  // <--                                  // jne	.LBB5_6
@@ -1746,7 +1770,7 @@ LBB5_6:
 LBB5_9:
 	XORL AX, AX // <--                                  // xor	eax, eax
 
-LBB5_180:
+LBB5_189:
 	NOP                 // (skipped)                            // lea	rsp, [rbp - 40]
 	NOP                 // (skipped)                            // pop	rbx
 	NOP                 // (skipped)                            // pop	r12
@@ -1762,7 +1786,7 @@ LBB5_10:
 	CMPQ         CX, $0x2                // <--                                  // cmp	rcx, 2
 	JE           LBB5_25                 // <--                                  // je	.LBB5_25
 	CMPQ         CX, $0x1                // <--                                  // cmp	rcx, 1
-	JNE          LBB5_69                 // <--                                  // jne	.LBB5_69
+	JNE          LBB5_71                 // <--                                  // jne	.LBB5_71
 	WORD         $0xb60f; BYTE $0x12     // MOVZX 0(DX), DX                      // movzx	edx, byte ptr [rdx]
 	WORD         $0x4a8d; BYTE $0x9f     // LEAL -0x61(DX), CX                   // lea	ecx, [rdx - 97]
 	LONG         $0xe0428d44             // LEAL -0x20(DX), R8                   // lea	r8d, [rdx - 32]
@@ -1782,9 +1806,9 @@ LBB5_10:
 	LONG         $0xc16ef9c5             // VMOVD CX, X0                         // vmovd	xmm0, ecx
 	LONG         $0x787de2c4; BYTE $0xc0 // VPBROADCASTB X0, Y0                  // vpbroadcastb	ymm0, xmm0
 	XORL         DX, DX                  // <--                                  // xor	edx, edx
-	VPBROADCASTB LCPI5_11<>(SB), Y1      // <--                                  // vpbroadcastb	ymm1, byte ptr [rip + .LCPI5_11]
-	VPBROADCASTB LCPI5_12<>(SB), Y2      // <--                                  // vpbroadcastb	ymm2, byte ptr [rip + .LCPI5_12]
-	VPBROADCASTB LCPI5_13<>(SB), Y3      // <--                                  // vpbroadcastb	ymm3, byte ptr [rip + .LCPI5_13]
+	VPBROADCASTB LCPI5_12<>(SB), Y1      // <--                                  // vpbroadcastb	ymm1, byte ptr [rip + .LCPI5_12]
+	VPBROADCASTB LCPI5_13<>(SB), Y2      // <--                                  // vpbroadcastb	ymm2, byte ptr [rip + .LCPI5_13]
+	VPBROADCASTB LCPI5_14<>(SB), Y3      // <--                                  // vpbroadcastb	ymm3, byte ptr [rip + .LCPI5_14]
 
 LBB5_14:
 	LONG $0x246ffec5; BYTE $0x17 // VMOVDQU 0(DI)(DX*1), Y4              // vmovdqu	ymm4, ymmword ptr [rdi + rdx]
@@ -1795,7 +1819,7 @@ LBB5_14:
 	LONG $0xe074ddc5             // VPCMPEQB Y0, Y4, Y4                  // vpcmpeqb	ymm4, ymm4, ymm0
 	LONG $0xccd77dc5             // VPMOVMSKB Y4, R9                     // vpmovmskb	r9d, ymm4
 	WORD $0x8545; BYTE $0xc9     // TESTL R9, R9                         // test	r9d, r9d
-	JNE  LBB5_172                // <--                                  // jne	.LBB5_172
+	JNE  LBB5_74                 // <--                                  // jne	.LBB5_74
 	LEAQ 0(DI)(DX*1), R9         // <--                                  // lea	r9, [rdi + rdx]
 	ADDQ $0x20, R9               // <--                                  // add	r9, 32
 	ADDQ $0x20, DX               // <--                                  // add	rdx, 32
@@ -1805,29 +1829,29 @@ LBB5_14:
 
 LBB5_17:
 	CMPQ     SI, $0x10               // <--                                  // cmp	rsi, 16
-	JL       LBB5_175                // <--                                  // jl	.LBB5_175
+	JL       LBB5_76                 // <--                                  // jl	.LBB5_76
 	LONG     $0x026ffac5             // VMOVDQU 0(DX), X0                    // vmovdqu	xmm0, xmmword ptr [rdx]
-	VPADDB   LCPI5_3<>(SB), X0, X1   // <--                                  // vpaddb	xmm1, xmm0, xmmword ptr [rip + .LCPI5_3]
-	VPCMPGTB LCPI5_4<>(SB), X1, X1   // <--                                  // vpcmpgtb	xmm1, xmm1, xmmword ptr [rip + .LCPI5_4]
+	VPADDB   LCPI5_4<>(SB), X0, X1   // <--                                  // vpaddb	xmm1, xmm0, xmmword ptr [rip + .LCPI5_4]
+	VPCMPGTB LCPI5_5<>(SB), X1, X1   // <--                                  // vpcmpgtb	xmm1, xmm1, xmmword ptr [rip + .LCPI5_5]
 	LONG     $0xd16ef9c5             // VMOVD CX, X2                         // vmovd	xmm2, ecx
-	VPANDN   LCPI5_5<>(SB), X1, X1   // <--                                  // vpandn	xmm1, xmm1, xmmword ptr [rip + .LCPI5_5]
+	VPANDN   LCPI5_6<>(SB), X1, X1   // <--                                  // vpandn	xmm1, xmm1, xmmword ptr [rip + .LCPI5_6]
 	LONG     $0xc0fcf1c5             // VPADDB X0, X1, X0                    // vpaddb	xmm0, xmm1, xmm0
 	LONG     $0x7879e2c4; BYTE $0xca // VPBROADCASTB X2, X1                  // vpbroadcastb	xmm1, xmm2
 	LONG     $0xc174f9c5             // VPCMPEQB X1, X0, X0                  // vpcmpeqb	xmm0, xmm0, xmm1
 	LONG     $0xc0d779c5             // VPMOVMSKB X0, R8                     // vpmovmskb	r8d, xmm0
 	WORD     $0x8545; BYTE $0xc0     // TESTL R8, R8                         // test	r8d, r8d
-	JE       LBB5_174                // <--                                  // je	.LBB5_174
+	JE       LBB5_75                 // <--                                  // je	.LBB5_75
 	SUBQ     DI, DX                  // <--                                  // sub	rdx, rdi
 	LONG     $0xbc0f41f3; BYTE $0xc0 // TZCNT R8, AX                         // rep		bsf	eax, r8d
 	ADDQ     DX, AX                  // <--                                  // add	rax, rdx
-	JMP      LBB5_180                // <--                                  // jmp	.LBB5_180
+	JMP      LBB5_189                // <--                                  // jmp	.LBB5_189
 
 LBB5_20:
 	XORL         R8, R8             // <--                                  // xor	r8d, r8d
-	VPBROADCASTB LCPI5_14<>(SB), X0 // <--                                  // vpbroadcastb	xmm0, byte ptr [rip + .LCPI5_14]
-	VPBROADCASTB LCPI5_15<>(SB), X1 // <--                                  // vpbroadcastb	xmm1, byte ptr [rip + .LCPI5_15]
-	VPBROADCASTB LCPI5_11<>(SB), X2 // <--                                  // vpbroadcastb	xmm2, byte ptr [rip + .LCPI5_11]
-	VPBROADCASTB LCPI5_16<>(SB), X3 // <--                                  // vpbroadcastb	xmm3, byte ptr [rip + .LCPI5_16]
+	VPBROADCASTB LCPI5_15<>(SB), X0 // <--                                  // vpbroadcastb	xmm0, byte ptr [rip + .LCPI5_15]
+	VPBROADCASTB LCPI5_16<>(SB), X1 // <--                                  // vpbroadcastb	xmm1, byte ptr [rip + .LCPI5_16]
+	VPBROADCASTB LCPI5_12<>(SB), X2 // <--                                  // vpbroadcastb	xmm2, byte ptr [rip + .LCPI5_12]
+	VPBROADCASTB LCPI5_17<>(SB), X3 // <--                                  // vpbroadcastb	xmm3, byte ptr [rip + .LCPI5_17]
 	JMP          LBB5_22            // <--                                  // jmp	.LBB5_22
 
 LBB5_21:
@@ -1858,194 +1882,54 @@ LBB5_22:
 	LONG $0xe17ef9c5             // VMOVD X4, CX                         // vmovd	ecx, xmm4
 	WORD $0xc1f6; BYTE $0x01     // TESTL $0x1, CL                       // test	cl, 1
 	JNE  LBB5_21                 // <--                                  // jne	.LBB5_21
-	JMP  LBB5_180                // <--                                  // jmp	.LBB5_180
+	JMP  LBB5_189                // <--                                  // jmp	.LBB5_189
 
 LBB5_25:
 	CMPQ         SI, $0x2                // <--                                  // cmp	rsi, 2
-	JL           LBB5_180                // <--                                  // jl	.LBB5_180
+	JL           LBB5_189                // <--                                  // jl	.LBB5_189
 	LONG         $0x797de2c4; BYTE $0x02 // VPBROADCASTW 0(DX), Y0               // vpbroadcastw	ymm0, word ptr [rdx]
 	VPADDB       LCPI5_0<>(SB), Y0, Y1   // <--                                  // vpaddb	ymm1, ymm0, ymmword ptr [rip + .LCPI5_0]
 	VPCMPGTB     LCPI5_1<>(SB), Y1, Y1   // <--                                  // vpcmpgtb	ymm1, ymm1, ymmword ptr [rip + .LCPI5_1]
 	VPANDN       LCPI5_2<>(SB), Y1, Y1   // <--                                  // vpandn	ymm1, ymm1, ymmword ptr [rip + .LCPI5_2]
-	LONG         $0xe4efd9c5             // VPXOR X4, X4, X4                     // vpxor	xmm4, xmm4, xmm4
+	LONG         $0xedefd1c5             // VPXOR X5, X5, X5                     // vpxor	xmm5, xmm5, xmm5
 	LONG         $0xc0fcf5c5             // VPADDB Y0, Y1, Y0                    // vpaddb	ymm0, ymm1, ymm0
 	XORL         R8, R8                  // <--                                  // xor	r8d, r8d
-	VPBROADCASTB LCPI5_11<>(SB), Y1      // <--                                  // vpbroadcastb	ymm1, byte ptr [rip + .LCPI5_11]
-	VPBROADCASTB LCPI5_12<>(SB), Y2      // <--                                  // vpbroadcastb	ymm2, byte ptr [rip + .LCPI5_12]
-	VPBROADCASTB LCPI5_13<>(SB), Y3      // <--                                  // vpbroadcastb	ymm3, byte ptr [rip + .LCPI5_13]
+	VPBROADCASTB LCPI5_12<>(SB), Y1      // <--                                  // vpbroadcastb	ymm1, byte ptr [rip + .LCPI5_12]
+	VPBROADCASTB LCPI5_13<>(SB), Y2      // <--                                  // vpbroadcastb	ymm2, byte ptr [rip + .LCPI5_13]
+	VPBROADCASTB LCPI5_14<>(SB), Y3      // <--                                  // vpbroadcastb	ymm3, byte ptr [rip + .LCPI5_14]
+	VMOVDQA      LCPI5_3<>(SB), Y4       // <--                                  // vmovdqa	ymm4, ymmword ptr [rip + .LCPI5_3]
 
 LBB5_27:
 	MOVQ SI, CX                  // <--                                  // mov	rcx, rsi
 	SUBQ R8, CX                  // <--                                  // sub	rcx, r8
-	JLE  LBB5_180                // <--                                  // jle	.LBB5_180
+	JLE  LBB5_189                // <--                                  // jle	.LBB5_189
 	LEAQ 0(DI)(R8*1), R9         // <--                                  // lea	r9, [rdi + r8]
 	CMPQ CX, $0x20               // <--                                  // cmp	rcx, 32
 	JB   LBB5_30                 // <--                                  // jb	.LBB5_30
-	LONG $0x6f7ec1c4; BYTE $0x29 // VMOVDQU 0(R9), Y5                    // vmovdqu	ymm5, ymmword ptr [r9]
-	JMP  LBB5_65                 // <--                                  // jmp	.LBB5_65
+	LONG $0x6f7ec1c4; BYTE $0x31 // VMOVDQU 0(R9), Y6                    // vmovdqu	ymm6, ymmword ptr [r9]
+	JMP  LBB5_32                 // <--                                  // jmp	.LBB5_32
 
 LBB5_30:
-	CMPQ CX, $0x8     // <--                                  // cmp	rcx, 8
-	JB   LBB5_35      // <--                                  // jb	.LBB5_35
-	MOVQ 0(R9), R10   // <--                                  // mov	r10, qword ptr [r9]
-	CMPQ CX, $0xf     // <--                                  // cmp	rcx, 15
-	JBE  LBB5_37      // <--                                  // jbe	.LBB5_37
-	MOVQ 0x8(R9), R11 // <--                                  // mov	r11, qword ptr [r9 + 8]
-	CMPQ CX, $0x17    // <--                                  // cmp	rcx, 23
-	JBE  LBB5_45      // <--                                  // jbe	.LBB5_45
-	LONG $0x04c6f640  // TESTB $0x4, SI                       // test	sil, 4
-	JNE  LBB5_53      // <--                                  // jne	.LBB5_53
-	XORL DX, DX       // <--                                  // xor	edx, edx
-	XORL BX, BX       // <--                                  // xor	ebx, ebx
-	JMP  LBB5_54      // <--                                  // jmp	.LBB5_54
+	WORD $0x8944; BYTE $0xca       // MOVL R9, DX                          // mov	edx, r9d
+	LONG $0x0fffe281; WORD $0x0000 // ANDL $index_fold_rabin_karp_avx2+2015(SB), DX // and	edx, 4095
+	LONG $0x0fe0fa81; WORD $0x0000 // CMPL DX, $index_fold_rabin_karp_avx2+1984(SB) // cmp	edx, 4064
+	JA   LBB5_36                   // <--                                  // ja	.LBB5_36
+	LONG $0xf16ef9c5               // VMOVD CX, X6                         // vmovd	xmm6, ecx
+	LONG $0x787de2c4; BYTE $0xf6   // VPBROADCASTB X6, Y6                  // vpbroadcastb	ymm6, xmm6
+	LONG $0xf464cdc5               // VPCMPGTB Y4, Y6, Y6                  // vpcmpgtb	ymm6, ymm6, ymm4
+	LONG $0xdb4dc1c4; BYTE $0x31   // VPAND 0(R9), Y6, Y6                  // vpand	ymm6, ymm6, ymmword ptr [r9]
 
-LBB5_35:
-	LONG $0x04c6f640 // TESTB $0x4, SI                       // test	sil, 4
-	JNE  LBB5_39     // <--                                  // jne	.LBB5_39
-	XORL DX, DX      // <--                                  // xor	edx, edx
-	XORL R10, R10    // <--                                  // xor	r10d, r10d
-	JMP  LBB5_40     // <--                                  // jmp	.LBB5_40
-
-LBB5_37:
-	LONG $0x04c6f640 // TESTB $0x4, SI                       // test	sil, 4
-	JNE  LBB5_47     // <--                                  // jne	.LBB5_47
-	XORL DX, DX      // <--                                  // xor	edx, edx
-	XORL R11, R11    // <--                                  // xor	r11d, r11d
-	JMP  LBB5_48     // <--                                  // jmp	.LBB5_48
-
-LBB5_39:
-	WORD $0x8b45; BYTE $0x11     // MOVL 0(R9), R10                      // mov	r10d, dword ptr [r9]
-	LONG $0x000004ba; BYTE $0x00 // MOVL $0x4, DX                        // mov	edx, 4
-
-LBB5_40:
-	LONG $0x02c6f640                           // TESTB $0x2, SI                       // test	sil, 2
-	JE   LBB5_42                               // <--                                  // je	.LBB5_42
-	LONG $0x1cb70f45; BYTE $0x11               // MOVZX 0(R9)(DX*1), R11               // movzx	r11d, word ptr [r9 + rdx]
-	LONG $0x00d50c8d; WORD $0x0000; BYTE $0x00 // LEAL 0(DX*8), CX                     // lea	ecx, [8*rdx]
-	SHLQ CL, R11                               // <--                                  // shl	r11, cl
-	ORQ  R11, R10                              // <--                                  // or	r10, r11
-	ORQ  $0x2, DX                              // <--                                  // or	rdx, 2
-
-LBB5_42:
-	LONG $0x01c6f640             // TESTB $0x1, SI                       // test	sil, 1
-	JE   LBB5_44                 // <--                                  // je	.LBB5_44
-	LONG $0x0cb60f45; BYTE $0x11 // MOVZX 0(R9)(DX*1), R9                // movzx	r9d, byte ptr [r9 + rdx]
-	WORD $0xe2c1; BYTE $0x03     // SHLL $0x3, DX                        // shl	edx, 3
-	WORD $0xd189                 // MOVL DX, CX                          // mov	ecx, edx
-	SHLQ CL, R9                  // <--                                  // shl	r9, cl
-	ORQ  R9, R10                 // <--                                  // or	r10, r9
-
-LBB5_44:
-	LONG $0x6ef9c1c4; BYTE $0xea // VMOVQ R10, X5                        // vmovq	xmm5, r10
-	JMP  LBB5_65                 // <--                                  // jmp	.LBB5_65
-
-LBB5_45:
-	LONG $0x04c6f640 // TESTB $0x4, SI                       // test	sil, 4
-	JNE  LBB5_59     // <--                                  // jne	.LBB5_59
-	XORL DX, DX      // <--                                  // xor	edx, edx
-	XORL BX, BX      // <--                                  // xor	ebx, ebx
-	JMP  LBB5_60     // <--                                  // jmp	.LBB5_60
-
-LBB5_47:
-	LONG $0x08598b45             // MOVL 0x8(R9), R11                    // mov	r11d, dword ptr [r9 + 8]
-	LONG $0x000004ba; BYTE $0x00 // MOVL $0x4, DX                        // mov	edx, 4
-
-LBB5_48:
-	LONG $0x02c6f640                           // TESTB $0x2, SI                       // test	sil, 2
-	JE   LBB5_50                               // <--                                  // je	.LBB5_50
-	LONG $0x5cb70f41; WORD $0x0811             // MOVZX 0x8(R9)(DX*1), BX              // movzx	ebx, word ptr [r9 + rdx + 8]
-	LONG $0x00d50c8d; WORD $0x0000; BYTE $0x00 // LEAL 0(DX*8), CX                     // lea	ecx, [8*rdx]
-	SHLQ CL, BX                                // <--                                  // shl	rbx, cl
-	ORQ  BX, R11                               // <--                                  // or	r11, rbx
-	ORQ  $0x2, DX                              // <--                                  // or	rdx, 2
-
-LBB5_50:
-	LONG $0x01c6f640               // TESTB $0x1, SI                       // test	sil, 1
-	JE   LBB5_52                   // <--                                  // je	.LBB5_52
-	LONG $0x4cb60f45; WORD $0x0811 // MOVZX 0x8(R9)(DX*1), R9              // movzx	r9d, byte ptr [r9 + rdx + 8]
-	WORD $0xe2c1; BYTE $0x03       // SHLL $0x3, DX                        // shl	edx, 3
-	WORD $0xd189                   // MOVL DX, CX                          // mov	ecx, edx
-	SHLQ CL, R9                    // <--                                  // shl	r9, cl
-	ORQ  R9, R11                   // <--                                  // or	r11, r9
-
-LBB5_52:
-	LONG $0x6ef9c1c4; BYTE $0xeb // VMOVQ R11, X5                        // vmovq	xmm5, r11
-	LONG $0x6ef9c1c4; BYTE $0xf2 // VMOVQ R10, X6                        // vmovq	xmm6, r10
-	LONG $0xed6cc9c5             // VPUNPCKLQDQ X5, X6, X5               // vpunpcklqdq	xmm5, xmm6, xmm5
-	JMP  LBB5_65                 // <--                                  // jmp	.LBB5_65
-
-LBB5_53:
-	LONG $0x18598b41             // MOVL 0x18(R9), BX                    // mov	ebx, dword ptr [r9 + 24]
-	LONG $0x000004ba; BYTE $0x00 // MOVL $0x4, DX                        // mov	edx, 4
-
-LBB5_54:
-	LONG $0x02c6f640                           // TESTB $0x2, SI                       // test	sil, 2
-	JE   LBB5_56                               // <--                                  // je	.LBB5_56
-	LONG $0x74b70f45; WORD $0x1811             // MOVZX 0x18(R9)(DX*1), R14            // movzx	r14d, word ptr [r9 + rdx + 24]
-	LONG $0x00d50c8d; WORD $0x0000; BYTE $0x00 // LEAL 0(DX*8), CX                     // lea	ecx, [8*rdx]
-	SHLQ CL, R14                               // <--                                  // shl	r14, cl
-	ORQ  R14, BX                               // <--                                  // or	rbx, r14
-	ORQ  $0x2, DX                              // <--                                  // or	rdx, 2
-
-LBB5_56:
-	LONG $0x01c6f640               // TESTB $0x1, SI                       // test	sil, 1
-	JE   LBB5_58                   // <--                                  // je	.LBB5_58
-	LONG $0x74b60f45; WORD $0x1811 // MOVZX 0x18(R9)(DX*1), R14            // movzx	r14d, byte ptr [r9 + rdx + 24]
-	WORD $0xe2c1; BYTE $0x03       // SHLL $0x3, DX                        // shl	edx, 3
-	WORD $0xd189                   // MOVL DX, CX                          // mov	ecx, edx
-	SHLQ CL, R14                   // <--                                  // shl	r14, cl
-	ORQ  R14, BX                   // <--                                  // or	rbx, r14
-
-LBB5_58:
-	LONG $0x6ef9e1c4; BYTE $0xeb   // VMOVQ BX, X5                         // vmovq	xmm5, rbx
-	LONG $0x7e7ac1c4; WORD $0x1071 // VMOVQ 0x10(R9), X6                   // vmovq	xmm6, qword ptr [r9 + 16]
-	LONG $0xed6cc9c5               // VPUNPCKLQDQ X5, X6, X5               // vpunpcklqdq	xmm5, xmm6, xmm5
-	LONG $0x6ef9c1c4; BYTE $0xf3   // VMOVQ R11, X6                        // vmovq	xmm6, r11
-	LONG $0x6ef9c1c4; BYTE $0xfa   // VMOVQ R10, X7                        // vmovq	xmm7, r10
-	LONG $0xf66cc1c5               // VPUNPCKLQDQ X6, X7, X6               // vpunpcklqdq	xmm6, xmm7, xmm6
-	LONG $0x384de3c4; WORD $0x01ed // VINSERTI128 $0x1, X5, Y6, Y5         // vinserti128	ymm5, ymm6, xmm5, 1
-	JMP  LBB5_65                   // <--                                  // jmp	.LBB5_65
-
-LBB5_59:
-	LONG $0x10598b41             // MOVL 0x10(R9), BX                    // mov	ebx, dword ptr [r9 + 16]
-	LONG $0x000004ba; BYTE $0x00 // MOVL $0x4, DX                        // mov	edx, 4
-
-LBB5_60:
-	LONG $0x02c6f640                           // TESTB $0x2, SI                       // test	sil, 2
-	JE   LBB5_62                               // <--                                  // je	.LBB5_62
-	LONG $0x74b70f45; WORD $0x1011             // MOVZX 0x10(R9)(DX*1), R14            // movzx	r14d, word ptr [r9 + rdx + 16]
-	LONG $0x00d50c8d; WORD $0x0000; BYTE $0x00 // LEAL 0(DX*8), CX                     // lea	ecx, [8*rdx]
-	SHLQ CL, R14                               // <--                                  // shl	r14, cl
-	ORQ  R14, BX                               // <--                                  // or	rbx, r14
-	ORQ  $0x2, DX                              // <--                                  // or	rdx, 2
-
-LBB5_62:
-	LONG $0x01c6f640               // TESTB $0x1, SI                       // test	sil, 1
-	JE   LBB5_64                   // <--                                  // je	.LBB5_64
-	LONG $0x4cb60f45; WORD $0x1011 // MOVZX 0x10(R9)(DX*1), R9             // movzx	r9d, byte ptr [r9 + rdx + 16]
-	WORD $0xe2c1; BYTE $0x03       // SHLL $0x3, DX                        // shl	edx, 3
-	WORD $0xd189                   // MOVL DX, CX                          // mov	ecx, edx
-	SHLQ CL, R9                    // <--                                  // shl	r9, cl
-	ORQ  R9, BX                    // <--                                  // or	rbx, r9
-
-LBB5_64:
-	LONG $0x6ef9c1c4; BYTE $0xeb   // VMOVQ R11, X5                        // vmovq	xmm5, r11
-	LONG $0x6ef9c1c4; BYTE $0xf2   // VMOVQ R10, X6                        // vmovq	xmm6, r10
-	LONG $0xed6cc9c5               // VPUNPCKLQDQ X5, X6, X5               // vpunpcklqdq	xmm5, xmm6, xmm5
-	LONG $0x6ef9e1c4; BYTE $0xf3   // VMOVQ BX, X6                         // vmovq	xmm6, rbx
-	LONG $0x3855e3c4; WORD $0x01ee // VINSERTI128 $0x1, X6, Y5, Y5         // vinserti128	ymm5, ymm5, xmm6, 1
-
-LBB5_65:
-	LONG $0xf1fcd5c5                           // VPADDB Y1, Y5, Y6                    // vpaddb	ymm6, ymm5, ymm1
-	LONG $0xf264cdc5                           // VPCMPGTB Y2, Y6, Y6                  // vpcmpgtb	ymm6, ymm6, ymm2
-	LONG $0xf3dfcdc5                           // VPANDN Y3, Y6, Y6                    // vpandn	ymm6, ymm6, ymm3
-	LONG $0xedfccdc5                           // VPADDB Y5, Y6, Y5                    // vpaddb	ymm5, ymm6, ymm5
-	LONG $0xf075d5c5                           // VPCMPEQW Y0, Y5, Y6                  // vpcmpeqw	ymm6, ymm5, ymm0
-	LONG $0x465de3c4; WORD $0x21e5             // VPERM2I128 $0x21, Y5, Y4, Y4         // vperm2i128	ymm4, ymm4, ymm5, 33
-	LONG $0x0f55e3c4; WORD $0x0fe4             // VPALIGNR $0xf, Y4, Y5, Y4            // vpalignr	ymm4, ymm5, ymm4, 15
-	LONG $0xe075ddc5                           // VPCMPEQW Y0, Y4, Y4                  // vpcmpeqw	ymm4, ymm4, ymm0
-	LONG $0xced7fdc5                           // VPMOVMSKB Y6, CX                     // vpmovmskb	ecx, ymm6
-	LONG $0xd4d7fdc5                           // VPMOVMSKB Y4, DX                     // vpmovmskb	edx, ymm4
+LBB5_32:
+	LONG $0xf9fccdc5                           // VPADDB Y1, Y6, Y7                    // vpaddb	ymm7, ymm6, ymm1
+	LONG $0xfa64c5c5                           // VPCMPGTB Y2, Y7, Y7                  // vpcmpgtb	ymm7, ymm7, ymm2
+	LONG $0xfbdfc5c5                           // VPANDN Y3, Y7, Y7                    // vpandn	ymm7, ymm7, ymm3
+	LONG $0xf6fcc5c5                           // VPADDB Y6, Y7, Y6                    // vpaddb	ymm6, ymm7, ymm6
+	LONG $0xf875cdc5                           // VPCMPEQW Y0, Y6, Y7                  // vpcmpeqw	ymm7, ymm6, ymm0
+	LONG $0x4655e3c4; WORD $0x21ee             // VPERM2I128 $0x21, Y6, Y5, Y5         // vperm2i128	ymm5, ymm5, ymm6, 33
+	LONG $0x0f4de3c4; WORD $0x0fed             // VPALIGNR $0xf, Y5, Y6, Y5            // vpalignr	ymm5, ymm6, ymm5, 15
+	LONG $0xe875d5c5                           // VPCMPEQW Y0, Y5, Y5                  // vpcmpeqw	ymm5, ymm5, ymm0
+	LONG $0xcfd7fdc5                           // VPMOVMSKB Y7, CX                     // vpmovmskb	ecx, ymm7
+	LONG $0xd5d7fdc5                           // VPMOVMSKB Y5, DX                     // vpmovmskb	edx, ymm5
 	WORD $0x8941; BYTE $0xd1                   // MOVL DX, R9                          // mov	r9d, edx
 	WORD $0xd141; BYTE $0xe9                   // SHRL $0x1, R9                        // shr	r9d
 	WORD $0x2141; BYTE $0xd1                   // ANDL DX, R9                          // and	r9d, edx
@@ -2059,9 +1943,9 @@ LBB5_65:
 	WORD $0x854d; BYTE $0xc0                   // TESTQ R8, R8                         // test	r8, r8
 	LONG $0xd2450f41                           // CMOVNE R10, DX                       // cmovne	edx, r10d
 
-LBB5_66:
+LBB5_33:
 	WORD $0xd285             // TESTL DX, DX                         // test	edx, edx
-	JE   LBB5_68             // <--                                  // je	.LBB5_68
+	JE   LBB5_35             // <--                                  // je	.LBB5_35
 	LONG $0xcabc0ff3         // TZCNT DX, CX                         // rep		bsf	ecx, edx
 	LONG $0xff4a8d44         // LEAL -0x1(DX), R9                    // lea	r9d, [rdx - 1]
 	WORD $0x2141; BYTE $0xd1 // ANDL DX, R9                          // and	r9d, edx
@@ -2071,28 +1955,180 @@ LBB5_66:
 	LONG $0xc29d0f41         // SETGE R10                            // setge	r10b
 	WORD $0x0841; BYTE $0xd2 // ORL DL, R10                          // or	r10b, dl
 	WORD $0x8944; BYTE $0xca // MOVL R9, DX                          // mov	edx, r9d
-	JNE  LBB5_66             // <--                                  // jne	.LBB5_66
-	JMP  LBB5_170            // <--                                  // jmp	.LBB5_170
+	JNE  LBB5_33             // <--                                  // jne	.LBB5_33
+	JMP  LBB5_73             // <--                                  // jmp	.LBB5_73
 
-LBB5_68:
+LBB5_35:
 	LEAQ 0x20(R8), CX // <--                                  // lea	rcx, [r8 + 32]
 	ORQ  $0x2, R8     // <--                                  // or	r8, 2
-	LONG $0xe56ffdc5  // VMOVDQA Y5, Y4                       // vmovdqa	ymm4, ymm5
+	LONG $0xee6ffdc5  // VMOVDQA Y6, Y5                       // vmovdqa	ymm5, ymm6
 	CMPQ R8, SI       // <--                                  // cmp	r8, rsi
 	MOVQ CX, R8       // <--                                  // mov	r8, rcx
 	JLE  LBB5_27      // <--                                  // jle	.LBB5_27
-	JMP  LBB5_180     // <--                                  // jmp	.LBB5_180
+	JMP  LBB5_189     // <--                                  // jmp	.LBB5_189
 
-LBB5_69:
+LBB5_36:
+	CMPQ CX, $0x8     // <--                                  // cmp	rcx, 8
+	JB   LBB5_41      // <--                                  // jb	.LBB5_41
+	MOVQ 0(R9), R10   // <--                                  // mov	r10, qword ptr [r9]
+	CMPQ CX, $0xf     // <--                                  // cmp	rcx, 15
+	JBE  LBB5_43      // <--                                  // jbe	.LBB5_43
+	MOVQ 0x8(R9), R11 // <--                                  // mov	r11, qword ptr [r9 + 8]
+	CMPQ CX, $0x17    // <--                                  // cmp	rcx, 23
+	JBE  LBB5_51      // <--                                  // jbe	.LBB5_51
+	LONG $0x04c6f640  // TESTB $0x4, SI                       // test	sil, 4
+	JNE  LBB5_59      // <--                                  // jne	.LBB5_59
+	XORL DX, DX       // <--                                  // xor	edx, edx
+	XORL BX, BX       // <--                                  // xor	ebx, ebx
+	JMP  LBB5_60      // <--                                  // jmp	.LBB5_60
+
+LBB5_41:
+	LONG $0x04c6f640 // TESTB $0x4, SI                       // test	sil, 4
+	JNE  LBB5_45     // <--                                  // jne	.LBB5_45
+	XORL DX, DX      // <--                                  // xor	edx, edx
+	XORL R10, R10    // <--                                  // xor	r10d, r10d
+	JMP  LBB5_46     // <--                                  // jmp	.LBB5_46
+
+LBB5_43:
+	LONG $0x04c6f640 // TESTB $0x4, SI                       // test	sil, 4
+	JNE  LBB5_53     // <--                                  // jne	.LBB5_53
+	XORL DX, DX      // <--                                  // xor	edx, edx
+	XORL R11, R11    // <--                                  // xor	r11d, r11d
+	JMP  LBB5_54     // <--                                  // jmp	.LBB5_54
+
+LBB5_45:
+	WORD $0x8b45; BYTE $0x11     // MOVL 0(R9), R10                      // mov	r10d, dword ptr [r9]
+	LONG $0x000004ba; BYTE $0x00 // MOVL $0x4, DX                        // mov	edx, 4
+
+LBB5_46:
+	LONG $0x02c6f640                           // TESTB $0x2, SI                       // test	sil, 2
+	JE   LBB5_48                               // <--                                  // je	.LBB5_48
+	LONG $0x1cb70f45; BYTE $0x11               // MOVZX 0(R9)(DX*1), R11               // movzx	r11d, word ptr [r9 + rdx]
+	LONG $0x00d50c8d; WORD $0x0000; BYTE $0x00 // LEAL 0(DX*8), CX                     // lea	ecx, [8*rdx]
+	SHLQ CL, R11                               // <--                                  // shl	r11, cl
+	ORQ  R11, R10                              // <--                                  // or	r10, r11
+	ORQ  $0x2, DX                              // <--                                  // or	rdx, 2
+
+LBB5_48:
+	LONG $0x01c6f640             // TESTB $0x1, SI                       // test	sil, 1
+	JE   LBB5_50                 // <--                                  // je	.LBB5_50
+	LONG $0x0cb60f45; BYTE $0x11 // MOVZX 0(R9)(DX*1), R9                // movzx	r9d, byte ptr [r9 + rdx]
+	WORD $0xe2c1; BYTE $0x03     // SHLL $0x3, DX                        // shl	edx, 3
+	WORD $0xd189                 // MOVL DX, CX                          // mov	ecx, edx
+	SHLQ CL, R9                  // <--                                  // shl	r9, cl
+	ORQ  R9, R10                 // <--                                  // or	r10, r9
+
+LBB5_50:
+	LONG $0x6ef9c1c4; BYTE $0xf2 // VMOVQ R10, X6                        // vmovq	xmm6, r10
+	JMP  LBB5_32                 // <--                                  // jmp	.LBB5_32
+
+LBB5_51:
+	LONG $0x04c6f640 // TESTB $0x4, SI                       // test	sil, 4
+	JNE  LBB5_65     // <--                                  // jne	.LBB5_65
+	XORL DX, DX      // <--                                  // xor	edx, edx
+	XORL BX, BX      // <--                                  // xor	ebx, ebx
+	JMP  LBB5_66     // <--                                  // jmp	.LBB5_66
+
+LBB5_53:
+	LONG $0x08598b45             // MOVL 0x8(R9), R11                    // mov	r11d, dword ptr [r9 + 8]
+	LONG $0x000004ba; BYTE $0x00 // MOVL $0x4, DX                        // mov	edx, 4
+
+LBB5_54:
+	LONG $0x02c6f640                           // TESTB $0x2, SI                       // test	sil, 2
+	JE   LBB5_56                               // <--                                  // je	.LBB5_56
+	LONG $0x5cb70f41; WORD $0x0811             // MOVZX 0x8(R9)(DX*1), BX              // movzx	ebx, word ptr [r9 + rdx + 8]
+	LONG $0x00d50c8d; WORD $0x0000; BYTE $0x00 // LEAL 0(DX*8), CX                     // lea	ecx, [8*rdx]
+	SHLQ CL, BX                                // <--                                  // shl	rbx, cl
+	ORQ  BX, R11                               // <--                                  // or	r11, rbx
+	ORQ  $0x2, DX                              // <--                                  // or	rdx, 2
+
+LBB5_56:
+	LONG $0x01c6f640               // TESTB $0x1, SI                       // test	sil, 1
+	JE   LBB5_58                   // <--                                  // je	.LBB5_58
+	LONG $0x4cb60f45; WORD $0x0811 // MOVZX 0x8(R9)(DX*1), R9              // movzx	r9d, byte ptr [r9 + rdx + 8]
+	WORD $0xe2c1; BYTE $0x03       // SHLL $0x3, DX                        // shl	edx, 3
+	WORD $0xd189                   // MOVL DX, CX                          // mov	ecx, edx
+	SHLQ CL, R9                    // <--                                  // shl	r9, cl
+	ORQ  R9, R11                   // <--                                  // or	r11, r9
+
+LBB5_58:
+	LONG $0x6ef9c1c4; BYTE $0xf3 // VMOVQ R11, X6                        // vmovq	xmm6, r11
+	LONG $0x6ef9c1c4; BYTE $0xfa // VMOVQ R10, X7                        // vmovq	xmm7, r10
+	LONG $0xf66cc1c5             // VPUNPCKLQDQ X6, X7, X6               // vpunpcklqdq	xmm6, xmm7, xmm6
+	JMP  LBB5_32                 // <--                                  // jmp	.LBB5_32
+
+LBB5_59:
+	LONG $0x18598b41             // MOVL 0x18(R9), BX                    // mov	ebx, dword ptr [r9 + 24]
+	LONG $0x000004ba; BYTE $0x00 // MOVL $0x4, DX                        // mov	edx, 4
+
+LBB5_60:
+	LONG $0x02c6f640                           // TESTB $0x2, SI                       // test	sil, 2
+	JE   LBB5_62                               // <--                                  // je	.LBB5_62
+	LONG $0x74b70f45; WORD $0x1811             // MOVZX 0x18(R9)(DX*1), R14            // movzx	r14d, word ptr [r9 + rdx + 24]
+	LONG $0x00d50c8d; WORD $0x0000; BYTE $0x00 // LEAL 0(DX*8), CX                     // lea	ecx, [8*rdx]
+	SHLQ CL, R14                               // <--                                  // shl	r14, cl
+	ORQ  R14, BX                               // <--                                  // or	rbx, r14
+	ORQ  $0x2, DX                              // <--                                  // or	rdx, 2
+
+LBB5_62:
+	LONG $0x01c6f640               // TESTB $0x1, SI                       // test	sil, 1
+	JE   LBB5_64                   // <--                                  // je	.LBB5_64
+	LONG $0x74b60f45; WORD $0x1811 // MOVZX 0x18(R9)(DX*1), R14            // movzx	r14d, byte ptr [r9 + rdx + 24]
+	WORD $0xe2c1; BYTE $0x03       // SHLL $0x3, DX                        // shl	edx, 3
+	WORD $0xd189                   // MOVL DX, CX                          // mov	ecx, edx
+	SHLQ CL, R14                   // <--                                  // shl	r14, cl
+	ORQ  R14, BX                   // <--                                  // or	rbx, r14
+
+LBB5_64:
+	LONG $0x6ef9e1c4; BYTE $0xf3   // VMOVQ BX, X6                         // vmovq	xmm6, rbx
+	LONG $0x7e7ac1c4; WORD $0x1079 // VMOVQ 0x10(R9), X7                   // vmovq	xmm7, qword ptr [r9 + 16]
+	LONG $0xf66cc1c5               // VPUNPCKLQDQ X6, X7, X6               // vpunpcklqdq	xmm6, xmm7, xmm6
+	LONG $0x6ef9c1c4; BYTE $0xfb   // VMOVQ R11, X7                        // vmovq	xmm7, r11
+	LONG $0x6ef941c4; BYTE $0xc2   // VMOVQ R10, X8                        // vmovq	xmm8, r10
+	LONG $0xff6cb9c5               // VPUNPCKLQDQ X7, X8, X7               // vpunpcklqdq	xmm7, xmm8, xmm7
+	LONG $0x3845e3c4; WORD $0x01f6 // VINSERTI128 $0x1, X6, Y7, Y6         // vinserti128	ymm6, ymm7, xmm6, 1
+	JMP  LBB5_32                   // <--                                  // jmp	.LBB5_32
+
+LBB5_65:
+	LONG $0x10598b41             // MOVL 0x10(R9), BX                    // mov	ebx, dword ptr [r9 + 16]
+	LONG $0x000004ba; BYTE $0x00 // MOVL $0x4, DX                        // mov	edx, 4
+
+LBB5_66:
+	LONG $0x02c6f640                           // TESTB $0x2, SI                       // test	sil, 2
+	JE   LBB5_68                               // <--                                  // je	.LBB5_68
+	LONG $0x74b70f45; WORD $0x1011             // MOVZX 0x10(R9)(DX*1), R14            // movzx	r14d, word ptr [r9 + rdx + 16]
+	LONG $0x00d50c8d; WORD $0x0000; BYTE $0x00 // LEAL 0(DX*8), CX                     // lea	ecx, [8*rdx]
+	SHLQ CL, R14                               // <--                                  // shl	r14, cl
+	ORQ  R14, BX                               // <--                                  // or	rbx, r14
+	ORQ  $0x2, DX                              // <--                                  // or	rdx, 2
+
+LBB5_68:
+	LONG $0x01c6f640               // TESTB $0x1, SI                       // test	sil, 1
+	JE   LBB5_70                   // <--                                  // je	.LBB5_70
+	LONG $0x4cb60f45; WORD $0x1011 // MOVZX 0x10(R9)(DX*1), R9             // movzx	r9d, byte ptr [r9 + rdx + 16]
+	WORD $0xe2c1; BYTE $0x03       // SHLL $0x3, DX                        // shl	edx, 3
+	WORD $0xd189                   // MOVL DX, CX                          // mov	ecx, edx
+	SHLQ CL, R9                    // <--                                  // shl	r9, cl
+	ORQ  R9, BX                    // <--                                  // or	rbx, r9
+
+LBB5_70:
+	LONG $0x6ef9c1c4; BYTE $0xf3   // VMOVQ R11, X6                        // vmovq	xmm6, r11
+	LONG $0x6ef9c1c4; BYTE $0xfa   // VMOVQ R10, X7                        // vmovq	xmm7, r10
+	LONG $0xf66cc1c5               // VPUNPCKLQDQ X6, X7, X6               // vpunpcklqdq	xmm6, xmm7, xmm6
+	LONG $0x6ef9e1c4; BYTE $0xfb   // VMOVQ BX, X7                         // vmovq	xmm7, rbx
+	LONG $0x384de3c4; WORD $0x01f7 // VINSERTI128 $0x1, X7, Y6, Y6         // vinserti128	ymm6, ymm6, xmm7, 1
+	JMP  LBB5_32                   // <--                                  // jmp	.LBB5_32
+
+LBB5_71:
 	CMPQ         R11, $-0x20                           // <--                                  // cmp	r11, -32
-	JL           LBB5_180                              // <--                                  // jl	.LBB5_180
-	LEAQ         0(DI)(CX*1), R13                      // <--                                  // lea	r13, [rdi + rcx]
+	JL           LBB5_189                              // <--                                  // jl	.LBB5_189
 	LONG         $0x797de2c4; WORD $0x0a44; BYTE $0xfe // VPBROADCASTW -0x2(DX)(CX*1), Y0      // vpbroadcastw	ymm0, word ptr [rdx + rcx - 2]
-	VPBROADCASTB LCPI5_11<>(SB), Y4                    // <--                                  // vpbroadcastb	ymm4, byte ptr [rip + .LCPI5_11]
+	LEAQ         0(DI)(CX*1), R12                      // <--                                  // lea	r12, [rdi + rcx]
+	VPBROADCASTB LCPI5_12<>(SB), Y4                    // <--                                  // vpbroadcastb	ymm4, byte ptr [rip + .LCPI5_12]
 	LONG         $0xccfcfdc5                           // VPADDB Y4, Y0, Y1                    // vpaddb	ymm1, ymm0, ymm4
-	VPBROADCASTB LCPI5_17<>(SB), Y5                    // <--                                  // vpbroadcastb	ymm5, byte ptr [rip + .LCPI5_17]
+	VPBROADCASTB LCPI5_18<>(SB), Y5                    // <--                                  // vpbroadcastb	ymm5, byte ptr [rip + .LCPI5_18]
 	LONG         $0xc964d5c5                           // VPCMPGTB Y1, Y5, Y1                  // vpcmpgtb	ymm1, ymm5, ymm1
-	VPBROADCASTB LCPI5_13<>(SB), Y6                    // <--                                  // vpbroadcastb	ymm6, byte ptr [rip + .LCPI5_13]
+	VPBROADCASTB LCPI5_14<>(SB), Y6                    // <--                                  // vpbroadcastb	ymm6, byte ptr [rip + .LCPI5_14]
 	LONG         $0xcedbf5c5                           // VPAND Y6, Y1, Y1                     // vpand	ymm1, ymm1, ymm6
 	LONG         $0xf8fcf5c5                           // VPADDB Y0, Y1, Y7                    // vpaddb	ymm7, ymm1, ymm0
 	LONG         $0x797de2c4; BYTE $0x02               // VPBROADCASTW 0(DX), Y0               // vpbroadcastw	ymm0, word ptr [rdx]
@@ -2101,414 +2137,150 @@ LBB5_69:
 	LONG         $0xcedbf5c5                           // VPAND Y6, Y1, Y1                     // vpand	ymm1, ymm1, ymm6
 	LONG         $0xc0fc75c5                           // VPADDB Y0, Y1, Y8                    // vpaddb	ymm8, ymm1, ymm0
 	LEAQ         -0x4(CX), R8                          // <--                                  // lea	r8, [rcx - 4]
-	MOVQ         R8, 0x18(SP)                          // <--                                  // mov	qword ptr [rsp + 24], r8
+	MOVQ         R8, 0x20(SP)                          // <--                                  // mov	qword ptr [rsp + 32], r8
 	LEAQ         0x20(DI), R14                         // <--                                  // lea	r14, [rdi + 32]
 	LEAQ         0x1f(DI), R15                         // <--                                  // lea	r15, [rdi + 31]
-	LEAQ         0x1(DI), R8                           // <--                                  // lea	r8, [rdi + 1]
-	MOVQ         R8, 0x30(SP)                          // <--                                  // mov	qword ptr [rsp + 48], r8
-	LONG         $0xef1941c4; BYTE $0xe4               // VPXOR X12, X12, X12                  // vpxor	xmm12, xmm12, xmm12
-	MOVQ         $0x0, 0x40(SP)                        // <--                                  // mov	qword ptr [rsp + 64], 0
-	VPBROADCASTB LCPI5_15<>(SB), X1                    // <--                                  // vpbroadcastb	xmm1, byte ptr [rip + .LCPI5_15]
-	VPBROADCASTB LCPI5_11<>(SB), X2                    // <--                                  // vpbroadcastb	xmm2, byte ptr [rip + .LCPI5_11]
-	VPBROADCASTB LCPI5_16<>(SB), X3                    // <--                                  // vpbroadcastb	xmm3, byte ptr [rip + .LCPI5_16]
+	LEAQ         0x1(DI), R13                          // <--                                  // lea	r13, [rdi + 1]
 	LONG         $0xef1141c4; BYTE $0xed               // VPXOR X13, X13, X13                  // vpxor	xmm13, xmm13, xmm13
-	XORL         R8, R8                                // <--                                  // xor	r8d, r8d
-	MOVQ         CX, 0x8(SP)                           // <--                                  // mov	qword ptr [rsp + 8], rcx
-	MOVQ         R13, 0x28(SP)                         // <--                                  // mov	qword ptr [rsp + 40], r13
-	JMP          LBB5_72                               // <--                                  // jmp	.LBB5_72
+	MOVQ         $0x0, 0x38(SP)                        // <--                                  // mov	qword ptr [rsp + 56], 0
+	VPBROADCASTB LCPI5_16<>(SB), X1                    // <--                                  // vpbroadcastb	xmm1, byte ptr [rip + .LCPI5_16]
+	VPBROADCASTB LCPI5_12<>(SB), X2                    // <--                                  // vpbroadcastb	xmm2, byte ptr [rip + .LCPI5_12]
+	VPBROADCASTB LCPI5_17<>(SB), X3                    // <--                                  // vpbroadcastb	xmm3, byte ptr [rip + .LCPI5_17]
+	LONG         $0xef0941c4; BYTE $0xf6               // VPXOR X14, X14, X14                  // vpxor	xmm14, xmm14, xmm14
+	XORL         R9, R9                                // <--                                  // xor	r9d, r9d
+	MOVQ         R12, 0x30(SP)                         // <--                                  // mov	qword ptr [rsp + 48], r12
+	JMP          LBB5_83                               // <--                                  // jmp	.LBB5_83
 
-LBB5_71:
-	LEAQ 0x20(R12), R8   // <--                                  // lea	r8, [r12 + 32]
-	ADDQ $0x20, R14      // <--                                  // add	r14, 32
-	ADDQ $0x20, R15      // <--                                  // add	r15, 32
-	ADDQ $0x20, 0x30(SP) // <--                                  // add	qword ptr [rsp + 48], 32
-	CMPQ R12, R11        // <--                                  // cmp	r12, r11
-	JG   LBB5_180        // <--                                  // jg	.LBB5_180
+LBB5_73:
+	DECQ CX       // <--                                  // dec	rcx
+	MOVQ CX, AX   // <--                                  // mov	rax, rcx
+	JMP  LBB5_189 // <--                                  // jmp	.LBB5_189
 
-LBB5_72:
-	MOVQ SI, BX                    // <--                                  // mov	rbx, rsi
-	SUBQ R8, BX                    // <--                                  // sub	rbx, r8
-	JLE  LBB5_180                  // <--                                  // jle	.LBB5_180
-	LONG $0x6f7d41c4; BYTE $0xd5   // VMOVDQA Y13, Y10                     // vmovdqa	ymm10, ymm13
-	LONG $0x6f7d41c4; BYTE $0xdc   // VMOVDQA Y12, Y11                     // vmovdqa	ymm11, ymm12
-	MOVQ R8, 0(SP)                 // <--                                  // mov	qword ptr [rsp], r8
-	LEAQ 0(DI)(R8*1), R12          // <--                                  // lea	r12, [rdi + r8]
-	CMPQ BX, $0x20                 // <--                                  // cmp	rbx, 32
-	JB   LBB5_75                   // <--                                  // jb	.LBB5_75
-	LONG $0x6f7e41c4; WORD $0x2424 // VMOVDQU 0(R12), Y12                  // vmovdqu	ymm12, ymmword ptr [r12]
-	MOVQ 0(SP), R12                // <--                                  // mov	r12, qword ptr [rsp]
-	JMP  LBB5_111                  // <--                                  // jmp	.LBB5_111
+LBB5_74:
+	LONG $0xbc0f41f3; BYTE $0xc1 // TZCNT R9, AX                         // rep		bsf	eax, r9d
+	ADDQ DX, AX                  // <--                                  // add	rax, rdx
+	JMP  LBB5_189                // <--                                  // jmp	.LBB5_189
 
 LBB5_75:
-	CMPQ BX, $0x8     // <--                                  // cmp	rbx, 8
-	JB   LBB5_80      // <--                                  // jb	.LBB5_80
-	MOVQ 0(R12), CX   // <--                                  // mov	rcx, qword ptr [r12]
-	CMPQ BX, $0xf     // <--                                  // cmp	rbx, 15
-	JBE  LBB5_82      // <--                                  // jbe	.LBB5_82
-	MOVQ 0x8(R12), R8 // <--                                  // mov	r8, qword ptr [r12 + 8]
-	CMPQ BX, $0x17    // <--                                  // cmp	rbx, 23
-	MOVQ R8, 0x10(SP) // <--                                  // mov	qword ptr [rsp + 16], r8
-	JBE  LBB5_90      // <--                                  // jbe	.LBB5_90
-	LONG $0x04c6f640  // TESTB $0x4, SI                       // test	sil, 4
-	JNE  LBB5_98      // <--                                  // jne	.LBB5_98
-	XORL R8, R8       // <--                                  // xor	r8d, r8d
-	XORL R9, R9       // <--                                  // xor	r9d, r9d
-	JMP  LBB5_99      // <--                                  // jmp	.LBB5_99
+	ADDQ $0x10, DX  // <--                                  // add	rdx, 16
+	ADDQ $-0x10, SI // <--                                  // add	rsi, -16
+
+LBB5_76:
+	WORD $0x8548; BYTE $0xf6 // TESTQ SI, SI                         // test	rsi, rsi
+	JLE  LBB5_189            // <--                                  // jle	.LBB5_189
+	XORL R8, R8              // <--                                  // xor	r8d, r8d
+
+LBB5_78:
+	LONG $0x0cb60f46; BYTE $0x02 // MOVZX 0(DX)(R8*1), R9                // movzx	r9d, byte ptr [rdx + r8]
+	LONG $0x9f518d45             // LEAL -0x61(R9), R10                  // lea	r10d, [r9 - 97]
+	LONG $0xe0598d45             // LEAL -0x20(R9), R11                  // lea	r11d, [r9 - 32]
+	CMPB R10, $0x1a              // <--                                  // cmp	r10b, 26
+	LONG $0xd3b60f45             // MOVZX R11, R10                       // movzx	r10d, r11b
+	LONG $0xd1430f45             // CMOVAE R9, R10                       // cmovae	r10d, r9d
+	CMPB R10, CL                 // <--                                  // cmp	r10b, cl
+	JE   LBB5_80                 // <--                                  // je	.LBB5_80
+	INCQ R8                      // <--                                  // inc	r8
+	CMPQ SI, R8                  // <--                                  // cmp	rsi, r8
+	JNE  LBB5_78                 // <--                                  // jne	.LBB5_78
+	JMP  LBB5_189                // <--                                  // jmp	.LBB5_189
 
 LBB5_80:
-	LONG $0x04c6f640 // TESTB $0x4, SI                       // test	sil, 4
-	JNE  LBB5_84     // <--                                  // jne	.LBB5_84
-	XORL R8, R8      // <--                                  // xor	r8d, r8d
-	XORL R9, R9      // <--                                  // xor	r9d, r9d
-	JMP  LBB5_85     // <--                                  // jmp	.LBB5_85
+	SUBQ DI, DX   // <--                                  // sub	rdx, rdi
+	ADDQ R8, DX   // <--                                  // add	rdx, r8
+	MOVQ DX, AX   // <--                                  // mov	rax, rdx
+	JMP  LBB5_189 // <--                                  // jmp	.LBB5_189
+
+LBB5_81:
+	MOVQ 0x8(SP), R14  // <--                                  // mov	r14, qword ptr [rsp + 8]
+	MOVQ 0(SP), R15    // <--                                  // mov	r15, qword ptr [rsp]
+	MOVQ 0x30(SP), R12 // <--                                  // mov	r12, qword ptr [rsp + 48]
 
 LBB5_82:
-	LONG $0x04c6f640 // TESTB $0x4, SI                       // test	sil, 4
-	JNE  LBB5_92     // <--                                  // jne	.LBB5_92
-	XORL R8, R8      // <--                                  // xor	r8d, r8d
-	XORL R9, R9      // <--                                  // xor	r9d, r9d
-	JMP  LBB5_93     // <--                                  // jmp	.LBB5_93
+	LEAQ 0x20(BX), R9 // <--                                  // lea	r9, [rbx + 32]
+	ADDQ $0x20, R14   // <--                                  // add	r14, 32
+	ADDQ $0x20, R15   // <--                                  // add	r15, 32
+	ADDQ $0x20, R13   // <--                                  // add	r13, 32
+	CMPQ BX, R11      // <--                                  // cmp	rbx, r11
+	JG   LBB5_189     // <--                                  // jg	.LBB5_189
 
-LBB5_84:
-	LONG $0x240c8b45               // MOVL 0(R12), R9                      // mov	r9d, dword ptr [r12]
-	LONG $0x0004b841; WORD $0x0000 // MOVL $0x4, R8                        // mov	r8d, 4
+LBB5_83:
+	MOVQ SI, R8                  // <--                                  // mov	r8, rsi
+	SUBQ R9, R8                  // <--                                  // sub	r8, r9
+	JLE  LBB5_189                // <--                                  // jle	.LBB5_189
+	LONG $0x6f7d41c4; BYTE $0xde // VMOVDQA Y14, Y11                     // vmovdqa	ymm11, ymm14
+	LONG $0x6f7d41c4; BYTE $0xe5 // VMOVDQA Y13, Y12                     // vmovdqa	ymm12, ymm13
+	MOVQ R9, 0x10(SP)            // <--                                  // mov	qword ptr [rsp + 16], r9
+	LEAQ 0(DI)(R9*1), BX         // <--                                  // lea	rbx, [rdi + r9]
+	CMPQ R8, $0x20               // <--                                  // cmp	r8, 32
+	JB   LBB5_86                 // <--                                  // jb	.LBB5_86
+	LONG $0x2b6f7ec5             // VMOVDQU 0(BX), Y13                   // vmovdqu	ymm13, ymmword ptr [rbx]
+	SUBQ CX, R8                  // <--                                  // sub	r8, rcx
+	CMPQ R8, $0x1e               // <--                                  // cmp	r8, 30
+	MOVQ 0x10(SP), BX            // <--                                  // mov	rbx, qword ptr [rsp + 16]
+	JL   LBB5_126                // <--                                  // jl	.LBB5_126
 
-LBB5_85:
-	LONG $0x02c6f640             // TESTB $0x2, SI                       // test	sil, 2
-	JE   LBB5_87                 // <--                                  // je	.LBB5_87
-	LONG $0x14b70f47; BYTE $0x04 // MOVZX 0(R12)(R8*1), R10              // movzx	r10d, word ptr [r12 + r8]
-	QUAD $0x00000000c50c8d42     // LEAL 0(R8*8), CX                     // lea	ecx, [8*r8]
-	SHLQ CL, R10                 // <--                                  // shl	r10, cl
-	ORQ  R10, R9                 // <--                                  // or	r9, r10
-	ORQ  $0x2, R8                // <--                                  // or	r8, 2
+LBB5_88:
+	LONG $0x6f7e41c4; WORD $0x1c74; BYTE $0xfe // VMOVDQU -0x2(R12)(BX*1), Y14         // vmovdqu	ymm14, ymmword ptr [r12 + rbx - 2]
+	JMP  LBB5_130                              // <--                                  // jmp	.LBB5_130
 
-LBB5_87:
-	LONG $0x01c6f640             // TESTB $0x1, SI                       // test	sil, 1
-	JE   LBB5_89                 // <--                                  // je	.LBB5_89
-	LONG $0x14b60f47; BYTE $0x04 // MOVZX 0(R12)(R8*1), R10              // movzx	r10d, byte ptr [r12 + r8]
-	LONG $0x03e0c141             // SHLL $0x3, R8                        // shl	r8d, 3
-	WORD $0x8944; BYTE $0xc1     // MOVL R8, CX                          // mov	ecx, r8d
-	SHLQ CL, R10                 // <--                                  // shl	r10, cl
-	ORQ  R10, R9                 // <--                                  // or	r9, r10
-
-LBB5_89:
-	MOVQ 0x8(SP), CX             // <--                                  // mov	rcx, qword ptr [rsp + 8]
-	MOVQ 0(SP), R12              // <--                                  // mov	r12, qword ptr [rsp]
-	LONG $0x6ef941c4; BYTE $0xe1 // VMOVQ R9, X12                        // vmovq	xmm12, r9
-	JMP  LBB5_111                // <--                                  // jmp	.LBB5_111
-
-LBB5_90:
-	LONG $0x04c6f640 // TESTB $0x4, SI                       // test	sil, 4
-	JNE  LBB5_104    // <--                                  // jne	.LBB5_104
-	XORL R8, R8      // <--                                  // xor	r8d, r8d
-	XORL R9, R9      // <--                                  // xor	r9d, r9d
-	JMP  LBB5_105    // <--                                  // jmp	.LBB5_105
-
-LBB5_92:
-	LONG $0x244c8b45; BYTE $0x08   // MOVL 0x8(R12), R9                    // mov	r9d, dword ptr [r12 + 8]
-	LONG $0x0004b841; WORD $0x0000 // MOVL $0x4, R8                        // mov	r8d, 4
-
-LBB5_93:
-	MOVQ CX, R13                   // <--                                  // mov	r13, rcx
-	LONG $0x02c6f640               // TESTB $0x2, SI                       // test	sil, 2
-	JE   LBB5_95                   // <--                                  // je	.LBB5_95
-	LONG $0x54b70f47; WORD $0x0804 // MOVZX 0x8(R12)(R8*1), R10            // movzx	r10d, word ptr [r12 + r8 + 8]
-	QUAD $0x00000000c50c8d42       // LEAL 0(R8*8), CX                     // lea	ecx, [8*r8]
-	SHLQ CL, R10                   // <--                                  // shl	r10, cl
-	ORQ  R10, R9                   // <--                                  // or	r9, r10
-	ORQ  $0x2, R8                  // <--                                  // or	r8, 2
-
-LBB5_95:
-	LONG $0x01c6f640               // TESTB $0x1, SI                       // test	sil, 1
-	JE   LBB5_97                   // <--                                  // je	.LBB5_97
-	LONG $0x54b60f47; WORD $0x0804 // MOVZX 0x8(R12)(R8*1), R10            // movzx	r10d, byte ptr [r12 + r8 + 8]
-	LONG $0x03e0c141               // SHLL $0x3, R8                        // shl	r8d, 3
-	WORD $0x8944; BYTE $0xc1       // MOVL R8, CX                          // mov	ecx, r8d
-	SHLQ CL, R10                   // <--                                  // shl	r10, cl
-	ORQ  R10, R9                   // <--                                  // or	r9, r10
-
-LBB5_97:
-	MOVQ 0x8(SP), CX             // <--                                  // mov	rcx, qword ptr [rsp + 8]
-	MOVQ 0(SP), R12              // <--                                  // mov	r12, qword ptr [rsp]
-	LONG $0x6ef941c4; BYTE $0xe1 // VMOVQ R9, X12                        // vmovq	xmm12, r9
-	LONG $0x6ef941c4; BYTE $0xed // VMOVQ R13, X13                       // vmovq	xmm13, r13
-	LONG $0x6c1141c4; BYTE $0xe4 // VPUNPCKLQDQ X12, X13, X12            // vpunpcklqdq	xmm12, xmm13, xmm12
-	JMP  LBB5_110                // <--                                  // jmp	.LBB5_110
-
-LBB5_98:
-	LONG $0x244c8b45; BYTE $0x18   // MOVL 0x18(R12), R9                   // mov	r9d, dword ptr [r12 + 24]
-	LONG $0x0004b841; WORD $0x0000 // MOVL $0x4, R8                        // mov	r8d, 4
-
-LBB5_99:
-	MOVQ CX, R13                   // <--                                  // mov	r13, rcx
-	LONG $0x02c6f640               // TESTB $0x2, SI                       // test	sil, 2
-	JE   LBB5_101                  // <--                                  // je	.LBB5_101
-	LONG $0x54b70f47; WORD $0x1804 // MOVZX 0x18(R12)(R8*1), R10           // movzx	r10d, word ptr [r12 + r8 + 24]
-	QUAD $0x00000000c50c8d42       // LEAL 0(R8*8), CX                     // lea	ecx, [8*r8]
-	SHLQ CL, R10                   // <--                                  // shl	r10, cl
-	ORQ  R10, R9                   // <--                                  // or	r9, r10
-	ORQ  $0x2, R8                  // <--                                  // or	r8, 2
-
-LBB5_101:
-	LONG $0x01c6f640               // TESTB $0x1, SI                       // test	sil, 1
-	JE   LBB5_103                  // <--                                  // je	.LBB5_103
-	LONG $0x54b60f47; WORD $0x1804 // MOVZX 0x18(R12)(R8*1), R10           // movzx	r10d, byte ptr [r12 + r8 + 24]
-	LONG $0x03e0c141               // SHLL $0x3, R8                        // shl	r8d, 3
-	WORD $0x8944; BYTE $0xc1       // MOVL R8, CX                          // mov	ecx, r8d
-	SHLQ CL, R10                   // <--                                  // shl	r10, cl
-	ORQ  R10, R9                   // <--                                  // or	r9, r10
-
-LBB5_103:
-	MOVQ 0x8(SP), CX                           // <--                                  // mov	rcx, qword ptr [rsp + 8]
-	LONG $0x6ef941c4; BYTE $0xe1               // VMOVQ R9, X12                        // vmovq	xmm12, r9
-	LONG $0x7e7a41c4; WORD $0x246c; BYTE $0x10 // VMOVQ 0x10(R12), X13                 // vmovq	xmm13, qword ptr [r12 + 16]
-	LONG $0x6c1141c4; BYTE $0xe4               // VPUNPCKLQDQ X12, X13, X12            // vpunpcklqdq	xmm12, xmm13, xmm12
-	LONG $0x6c7e7ac5; WORD $0x1024             // VMOVQ 0x10(SP), X13                  // vmovq	xmm13, qword ptr [rsp + 16]
-	LONG $0x6ef941c4; BYTE $0xf5               // VMOVQ R13, X14                       // vmovq	xmm14, r13
-	LONG $0x6c0941c4; BYTE $0xed               // VPUNPCKLQDQ X13, X14, X13            // vpunpcklqdq	xmm13, xmm14, xmm13
-	LONG $0x381543c4; WORD $0x01e4             // VINSERTI128 $0x1, X12, Y13, Y12      // vinserti128	ymm12, ymm13, xmm12, 1
-	MOVQ 0(SP), R12                            // <--                                  // mov	r12, qword ptr [rsp]
-	JMP  LBB5_110                              // <--                                  // jmp	.LBB5_110
-
-LBB5_104:
-	LONG $0x244c8b45; BYTE $0x10   // MOVL 0x10(R12), R9                   // mov	r9d, dword ptr [r12 + 16]
-	LONG $0x0004b841; WORD $0x0000 // MOVL $0x4, R8                        // mov	r8d, 4
-
-LBB5_105:
-	MOVQ CX, R13                   // <--                                  // mov	r13, rcx
-	LONG $0x02c6f640               // TESTB $0x2, SI                       // test	sil, 2
-	JE   LBB5_107                  // <--                                  // je	.LBB5_107
-	LONG $0x54b70f47; WORD $0x1004 // MOVZX 0x10(R12)(R8*1), R10           // movzx	r10d, word ptr [r12 + r8 + 16]
-	QUAD $0x00000000c50c8d42       // LEAL 0(R8*8), CX                     // lea	ecx, [8*r8]
-	SHLQ CL, R10                   // <--                                  // shl	r10, cl
-	ORQ  R10, R9                   // <--                                  // or	r9, r10
-	ORQ  $0x2, R8                  // <--                                  // or	r8, 2
-
-LBB5_107:
-	LONG $0x01c6f640               // TESTB $0x1, SI                       // test	sil, 1
-	JE   LBB5_109                  // <--                                  // je	.LBB5_109
-	LONG $0x54b60f47; WORD $0x1004 // MOVZX 0x10(R12)(R8*1), R10           // movzx	r10d, byte ptr [r12 + r8 + 16]
-	LONG $0x03e0c141               // SHLL $0x3, R8                        // shl	r8d, 3
-	WORD $0x8944; BYTE $0xc1       // MOVL R8, CX                          // mov	ecx, r8d
-	SHLQ CL, R10                   // <--                                  // shl	r10, cl
-	ORQ  R10, R9                   // <--                                  // or	r9, r10
-
-LBB5_109:
-	MOVQ 0x8(SP), CX               // <--                                  // mov	rcx, qword ptr [rsp + 8]
-	MOVQ 0(SP), R12                // <--                                  // mov	r12, qword ptr [rsp]
-	LONG $0x647e7ac5; WORD $0x1024 // VMOVQ 0x10(SP), X12                  // vmovq	xmm12, qword ptr [rsp + 16]
-	LONG $0x6ef941c4; BYTE $0xed   // VMOVQ R13, X13                       // vmovq	xmm13, r13
-	LONG $0x6c1141c4; BYTE $0xe4   // VPUNPCKLQDQ X12, X13, X12            // vpunpcklqdq	xmm12, xmm13, xmm12
-	LONG $0x6ef941c4; BYTE $0xe9   // VMOVQ R9, X13                        // vmovq	xmm13, r9
-	LONG $0x381d43c4; WORD $0x01e5 // VINSERTI128 $0x1, X13, Y12, Y12      // vinserti128	ymm12, ymm12, xmm13, 1
-
-LBB5_110:
-	MOVQ 0x28(SP), R13 // <--                                  // mov	r13, qword ptr [rsp + 40]
-
-LBB5_111:
-	SUBQ CX, BX                                // <--                                  // sub	rbx, rcx
-	CMPQ BX, $0x1e                             // <--                                  // cmp	rbx, 30
-	JL   LBB5_113                              // <--                                  // jl	.LBB5_113
-	LONG $0x6f7e01c4; WORD $0x256c; BYTE $0xfe // VMOVDQU -0x2(R13)(R12*1), Y13        // vmovdqu	ymm13, ymmword ptr [r13 + r12 - 2]
-	JMP  LBB5_151                              // <--                                  // jmp	.LBB5_151
-
-LBB5_113:
-	LONG $0xef1141c4; BYTE $0xed   // VPXOR X13, X13, X13                  // vpxor	xmm13, xmm13, xmm13
-	CMPQ BX, $-0x1                 // <--                                  // cmp	rbx, -1
-	JL   LBB5_151                  // <--                                  // jl	.LBB5_151
-	LEAQ 0x2(BX), CX               // <--                                  // lea	rcx, [rbx + 2]
-	MOVQ R12, R8                   // <--                                  // mov	r8, r12
-	ADDQ R13, R12                  // <--                                  // add	r12, r13
-	ADDQ $-0x2, R12                // <--                                  // add	r12, -2
-	CMPQ CX, $0x8                  // <--                                  // cmp	rcx, 8
-	JB   LBB5_119                  // <--                                  // jb	.LBB5_119
-	LEAQ 0(R8)(R13*1), R10         // <--                                  // lea	r10, [r8 + r13]
-	MOVQ 0(R12), R8                // <--                                  // mov	r8, qword ptr [r12]
-	CMPQ CX, $0xf                  // <--                                  // cmp	rcx, 15
-	MOVQ R8, 0x10(SP)              // <--                                  // mov	qword ptr [rsp + 16], r8
-	JBE  LBB5_121                  // <--                                  // jbe	.LBB5_121
-	LONG $0x7e7a41c4; WORD $0x066a // VMOVQ 0x6(R10), X13                  // vmovq	xmm13, qword ptr [r10 + 6]
-	CMPQ CX, $0x17                 // <--                                  // cmp	rcx, 23
-	JBE  LBB5_129                  // <--                                  // jbe	.LBB5_129
-	WORD $0xc1f6; BYTE $0x04       // TESTL $0x4, CL                       // test	cl, 4
-	JNE  LBB5_137                  // <--                                  // jne	.LBB5_137
-	XORL R8, R8                    // <--                                  // xor	r8d, r8d
-	XORL R9, R9                    // <--                                  // xor	r9d, r9d
-	JMP  LBB5_138                  // <--                                  // jmp	.LBB5_138
-
-LBB5_119:
-	CMPQ CX, $0x4 // <--                                  // cmp	rcx, 4
-	JAE  LBB5_123 // <--                                  // jae	.LBB5_123
-	XORL R8, R8   // <--                                  // xor	r8d, r8d
-	XORL R9, R9   // <--                                  // xor	r9d, r9d
-	JMP  LBB5_124 // <--                                  // jmp	.LBB5_124
-
-LBB5_121:
-	WORD $0xc1f6; BYTE $0x04 // TESTL $0x4, CL                       // test	cl, 4
-	JNE  LBB5_131            // <--                                  // jne	.LBB5_131
-	XORL R8, R8              // <--                                  // xor	r8d, r8d
-	XORL R9, R9              // <--                                  // xor	r9d, r9d
-	JMP  LBB5_132            // <--                                  // jmp	.LBB5_132
-
-LBB5_123:
-	LONG $0x240c8b45               // MOVL 0(R12), R9                      // mov	r9d, dword ptr [r12]
-	LONG $0x0004b841; WORD $0x0000 // MOVL $0x4, R8                        // mov	r8d, 4
-
-LBB5_124:
-	WORD $0xc3f6; BYTE $0x02     // TESTL $0x2, BL                       // test	bl, 2
-	JNE  LBB5_126                // <--                                  // jne	.LBB5_126
-	LONG $0x14b70f47; BYTE $0x04 // MOVZX 0(R12)(R8*1), R10              // movzx	r10d, word ptr [r12 + r8]
-	QUAD $0x00000000c50c8d42     // LEAL 0(R8*8), CX                     // lea	ecx, [8*r8]
-	SHLQ CL, R10                 // <--                                  // shl	r10, cl
-	ORQ  R10, R9                 // <--                                  // or	r9, r10
-	ORQ  $0x2, R8                // <--                                  // or	r8, 2
+LBB5_86:
+	WORD     $0x8941; BYTE $0xd9                   // MOVL BX, R9                          // mov	r9d, ebx
+	LONG     $0xffe18141; WORD $0x000f; BYTE $0x00 // ANDL $index_fold_rabin_karp_avx2+2015(SB), R9 // and	r9d, 4095
+	LONG     $0xe0f98141; WORD $0x000f; BYTE $0x00 // CMPL R9, $index_fold_rabin_karp_avx2+1984(SB) // cmp	r9d, 4064
+	JA       LBB5_89                               // <--                                  // ja	.LBB5_89
+	LONG     $0x6e7941c4; BYTE $0xe8               // VMOVD R8, X13                        // vmovd	xmm13, r8d
+	LONG     $0x787d42c4; BYTE $0xed               // VPBROADCASTB X13, Y13                // vpbroadcastb	ymm13, xmm13
+	VPCMPGTB LCPI5_3<>(SB), Y13, Y13               // <--                                  // vpcmpgtb	ymm13, ymm13, ymmword ptr [rip + .LCPI5_3]
+	LONG     $0x2bdb15c5                           // VPAND 0(BX), Y13, Y13                // vpand	ymm13, ymm13, ymmword ptr [rbx]
+	SUBQ     CX, R8                                // <--                                  // sub	r8, rcx
+	CMPQ     R8, $0x1e                             // <--                                  // cmp	r8, 30
+	MOVQ     0x10(SP), BX                          // <--                                  // mov	rbx, qword ptr [rsp + 16]
+	JGE      LBB5_88                               // <--                                  // jge	.LBB5_88
 
 LBB5_126:
-	LONG $0x01c3f641             // TESTB $0x1, R11                      // test	r11b, 1
-	JE   LBB5_128                // <--                                  // je	.LBB5_128
-	LONG $0x14b60f47; BYTE $0x04 // MOVZX 0(R12)(R8*1), R10              // movzx	r10d, byte ptr [r12 + r8]
-	LONG $0x03e0c141             // SHLL $0x3, R8                        // shl	r8d, 3
-	WORD $0x8944; BYTE $0xc1     // MOVL R8, CX                          // mov	ecx, r8d
-	SHLQ CL, R10                 // <--                                  // shl	r10, cl
-	ORQ  R10, R9                 // <--                                  // or	r9, r10
-
-LBB5_128:
-	MOVQ 0x8(SP), CX             // <--                                  // mov	rcx, qword ptr [rsp + 8]
-	MOVQ 0(SP), R12              // <--                                  // mov	r12, qword ptr [rsp]
-	LONG $0x6ef941c4; BYTE $0xe9 // VMOVQ R9, X13                        // vmovq	xmm13, r9
-	JMP  LBB5_151                // <--                                  // jmp	.LBB5_151
+	LONG     $0xef0941c4; BYTE $0xf6               // VPXOR X14, X14, X14                  // vpxor	xmm14, xmm14, xmm14
+	CMPQ     R8, $-0x1                             // <--                                  // cmp	r8, -1
+	JL       LBB5_130                              // <--                                  // jl	.LBB5_130
+	LEAQ     0x2(R8), R9                           // <--                                  // lea	r9, [r8 + 2]
+	ADDQ     R12, BX                               // <--                                  // add	rbx, r12
+	ADDQ     $-0x2, BX                             // <--                                  // add	rbx, -2
+	WORD     $0x8941; BYTE $0xda                   // MOVL BX, R10                         // mov	r10d, ebx
+	LONG     $0xffe28141; WORD $0x000f; BYTE $0x00 // ANDL $index_fold_rabin_karp_avx2+2015(SB), R10 // and	r10d, 4095
+	LONG     $0xe0fa8141; WORD $0x000f; BYTE $0x00 // CMPL R10, $index_fold_rabin_karp_avx2+1984(SB) // cmp	r10d, 4064
+	JA       LBB5_151                              // <--                                  // ja	.LBB5_151
+	LONG     $0x6e7941c4; BYTE $0xf1               // VMOVD R9, X14                        // vmovd	xmm14, r9d
+	LONG     $0x787d42c4; BYTE $0xf6               // VPBROADCASTB X14, Y14                // vpbroadcastb	ymm14, xmm14
+	VPCMPGTB LCPI5_3<>(SB), Y14, Y14               // <--                                  // vpcmpgtb	ymm14, ymm14, ymmword ptr [rip + .LCPI5_3]
+	LONG     $0x33db0dc5                           // VPAND 0(BX), Y14, Y14                // vpand	ymm14, ymm14, ymmword ptr [rbx]
 
 LBB5_129:
-	WORD $0xc1f6; BYTE $0x04 // TESTL $0x4, CL                       // test	cl, 4
-	JNE  LBB5_140            // <--                                  // jne	.LBB5_140
-	XORL R8, R8              // <--                                  // xor	r8d, r8d
-	XORL R9, R9              // <--                                  // xor	r9d, r9d
-	JMP  LBB5_141            // <--                                  // jmp	.LBB5_141
+	MOVQ 0x10(SP), BX // <--                                  // mov	rbx, qword ptr [rsp + 16]
 
-LBB5_131:
-	LONG $0x064a8b45               // MOVL 0x6(R10), R9                    // mov	r9d, dword ptr [r10 + 6]
-	LONG $0x0004b841; WORD $0x0000 // MOVL $0x4, R8                        // mov	r8d, 4
-
-LBB5_132:
-	WORD $0xc3f6; BYTE $0x02       // TESTL $0x2, BL                       // test	bl, 2
-	JNE  LBB5_134                  // <--                                  // jne	.LBB5_134
-	LONG $0x54b70f47; WORD $0x0602 // MOVZX 0x6(R10)(R8*1), R10            // movzx	r10d, word ptr [r10 + r8 + 6]
-	QUAD $0x00000000c50c8d42       // LEAL 0(R8*8), CX                     // lea	ecx, [8*r8]
-	SHLQ CL, R10                   // <--                                  // shl	r10, cl
-	ORQ  R10, R9                   // <--                                  // or	r9, r10
-	ORQ  $0x2, R8                  // <--                                  // or	r8, 2
-
-LBB5_134:
-	LONG $0x01c3f641               // TESTB $0x1, R11                      // test	r11b, 1
-	JE   LBB5_136                  // <--                                  // je	.LBB5_136
-	LONG $0x54b60f47; WORD $0x0804 // MOVZX 0x8(R12)(R8*1), R10            // movzx	r10d, byte ptr [r12 + r8 + 8]
-	LONG $0x03e0c141               // SHLL $0x3, R8                        // shl	r8d, 3
-	WORD $0x8944; BYTE $0xc1       // MOVL R8, CX                          // mov	ecx, r8d
-	SHLQ CL, R10                   // <--                                  // shl	r10, cl
-	ORQ  R10, R9                   // <--                                  // or	r9, r10
-
-LBB5_136:
-	MOVQ 0x8(SP), CX               // <--                                  // mov	rcx, qword ptr [rsp + 8]
-	MOVQ 0(SP), R12                // <--                                  // mov	r12, qword ptr [rsp]
-	LONG $0x6ef941c4; BYTE $0xe9   // VMOVQ R9, X13                        // vmovq	xmm13, r9
-	LONG $0x747e7ac5; WORD $0x1024 // VMOVQ 0x10(SP), X14                  // vmovq	xmm14, qword ptr [rsp + 16]
-	LONG $0x6c0941c4; BYTE $0xed   // VPUNPCKLQDQ X13, X14, X13            // vpunpcklqdq	xmm13, xmm14, xmm13
-	JMP  LBB5_151                  // <--                                  // jmp	.LBB5_151
-
-LBB5_137:
-	LONG $0x164a8b45               // MOVL 0x16(R10), R9                   // mov	r9d, dword ptr [r10 + 22]
-	LONG $0x0004b841; WORD $0x0000 // MOVL $0x4, R8                        // mov	r8d, 4
-
-LBB5_138:
-	WORD $0xc3f6; BYTE $0x02       // TESTL $0x2, BL                       // test	bl, 2
-	JNE  LBB5_146                  // <--                                  // jne	.LBB5_146
-	MOVQ R10, BX                   // <--                                  // mov	rbx, r10
-	LONG $0x54b70f47; WORD $0x1602 // MOVZX 0x16(R10)(R8*1), R10           // movzx	r10d, word ptr [r10 + r8 + 22]
-	QUAD $0x00000000c50c8d42       // LEAL 0(R8*8), CX                     // lea	ecx, [8*r8]
-	SHLQ CL, R10                   // <--                                  // shl	r10, cl
-	ORQ  R10, R9                   // <--                                  // or	r9, r10
-	ORQ  $0x2, R8                  // <--                                  // or	r8, 2
-	JMP  LBB5_147                  // <--                                  // jmp	.LBB5_147
-
-LBB5_140:
-	LONG $0x0e4a8b45               // MOVL 0xe(R10), R9                    // mov	r9d, dword ptr [r10 + 14]
-	LONG $0x0004b841; WORD $0x0000 // MOVL $0x4, R8                        // mov	r8d, 4
-
-LBB5_141:
-	WORD $0xc3f6; BYTE $0x02       // TESTL $0x2, BL                       // test	bl, 2
-	JNE  LBB5_143                  // <--                                  // jne	.LBB5_143
-	LONG $0x54b70f47; WORD $0x0e02 // MOVZX 0xe(R10)(R8*1), R10            // movzx	r10d, word ptr [r10 + r8 + 14]
-	QUAD $0x00000000c50c8d42       // LEAL 0(R8*8), CX                     // lea	ecx, [8*r8]
-	SHLQ CL, R10                   // <--                                  // shl	r10, cl
-	ORQ  R10, R9                   // <--                                  // or	r9, r10
-	ORQ  $0x2, R8                  // <--                                  // or	r8, 2
-
-LBB5_143:
-	LONG $0x01c3f641               // TESTB $0x1, R11                      // test	r11b, 1
-	JE   LBB5_145                  // <--                                  // je	.LBB5_145
-	LONG $0x54b60f47; WORD $0x1004 // MOVZX 0x10(R12)(R8*1), R10           // movzx	r10d, byte ptr [r12 + r8 + 16]
-	LONG $0x03e0c141               // SHLL $0x3, R8                        // shl	r8d, 3
-	WORD $0x8944; BYTE $0xc1       // MOVL R8, CX                          // mov	ecx, r8d
-	SHLQ CL, R10                   // <--                                  // shl	r10, cl
-	ORQ  R10, R9                   // <--                                  // or	r9, r10
-
-LBB5_145:
-	MOVQ 0x8(SP), CX               // <--                                  // mov	rcx, qword ptr [rsp + 8]
-	MOVQ 0(SP), R12                // <--                                  // mov	r12, qword ptr [rsp]
-	LONG $0x747e7ac5; WORD $0x1024 // VMOVQ 0x10(SP), X14                  // vmovq	xmm14, qword ptr [rsp + 16]
-	LONG $0x6c0941c4; BYTE $0xed   // VPUNPCKLQDQ X13, X14, X13            // vpunpcklqdq	xmm13, xmm14, xmm13
-	LONG $0x6ef941c4; BYTE $0xf1   // VMOVQ R9, X14                        // vmovq	xmm14, r9
-	JMP  LBB5_150                  // <--                                  // jmp	.LBB5_150
-
-LBB5_146:
-	MOVQ R10, BX // <--                                  // mov	rbx, r10
-
-LBB5_147:
-	LONG $0x01c3f641               // TESTB $0x1, R11                      // test	r11b, 1
-	JE   LBB5_149                  // <--                                  // je	.LBB5_149
-	LONG $0x54b60f47; WORD $0x1804 // MOVZX 0x18(R12)(R8*1), R10           // movzx	r10d, byte ptr [r12 + r8 + 24]
-	LONG $0x03e0c141               // SHLL $0x3, R8                        // shl	r8d, 3
-	WORD $0x8944; BYTE $0xc1       // MOVL R8, CX                          // mov	ecx, r8d
-	SHLQ CL, R10                   // <--                                  // shl	r10, cl
-	ORQ  R10, R9                   // <--                                  // or	r9, r10
-
-LBB5_149:
-	MOVQ 0x8(SP), CX               // <--                                  // mov	rcx, qword ptr [rsp + 8]
-	MOVQ 0(SP), R12                // <--                                  // mov	r12, qword ptr [rsp]
-	LONG $0x6ef941c4; BYTE $0xf1   // VMOVQ R9, X14                        // vmovq	xmm14, r9
-	LONG $0x7b7e7ac5; BYTE $0x0e   // VMOVQ 0xe(BX), X15                   // vmovq	xmm15, qword ptr [rbx + 14]
-	LONG $0x6c0141c4; BYTE $0xf6   // VPUNPCKLQDQ X14, X15, X14            // vpunpcklqdq	xmm14, xmm15, xmm14
-	LONG $0x7c7e7ac5; WORD $0x1024 // VMOVQ 0x10(SP), X15                  // vmovq	xmm15, qword ptr [rsp + 16]
-	LONG $0x6c0141c4; BYTE $0xed   // VPUNPCKLQDQ X13, X15, X13            // vpunpcklqdq	xmm13, xmm15, xmm13
-
-LBB5_150:
-	LONG $0x381543c4; WORD $0x01ee // VINSERTI128 $0x1, X14, Y13, Y13      // vinserti128	ymm13, ymm13, xmm14, 1
-
-LBB5_151:
-	LONG         $0xf4fc1dc5                           // VPADDB Y4, Y12, Y14                  // vpaddb	ymm14, ymm12, ymm4
-	LONG         $0x645541c4; BYTE $0xf6               // VPCMPGTB Y14, Y5, Y14                // vpcmpgtb	ymm14, ymm5, ymm14
-	LONG         $0xf6db0dc5                           // VPAND Y6, Y14, Y14                   // vpand	ymm14, ymm14, ymm6
-	LONG         $0xfc0d41c4; BYTE $0xf4               // VPADDB Y12, Y14, Y14                 // vpaddb	ymm14, ymm14, ymm12
+LBB5_130:
 	LONG         $0xfcfc15c5                           // VPADDB Y4, Y13, Y15                  // vpaddb	ymm15, ymm13, ymm4
 	LONG         $0x645541c4; BYTE $0xff               // VPCMPGTB Y15, Y5, Y15                // vpcmpgtb	ymm15, ymm5, ymm15
 	LONG         $0xfedb05c5                           // VPAND Y6, Y15, Y15                   // vpand	ymm15, ymm15, ymm6
 	LONG         $0xfc0541c4; BYTE $0xfd               // VPADDB Y13, Y15, Y15                 // vpaddb	ymm15, ymm15, ymm13
-	LONG         $0xccfc25c5                           // VPADDB Y4, Y11, Y9                   // vpaddb	ymm9, ymm11, ymm4
+	LONG         $0xd4fc0dc5                           // VPADDB Y4, Y14, Y10                  // vpaddb	ymm10, ymm14, ymm4
+	LONG         $0x645541c4; BYTE $0xd2               // VPCMPGTB Y10, Y5, Y10                // vpcmpgtb	ymm10, ymm5, ymm10
+	LONG         $0xd6db2dc5                           // VPAND Y6, Y10, Y10                   // vpand	ymm10, ymm10, ymm6
+	LONG         $0xfc2d41c4; BYTE $0xd6               // VPADDB Y14, Y10, Y10                 // vpaddb	ymm10, ymm10, ymm14
+	LONG         $0xccfc1dc5                           // VPADDB Y4, Y12, Y9                   // vpaddb	ymm9, ymm12, ymm4
 	LONG         $0x645541c4; BYTE $0xc9               // VPCMPGTB Y9, Y5, Y9                  // vpcmpgtb	ymm9, ymm5, ymm9
-	VPBROADCASTB LCPI5_13<>(SB), Y0                    // <--                                  // vpbroadcastb	ymm0, byte ptr [rip + .LCPI5_13]
+	VPBROADCASTB LCPI5_14<>(SB), Y0                    // <--                                  // vpbroadcastb	ymm0, byte ptr [rip + .LCPI5_14]
 	LONG         $0xc8db35c5                           // VPAND Y0, Y9, Y9                     // vpand	ymm9, ymm9, ymm0
-	LONG         $0xfc3541c4; BYTE $0xcb               // VPADDB Y11, Y9, Y9                   // vpaddb	ymm9, ymm9, ymm11
-	LONG         $0xdcfc2dc5                           // VPADDB Y4, Y10, Y11                  // vpaddb	ymm11, ymm10, ymm4
-	LONG         $0x645541c4; BYTE $0xdb               // VPCMPGTB Y11, Y5, Y11                // vpcmpgtb	ymm11, ymm5, ymm11
-	LONG         $0xd8db25c5                           // VPAND Y0, Y11, Y11                   // vpand	ymm11, ymm11, ymm0
-	LONG         $0xfc2541c4; BYTE $0xd2               // VPADDB Y10, Y11, Y10                 // vpaddb	ymm10, ymm11, ymm10
-	LONG         $0x750d41c4; BYTE $0xd8               // VPCMPEQW Y8, Y14, Y11                // vpcmpeqw	ymm11, ymm14, ymm8
-	LONG         $0xc77585c5                           // VPCMPEQW Y7, Y15, Y0                 // vpcmpeqw	ymm0, ymm15, ymm7
-	LONG         $0xc0dba5c5                           // VPAND Y0, Y11, Y0                    // vpand	ymm0, ymm11, ymm0
-	LONG         $0x463543c4; WORD $0x21ce             // VPERM2I128 $0x21, Y14, Y9, Y9        // vperm2i128	ymm9, ymm9, ymm14, 33
-	LONG         $0x0f0d43c4; WORD $0x0fc9             // VPALIGNR $0xf, Y9, Y14, Y9           // vpalignr	ymm9, ymm14, ymm9, 15
-	LONG         $0x462d43c4; WORD $0x21d7             // VPERM2I128 $0x21, Y15, Y10, Y10      // vperm2i128	ymm10, ymm10, ymm15, 33
-	LONG         $0x0f0543c4; WORD $0x0fd2             // VPALIGNR $0xf, Y10, Y15, Y10         // vpalignr	ymm10, ymm15, ymm10, 15
+	LONG         $0xfc3541c4; BYTE $0xcc               // VPADDB Y12, Y9, Y9                   // vpaddb	ymm9, ymm9, ymm12
+	LONG         $0xe4fc25c5                           // VPADDB Y4, Y11, Y12                  // vpaddb	ymm12, ymm11, ymm4
+	LONG         $0x645541c4; BYTE $0xe4               // VPCMPGTB Y12, Y5, Y12                // vpcmpgtb	ymm12, ymm5, ymm12
+	LONG         $0xe0db1dc5                           // VPAND Y0, Y12, Y12                   // vpand	ymm12, ymm12, ymm0
+	LONG         $0xfc1d41c4; BYTE $0xdb               // VPADDB Y11, Y12, Y11                 // vpaddb	ymm11, ymm12, ymm11
+	LONG         $0x750541c4; BYTE $0xe0               // VPCMPEQW Y8, Y15, Y12                // vpcmpeqw	ymm12, ymm15, ymm8
+	LONG         $0xc775adc5                           // VPCMPEQW Y7, Y10, Y0                 // vpcmpeqw	ymm0, ymm10, ymm7
+	LONG         $0xc0db9dc5                           // VPAND Y0, Y12, Y0                    // vpand	ymm0, ymm12, ymm0
+	LONG         $0x463543c4; WORD $0x21cf             // VPERM2I128 $0x21, Y15, Y9, Y9        // vperm2i128	ymm9, ymm9, ymm15, 33
+	LONG         $0x0f0543c4; WORD $0x0fc9             // VPALIGNR $0xf, Y9, Y15, Y9           // vpalignr	ymm9, ymm15, ymm9, 15
+	LONG         $0x462543c4; WORD $0x21da             // VPERM2I128 $0x21, Y10, Y11, Y11      // vperm2i128	ymm11, ymm11, ymm10, 33
+	LONG         $0x0f2d43c4; WORD $0x0fd3             // VPALIGNR $0xf, Y11, Y10, Y10         // vpalignr	ymm10, ymm10, ymm11, 15
 	LONG         $0x753541c4; BYTE $0xc8               // VPCMPEQW Y8, Y9, Y9                  // vpcmpeqw	ymm9, ymm9, ymm8
 	LONG         $0xd7752dc5                           // VPCMPEQW Y7, Y10, Y10                // vpcmpeqw	ymm10, ymm10, ymm7
 	LONG         $0xdb2d41c4; BYTE $0xc9               // VPAND Y9, Y10, Y9                    // vpand	ymm9, ymm10, ymm9
@@ -2524,76 +2296,83 @@ LBB5_151:
 	WORD         $0x0945; BYTE $0xd1                   // ORL R10, R9                          // or	r9d, r10d
 	WORD         $0x8945; BYTE $0xc8                   // MOVL R9, R8                          // mov	r8d, r9d
 	LONG         $0xfee08341                           // ANDL $-0x2, R8                       // and	r8d, -2
-	WORD         $0x854d; BYTE $0xe4                   // TESTQ R12, R12                       // test	r12, r12
+	WORD         $0x8548; BYTE $0xdb                   // TESTQ BX, BX                         // test	rbx, rbx
 	LONG         $0xc1450f45                           // CMOVNE R9, R8                        // cmovne	r8d, r9d
 	WORD         $0x8545; BYTE $0xc0                   // TESTL R8, R8                         // test	r8d, r8d
-	JE           LBB5_71                               // <--                                  // je	.LBB5_71
+	JE           LBB5_82                               // <--                                  // je	.LBB5_82
 	CMPQ         CX, $0x5                              // <--                                  // cmp	rcx, 5
-	MOVQ         R14, 0x10(SP)                         // <--                                  // mov	qword ptr [rsp + 16], r14
-	VPBROADCASTB LCPI5_14<>(SB), X11                   // <--                                  // vpbroadcastb	xmm11, byte ptr [rip + .LCPI5_14]
-	MOVQ         R15, 0x20(SP)                         // <--                                  // mov	qword ptr [rsp + 32], r15
-	JAE          LBB5_159                              // <--                                  // jae	.LBB5_159
+	VPBROADCASTB LCPI5_15<>(SB), X11                   // <--                                  // vpbroadcastb	xmm11, byte ptr [rip + .LCPI5_15]
+	JAE          LBB5_137                              // <--                                  // jae	.LBB5_137
 
-LBB5_153:
+LBB5_132:
 	LONG $0xbc0f45f3; BYTE $0xc8 // TZCNT R8, R9                         // rep		bsf	r9d, r8d
-	ORQ  R12, R9                 // <--                                  // or	r9, r12
+	ORQ  BX, R9                  // <--                                  // or	r9, rbx
 	SUBQ $0x1, R9                // <--                                  // sub	r9, 1
 	LONG $0xc2920f41             // SETB R10                             // setb	r10b
 	CMPQ R9, R11                 // <--                                  // cmp	r9, r11
 	WORD $0x9f0f; BYTE $0xc3     // SETG BL                              // setg	bl
 	WORD $0x0844; BYTE $0xd3     // ORL R10, BL                          // or	bl, r10b
 	WORD $0xfb80; BYTE $0x01     // CMPL BL, $0x1                        // cmp	bl, 1
-	JNE  LBB5_173                // <--                                  // jne	.LBB5_173
+	JNE  LBB5_188                // <--                                  // jne	.LBB5_188
 	LONG $0xff488d45             // LEAL -0x1(R8), R9                    // lea	r9d, [r8 - 1]
 	WORD $0x2145; BYTE $0xc1     // ANDL R8, R9                          // and	r9d, r8d
 	WORD $0x8945; BYTE $0xc8     // MOVL R9, R8                          // mov	r8d, r9d
-	JNE  LBB5_153                // <--                                  // jne	.LBB5_153
+	MOVQ 0x10(SP), BX            // <--                                  // mov	rbx, qword ptr [rsp + 16]
+	JNE  LBB5_132                // <--                                  // jne	.LBB5_132
+	MOVQ R15, 0(SP)              // <--                                  // mov	qword ptr [rsp], r15
+	MOVQ R14, 0x8(SP)            // <--                                  // mov	qword ptr [rsp + 8], r14
 
-LBB5_155:
-	MOVQ 0(SP), R12   // <--                                  // mov	r12, qword ptr [rsp]
-	MOVQ R12, R8      // <--                                  // mov	r8, r12
-	ORQ  $0x1f, R8    // <--                                  // or	r8, 31
-	CMPQ R8, R11      // <--                                  // cmp	r8, r11
-	JGE  LBB5_71      // <--                                  // jge	.LBB5_71
-	MOVQ R8, R9       // <--                                  // mov	r9, r8
-	SHRQ $0x4, R9     // <--                                  // shr	r9, 4
-	ADDQ $0x4, R9     // <--                                  // add	r9, 4
-	CMPQ 0x40(SP), R9 // <--                                  // cmp	qword ptr [rsp + 64], r9
-	JLE  LBB5_71      // <--                                  // jle	.LBB5_71
-	JMP  LBB5_182     // <--                                  // jmp	.LBB5_182
+LBB5_135:
+	MOVQ BX, R8        // <--                                  // mov	r8, rbx
+	ORQ  $0x1f, R8     // <--                                  // or	r8, 31
+	CMPQ R8, R11       // <--                                  // cmp	r8, r11
+	JGE  LBB5_81       // <--                                  // jge	.LBB5_81
+	MOVQ R8, R9        // <--                                  // mov	r9, r8
+	SHRQ $0x4, R9      // <--                                  // shr	r9, 4
+	ADDQ $0x4, R9      // <--                                  // add	r9, 4
+	CMPQ 0x38(SP), R9  // <--                                  // cmp	qword ptr [rsp + 56], r9
+	MOVQ 0x8(SP), R14  // <--                                  // mov	r14, qword ptr [rsp + 8]
+	MOVQ 0(SP), R15    // <--                                  // mov	r15, qword ptr [rsp]
+	MOVQ 0x30(SP), R12 // <--                                  // mov	r12, qword ptr [rsp + 48]
+	JLE  LBB5_82       // <--                                  // jle	.LBB5_82
+	JMP  LBB5_191      // <--                                  // jmp	.LBB5_191
 
-LBB5_157:
-	INCQ 0x40(SP)      // <--                                  // inc	qword ptr [rsp + 64]
-	MOVQ 0x10(SP), R14 // <--                                  // mov	r14, qword ptr [rsp + 16]
-	MOVQ 0x20(SP), R15 // <--                                  // mov	r15, qword ptr [rsp + 32]
-	MOVQ 0x28(SP), R13 // <--                                  // mov	r13, qword ptr [rsp + 40]
+LBB5_137:
+	MOVQ R15, 0(SP)    // <--                                  // mov	qword ptr [rsp], r15
+	MOVQ R14, 0x8(SP)  // <--                                  // mov	qword ptr [rsp + 8], r14
+	MOVQ R13, 0x40(SP) // <--                                  // mov	qword ptr [rsp + 64], r13
+	JMP  LBB5_140      // <--                                  // jmp	.LBB5_140
 
-LBB5_158:
+LBB5_138:
+	INCQ 0x38(SP)      // <--                                  // inc	qword ptr [rsp + 56]
+	MOVQ 0x40(SP), R13 // <--                                  // mov	r13, qword ptr [rsp + 64]
+
+LBB5_139:
 	LONG $0xff488d45         // LEAL -0x1(R8), R9                    // lea	r9d, [r8 - 1]
 	WORD $0x2145; BYTE $0xc1 // ANDL R8, R9                          // and	r9d, r8d
 	WORD $0x8945; BYTE $0xc8 // MOVL R9, R8                          // mov	r8d, r9d
-	JE   LBB5_155            // <--                                  // je	.LBB5_155
+	MOVQ 0x10(SP), BX        // <--                                  // mov	rbx, qword ptr [rsp + 16]
+	JE   LBB5_135            // <--                                  // je	.LBB5_135
 
-LBB5_159:
+LBB5_140:
 	LONG $0xbc0f45f3; BYTE $0xe0 // TZCNT R8, R12                        // rep		bsf	r12d, r8d
-	MOVQ 0(SP), BX               // <--                                  // mov	rbx, qword ptr [rsp]
 	ORQ  R12, BX                 // <--                                  // or	rbx, r12
 	SUBQ $0x1, BX                // <--                                  // sub	rbx, 1
 	LONG $0xc1920f41             // SETB R9                              // setb	r9b
 	CMPQ BX, R11                 // <--                                  // cmp	rbx, r11
 	LONG $0xc29f0f41             // SETG R10                             // setg	r10b
 	WORD $0x0845; BYTE $0xca     // ORL R9, R10                          // or	r10b, r9b
-	JNE  LBB5_158                // <--                                  // jne	.LBB5_158
-	CMPQ 0x18(SP), $0x8          // <--                                  // cmp	qword ptr [rsp + 24], 8
-	JAE  LBB5_166                // <--                                  // jae	.LBB5_166
+	JNE  LBB5_139                // <--                                  // jne	.LBB5_139
+	CMPQ 0x20(SP), $0x8          // <--                                  // cmp	qword ptr [rsp + 32], 8
+	JAE  LBB5_147                // <--                                  // jae	.LBB5_147
 	XORL R15, R15                // <--                                  // xor	r15d, r15d
 
-LBB5_162:
-	CMPQ R15, 0x18(SP) // <--                                  // cmp	r15, qword ptr [rsp + 24]
-	JAE  LBB5_181      // <--                                  // jae	.LBB5_181
-	ADDQ 0x30(SP), R12 // <--                                  // add	r12, qword ptr [rsp + 48]
+LBB5_143:
+	CMPQ R15, 0x20(SP) // <--                                  // cmp	r15, qword ptr [rsp + 32]
+	JAE  LBB5_190      // <--                                  // jae	.LBB5_190
+	ADDQ 0x40(SP), R12 // <--                                  // add	r12, qword ptr [rsp + 64]
 
-LBB5_164:
+LBB5_145:
 	LONG $0x0cb60f47; BYTE $0x3c   // MOVZX 0(R12)(R15*1), R9              // movzx	r9d, byte ptr [r12 + r15]
 	LONG $0x9f518d45               // LEAL -0x61(R9), R10                  // lea	r10d, [r9 - 97]
 	LONG $0xe0698d45               // LEAL -0x20(R9), R13                  // lea	r13d, [r9 - 32]
@@ -2607,30 +2386,29 @@ LBB5_164:
 	LONG $0xf6b60f45               // MOVZX R14, R14                       // movzx	r14d, r14b
 	LONG $0xf1430f45               // CMOVAE R9, R14                       // cmovae	r14d, r9d
 	CMPB R10, R14                  // <--                                  // cmp	r10b, r14b
-	JNE  LBB5_157                  // <--                                  // jne	.LBB5_157
+	JNE  LBB5_138                  // <--                                  // jne	.LBB5_138
 	INCQ R15                       // <--                                  // inc	r15
-	CMPQ 0x18(SP), R15             // <--                                  // cmp	qword ptr [rsp + 24], r15
-	JNE  LBB5_164                  // <--                                  // jne	.LBB5_164
-	JMP  LBB5_181                  // <--                                  // jmp	.LBB5_181
+	CMPQ 0x20(SP), R15             // <--                                  // cmp	qword ptr [rsp + 32], r15
+	JNE  LBB5_145                  // <--                                  // jne	.LBB5_145
+	JMP  LBB5_190                  // <--                                  // jmp	.LBB5_190
 
-LBB5_166:
-	MOVQ 0x30(SP), R9      // <--                                  // mov	r9, qword ptr [rsp + 48]
-	LEAQ 0(R9)(R12*1), R10 // <--                                  // lea	r10, [r9 + r12]
-	XORL R9, R9            // <--                                  // xor	r9d, r9d
-	JMP  LBB5_168          // <--                                  // jmp	.LBB5_168
+LBB5_147:
+	LEAQ 0(R12)(R13*1), R10 // <--                                  // lea	r10, [r12 + r13]
+	XORL R9, R9             // <--                                  // xor	r9d, r9d
+	JMP  LBB5_149           // <--                                  // jmp	.LBB5_149
 
-LBB5_167:
+LBB5_148:
 	LEAQ 0x8(R9), R15 // <--                                  // lea	r15, [r9 + 8]
 	ADDQ $0x10, R9    // <--                                  // add	r9, 16
-	CMPQ R9, 0x18(SP) // <--                                  // cmp	r9, qword ptr [rsp + 24]
+	CMPQ R9, 0x20(SP) // <--                                  // cmp	r9, qword ptr [rsp + 32]
 	MOVQ R15, R9      // <--                                  // mov	r9, r15
-	JA   LBB5_162     // <--                                  // ja	.LBB5_162
+	JA   LBB5_143     // <--                                  // ja	.LBB5_143
 
-LBB5_168:
+LBB5_149:
 	MOVQ 0(R10)(R9*1), R15         // <--                                  // mov	r15, qword ptr [r10 + r9]
 	MOVQ 0x2(DX)(R9*1), R13        // <--                                  // mov	r13, qword ptr [rdx + r9 + 2]
 	CMPQ R15, R13                  // <--                                  // cmp	r15, r13
-	JE   LBB5_167                  // <--                                  // je	.LBB5_167
+	JE   LBB5_148                  // <--                                  // je	.LBB5_148
 	LONG $0x6ef9c1c4; BYTE $0xc5   // VMOVQ R13, X0                        // vmovq	xmm0, r13
 	LONG $0x6ef941c4; BYTE $0xcf   // VMOVQ R15, X9                        // vmovq	xmm9, r15
 	LONG $0xc06cb1c5               // VPUNPCKLQDQ X0, X9, X0               // vpunpcklqdq	xmm0, xmm9, xmm0
@@ -2646,68 +2424,362 @@ LBB5_168:
 	LONG $0x2979c2c4; BYTE $0xc1   // VPCMPEQQ X9, X0, X0                  // vpcmpeqq	xmm0, xmm0, xmm9
 	LONG $0x7e79c1c4; BYTE $0xc7   // VMOVD X0, R15                        // vmovd	r15d, xmm0
 	LONG $0x01c7f641               // TESTB $0x1, R15                      // test	r15b, 1
-	JNE  LBB5_167                  // <--                                  // jne	.LBB5_167
-	JMP  LBB5_157                  // <--                                  // jmp	.LBB5_157
+	JNE  LBB5_148                  // <--                                  // jne	.LBB5_148
+	JMP  LBB5_138                  // <--                                  // jmp	.LBB5_138
 
-LBB5_170:
-	DECQ CX       // <--                                  // dec	rcx
-	MOVQ CX, AX   // <--                                  // mov	rax, rcx
-	JMP  LBB5_180 // <--                                  // jmp	.LBB5_180
+LBB5_89:
+	MOVQ R15, 0(SP)              // <--                                  // mov	qword ptr [rsp], r15
+	MOVQ CX, 0x8(SP)             // <--                                  // mov	qword ptr [rsp + 8], rcx
+	CMPQ R8, $0x8                // <--                                  // cmp	r8, 8
+	JB   LBB5_94                 // <--                                  // jb	.LBB5_94
+	MOVQ 0(BX), CX               // <--                                  // mov	rcx, qword ptr [rbx]
+	MOVQ CX, 0x18(SP)            // <--                                  // mov	qword ptr [rsp + 24], rcx
+	CMPQ R8, $0xf                // <--                                  // cmp	r8, 15
+	JBE  LBB5_96                 // <--                                  // jbe	.LBB5_96
+	LONG $0x6b7e7ac5; BYTE $0x08 // VMOVQ 0x8(BX), X13                   // vmovq	xmm13, qword ptr [rbx + 8]
+	CMPQ R8, $0x17               // <--                                  // cmp	r8, 23
+	JBE  LBB5_104                // <--                                  // jbe	.LBB5_104
+	LONG $0x04c6f640             // TESTB $0x4, SI                       // test	sil, 4
+	JNE  LBB5_112                // <--                                  // jne	.LBB5_112
+	XORL R15, R15                // <--                                  // xor	r15d, r15d
+	XORL R9, R9                  // <--                                  // xor	r9d, r9d
+	JMP  LBB5_113                // <--                                  // jmp	.LBB5_113
 
-LBB5_181:
-	MOVQ BX, AX   // <--                                  // mov	rax, rbx
-	JMP  LBB5_180 // <--                                  // jmp	.LBB5_180
+LBB5_151:
+	MOVQ R14, R10     // <--                                  // mov	r10, r14
+	MOVQ CX, 0x8(SP)  // <--                                  // mov	qword ptr [rsp + 8], rcx
+	CMPQ R9, $0x8     // <--                                  // cmp	r9, 8
+	JB   LBB5_156     // <--                                  // jb	.LBB5_156
+	MOVQ 0x10(SP), CX // <--                                  // mov	rcx, qword ptr [rsp + 16]
+	ADDQ R12, CX      // <--                                  // add	rcx, r12
+	MOVQ CX, 0(SP)    // <--                                  // mov	qword ptr [rsp], rcx
+	MOVQ 0(BX), CX    // <--                                  // mov	rcx, qword ptr [rbx]
+	MOVQ CX, 0x18(SP) // <--                                  // mov	qword ptr [rsp + 24], rcx
+	CMPQ R9, $0xf     // <--                                  // cmp	r9, 15
+	JBE  LBB5_158     // <--                                  // jbe	.LBB5_158
+	MOVQ 0(SP), CX    // <--                                  // mov	rcx, qword ptr [rsp]
+	MOVQ 0x6(CX), CX  // <--                                  // mov	rcx, qword ptr [rcx + 6]
+	MOVQ CX, 0x28(SP) // <--                                  // mov	qword ptr [rsp + 40], rcx
+	CMPQ R9, $0x17    // <--                                  // cmp	r9, 23
+	JBE  LBB5_166     // <--                                  // jbe	.LBB5_166
+	LONG $0x04c1f641  // TESTB $0x4, R9                       // test	r9b, 4
+	JNE  LBB5_174     // <--                                  // jne	.LBB5_174
+	XORL R14, R14     // <--                                  // xor	r14d, r14d
+	XORL R9, R9       // <--                                  // xor	r9d, r9d
+	JMP  LBB5_175     // <--                                  // jmp	.LBB5_175
 
-LBB5_172:
-	LONG $0xbc0f41f3; BYTE $0xc1 // TZCNT R9, AX                         // rep		bsf	eax, r9d
-	ADDQ DX, AX                  // <--                                  // add	rax, rdx
-	JMP  LBB5_180                // <--                                  // jmp	.LBB5_180
+LBB5_94:
+	LONG $0x04c6f640 // TESTB $0x4, SI                       // test	sil, 4
+	JNE  LBB5_98     // <--                                  // jne	.LBB5_98
+	XORL R9, R9      // <--                                  // xor	r9d, r9d
+	XORL R15, R15    // <--                                  // xor	r15d, r15d
+	JMP  LBB5_99     // <--                                  // jmp	.LBB5_99
+
+LBB5_96:
+	LONG $0x04c6f640 // TESTB $0x4, SI                       // test	sil, 4
+	JNE  LBB5_106    // <--                                  // jne	.LBB5_106
+	XORL R15, R15    // <--                                  // xor	r15d, r15d
+	XORL R9, R9      // <--                                  // xor	r9d, r9d
+	JMP  LBB5_107    // <--                                  // jmp	.LBB5_107
+
+LBB5_156:
+	CMPQ R9, $0x4 // <--                                  // cmp	r9, 4
+	JAE  LBB5_160 // <--                                  // jae	.LBB5_160
+	XORL R14, R14 // <--                                  // xor	r14d, r14d
+	XORL R9, R9   // <--                                  // xor	r9d, r9d
+	JMP  LBB5_161 // <--                                  // jmp	.LBB5_161
+
+LBB5_98:
+	WORD $0x8b44; BYTE $0x3b       // MOVL 0(BX), R15                      // mov	r15d, dword ptr [rbx]
+	LONG $0x0004b941; WORD $0x0000 // MOVL $0x4, R9                        // mov	r9d, 4
+
+LBB5_99:
+	LONG $0x02c6f640             // TESTB $0x2, SI                       // test	sil, 2
+	JE   LBB5_101                // <--                                  // je	.LBB5_101
+	LONG $0x14b70f46; BYTE $0x0b // MOVZX 0(BX)(R9*1), R10               // movzx	r10d, word ptr [rbx + r9]
+	QUAD $0x00000000cd0c8d42     // LEAL 0(R9*8), CX                     // lea	ecx, [8*r9]
+	SHLQ CL, R10                 // <--                                  // shl	r10, cl
+	ORQ  R10, R15                // <--                                  // or	r15, r10
+	ORQ  $0x2, R9                // <--                                  // or	r9, 2
+
+LBB5_101:
+	LONG $0x01c6f640             // TESTB $0x1, SI                       // test	sil, 1
+	JE   LBB5_103                // <--                                  // je	.LBB5_103
+	LONG $0x14b60f46; BYTE $0x0b // MOVZX 0(BX)(R9*1), R10               // movzx	r10d, byte ptr [rbx + r9]
+	LONG $0x03e1c141             // SHLL $0x3, R9                        // shl	r9d, 3
+	WORD $0x8944; BYTE $0xc9     // MOVL R9, CX                          // mov	ecx, r9d
+	SHLQ CL, R10                 // <--                                  // shl	r10, cl
+	ORQ  R10, R15                // <--                                  // or	r15, r10
+
+LBB5_103:
+	LONG $0x6ef941c4; BYTE $0xef // VMOVQ R15, X13                       // vmovq	xmm13, r15
+	JMP  LBB5_125                // <--                                  // jmp	.LBB5_125
+
+LBB5_104:
+	LONG $0x04c6f640 // TESTB $0x4, SI                       // test	sil, 4
+	JNE  LBB5_118    // <--                                  // jne	.LBB5_118
+	XORL R15, R15    // <--                                  // xor	r15d, r15d
+	XORL R9, R9      // <--                                  // xor	r9d, r9d
+	JMP  LBB5_119    // <--                                  // jmp	.LBB5_119
+
+LBB5_158:
+	LONG $0x04c1f641 // TESTB $0x4, R9                       // test	r9b, 4
+	JNE  LBB5_168    // <--                                  // jne	.LBB5_168
+	XORL R14, R14    // <--                                  // xor	r14d, r14d
+	XORL R9, R9      // <--                                  // xor	r9d, r9d
+	JMP  LBB5_169    // <--                                  // jmp	.LBB5_169
+
+LBB5_106:
+	LONG $0x084b8b44               // MOVL 0x8(BX), R9                     // mov	r9d, dword ptr [rbx + 8]
+	LONG $0x0004bf41; WORD $0x0000 // MOVL $0x4, R15                       // mov	r15d, 4
+
+LBB5_107:
+	LONG $0x02c6f640               // TESTB $0x2, SI                       // test	sil, 2
+	JE   LBB5_109                  // <--                                  // je	.LBB5_109
+	LONG $0x54b70f46; WORD $0x083b // MOVZX 0x8(BX)(R15*1), R10            // movzx	r10d, word ptr [rbx + r15 + 8]
+	QUAD $0x00000000fd0c8d42       // LEAL 0(R15*8), CX                    // lea	ecx, [8*r15]
+	SHLQ CL, R10                   // <--                                  // shl	r10, cl
+	ORQ  R10, R9                   // <--                                  // or	r9, r10
+	ORQ  $0x2, R15                 // <--                                  // or	r15, 2
+
+LBB5_109:
+	LONG $0x01c6f640               // TESTB $0x1, SI                       // test	sil, 1
+	JE   LBB5_111                  // <--                                  // je	.LBB5_111
+	LONG $0x54b60f46; WORD $0x083b // MOVZX 0x8(BX)(R15*1), R10            // movzx	r10d, byte ptr [rbx + r15 + 8]
+	LONG $0x03e7c141               // SHLL $0x3, R15                       // shl	r15d, 3
+	WORD $0x8944; BYTE $0xf9       // MOVL R15, CX                         // mov	ecx, r15d
+	SHLQ CL, R10                   // <--                                  // shl	r10, cl
+	ORQ  R10, R9                   // <--                                  // or	r9, r10
+
+LBB5_111:
+	LONG $0x6ef941c4; BYTE $0xe9   // VMOVQ R9, X13                        // vmovq	xmm13, r9
+	LONG $0x747e7ac5; WORD $0x1824 // VMOVQ 0x18(SP), X14                  // vmovq	xmm14, qword ptr [rsp + 24]
+	LONG $0x6c0941c4; BYTE $0xed   // VPUNPCKLQDQ X13, X14, X13            // vpunpcklqdq	xmm13, xmm14, xmm13
+	JMP  LBB5_125                  // <--                                  // jmp	.LBB5_125
+
+LBB5_160:
+	WORD $0x8b44; BYTE $0x0b       // MOVL 0(BX), R9                       // mov	r9d, dword ptr [rbx]
+	LONG $0x0004be41; WORD $0x0000 // MOVL $0x4, R14                       // mov	r14d, 4
+
+LBB5_161:
+	LONG $0x02c0f641             // TESTB $0x2, R8                       // test	r8b, 2
+	JNE  LBB5_163                // <--                                  // jne	.LBB5_163
+	LONG $0x04b70f46; BYTE $0x33 // MOVZX 0(BX)(R14*1), R8               // movzx	r8d, word ptr [rbx + r14]
+	QUAD $0x00000000f50c8d42     // LEAL 0(R14*8), CX                    // lea	ecx, [8*r14]
+	SHLQ CL, R8                  // <--                                  // shl	r8, cl
+	ORQ  R8, R9                  // <--                                  // or	r9, r8
+	ORQ  $0x2, R14               // <--                                  // or	r14, 2
+
+LBB5_163:
+	LONG $0x01c3f641             // TESTB $0x1, R11                      // test	r11b, 1
+	JE   LBB5_165                // <--                                  // je	.LBB5_165
+	LONG $0x04b60f46; BYTE $0x33 // MOVZX 0(BX)(R14*1), R8               // movzx	r8d, byte ptr [rbx + r14]
+	LONG $0x03e6c141             // SHLL $0x3, R14                       // shl	r14d, 3
+	WORD $0x8944; BYTE $0xf1     // MOVL R14, CX                         // mov	ecx, r14d
+	SHLQ CL, R8                  // <--                                  // shl	r8, cl
+	ORQ  R8, R9                  // <--                                  // or	r9, r8
+
+LBB5_165:
+	LONG $0x6ef941c4; BYTE $0xf1 // VMOVQ R9, X14                        // vmovq	xmm14, r9
+	JMP  LBB5_186                // <--                                  // jmp	.LBB5_186
+
+LBB5_112:
+	LONG $0x184b8b44               // MOVL 0x18(BX), R9                    // mov	r9d, dword ptr [rbx + 24]
+	LONG $0x0004bf41; WORD $0x0000 // MOVL $0x4, R15                       // mov	r15d, 4
+
+LBB5_113:
+	LONG $0x02c6f640               // TESTB $0x2, SI                       // test	sil, 2
+	JE   LBB5_115                  // <--                                  // je	.LBB5_115
+	LONG $0x54b70f46; WORD $0x183b // MOVZX 0x18(BX)(R15*1), R10           // movzx	r10d, word ptr [rbx + r15 + 24]
+	QUAD $0x00000000fd0c8d42       // LEAL 0(R15*8), CX                    // lea	ecx, [8*r15]
+	SHLQ CL, R10                   // <--                                  // shl	r10, cl
+	ORQ  R10, R9                   // <--                                  // or	r9, r10
+	ORQ  $0x2, R15                 // <--                                  // or	r15, 2
+
+LBB5_115:
+	LONG $0x01c6f640               // TESTB $0x1, SI                       // test	sil, 1
+	JE   LBB5_117                  // <--                                  // je	.LBB5_117
+	LONG $0x54b60f46; WORD $0x183b // MOVZX 0x18(BX)(R15*1), R10           // movzx	r10d, byte ptr [rbx + r15 + 24]
+	LONG $0x03e7c141               // SHLL $0x3, R15                       // shl	r15d, 3
+	WORD $0x8944; BYTE $0xf9       // MOVL R15, CX                         // mov	ecx, r15d
+	SHLQ CL, R10                   // <--                                  // shl	r10, cl
+	ORQ  R10, R9                   // <--                                  // or	r9, r10
+
+LBB5_117:
+	LONG $0x6ef941c4; BYTE $0xf1   // VMOVQ R9, X14                        // vmovq	xmm14, r9
+	LONG $0x7b7e7ac5; BYTE $0x10   // VMOVQ 0x10(BX), X15                  // vmovq	xmm15, qword ptr [rbx + 16]
+	LONG $0x6c0141c4; BYTE $0xf6   // VPUNPCKLQDQ X14, X15, X14            // vpunpcklqdq	xmm14, xmm15, xmm14
+	LONG $0x7c7e7ac5; WORD $0x1824 // VMOVQ 0x18(SP), X15                  // vmovq	xmm15, qword ptr [rsp + 24]
+	LONG $0x6c0141c4; BYTE $0xed   // VPUNPCKLQDQ X13, X15, X13            // vpunpcklqdq	xmm13, xmm15, xmm13
+	JMP  LBB5_124                  // <--                                  // jmp	.LBB5_124
+
+LBB5_166:
+	LONG $0x04c1f641 // TESTB $0x4, R9                       // test	r9b, 4
+	JNE  LBB5_180    // <--                                  // jne	.LBB5_180
+	XORL R14, R14    // <--                                  // xor	r14d, r14d
+	XORL R9, R9      // <--                                  // xor	r9d, r9d
+	JMP  LBB5_181    // <--                                  // jmp	.LBB5_181
+
+LBB5_118:
+	LONG $0x104b8b44               // MOVL 0x10(BX), R9                    // mov	r9d, dword ptr [rbx + 16]
+	LONG $0x0004bf41; WORD $0x0000 // MOVL $0x4, R15                       // mov	r15d, 4
+
+LBB5_119:
+	LONG $0x02c6f640               // TESTB $0x2, SI                       // test	sil, 2
+	JE   LBB5_121                  // <--                                  // je	.LBB5_121
+	LONG $0x54b70f46; WORD $0x103b // MOVZX 0x10(BX)(R15*1), R10           // movzx	r10d, word ptr [rbx + r15 + 16]
+	QUAD $0x00000000fd0c8d42       // LEAL 0(R15*8), CX                    // lea	ecx, [8*r15]
+	SHLQ CL, R10                   // <--                                  // shl	r10, cl
+	ORQ  R10, R9                   // <--                                  // or	r9, r10
+	ORQ  $0x2, R15                 // <--                                  // or	r15, 2
+
+LBB5_121:
+	LONG $0x01c6f640               // TESTB $0x1, SI                       // test	sil, 1
+	JE   LBB5_123                  // <--                                  // je	.LBB5_123
+	LONG $0x54b60f46; WORD $0x103b // MOVZX 0x10(BX)(R15*1), R10           // movzx	r10d, byte ptr [rbx + r15 + 16]
+	LONG $0x03e7c141               // SHLL $0x3, R15                       // shl	r15d, 3
+	WORD $0x8944; BYTE $0xf9       // MOVL R15, CX                         // mov	ecx, r15d
+	SHLQ CL, R10                   // <--                                  // shl	r10, cl
+	ORQ  R10, R9                   // <--                                  // or	r9, r10
+
+LBB5_123:
+	LONG $0x747e7ac5; WORD $0x1824 // VMOVQ 0x18(SP), X14                  // vmovq	xmm14, qword ptr [rsp + 24]
+	LONG $0x6c0941c4; BYTE $0xed   // VPUNPCKLQDQ X13, X14, X13            // vpunpcklqdq	xmm13, xmm14, xmm13
+	LONG $0x6ef941c4; BYTE $0xf1   // VMOVQ R9, X14                        // vmovq	xmm14, r9
+
+LBB5_124:
+	LONG $0x381543c4; WORD $0x01ee // VINSERTI128 $0x1, X14, Y13, Y13      // vinserti128	ymm13, ymm13, xmm14, 1
+
+LBB5_125:
+	MOVQ 0x8(SP), CX  // <--                                  // mov	rcx, qword ptr [rsp + 8]
+	MOVQ 0(SP), R15   // <--                                  // mov	r15, qword ptr [rsp]
+	SUBQ CX, R8       // <--                                  // sub	r8, rcx
+	CMPQ R8, $0x1e    // <--                                  // cmp	r8, 30
+	MOVQ 0x10(SP), BX // <--                                  // mov	rbx, qword ptr [rsp + 16]
+	JGE  LBB5_88      // <--                                  // jge	.LBB5_88
+	JMP  LBB5_126     // <--                                  // jmp	.LBB5_126
+
+LBB5_168:
+	MOVQ 0(SP), CX                 // <--                                  // mov	rcx, qword ptr [rsp]
+	LONG $0x06498b44               // MOVL 0x6(CX), R9                     // mov	r9d, dword ptr [rcx + 6]
+	LONG $0x0004be41; WORD $0x0000 // MOVL $0x4, R14                       // mov	r14d, 4
+
+LBB5_169:
+	LONG $0x02c0f641               // TESTB $0x2, R8                       // test	r8b, 2
+	JNE  LBB5_171                  // <--                                  // jne	.LBB5_171
+	MOVQ 0(SP), CX                 // <--                                  // mov	rcx, qword ptr [rsp]
+	LONG $0x44b70f46; WORD $0x0631 // MOVZX 0x6(CX)(R14*1), R8             // movzx	r8d, word ptr [rcx + r14 + 6]
+	QUAD $0x00000000f50c8d42       // LEAL 0(R14*8), CX                    // lea	ecx, [8*r14]
+	SHLQ CL, R8                    // <--                                  // shl	r8, cl
+	ORQ  R8, R9                    // <--                                  // or	r9, r8
+	ORQ  $0x2, R14                 // <--                                  // or	r14, 2
+
+LBB5_171:
+	LONG $0x01c3f641               // TESTB $0x1, R11                      // test	r11b, 1
+	JE   LBB5_173                  // <--                                  // je	.LBB5_173
+	LONG $0x44b60f46; WORD $0x0833 // MOVZX 0x8(BX)(R14*1), R8             // movzx	r8d, byte ptr [rbx + r14 + 8]
+	LONG $0x03e6c141               // SHLL $0x3, R14                       // shl	r14d, 3
+	WORD $0x8944; BYTE $0xf1       // MOVL R14, CX                         // mov	ecx, r14d
+	SHLQ CL, R8                    // <--                                  // shl	r8, cl
+	ORQ  R8, R9                    // <--                                  // or	r9, r8
 
 LBB5_173:
-	MOVQ R9, AX   // <--                                  // mov	rax, r9
-	JMP  LBB5_180 // <--                                  // jmp	.LBB5_180
+	LONG $0x6ef941c4; BYTE $0xf1   // VMOVQ R9, X14                        // vmovq	xmm14, r9
+	LONG $0x7c7e7ac5; WORD $0x1824 // VMOVQ 0x18(SP), X15                  // vmovq	xmm15, qword ptr [rsp + 24]
+	LONG $0x6c0141c4; BYTE $0xf6   // VPUNPCKLQDQ X14, X15, X14            // vpunpcklqdq	xmm14, xmm15, xmm14
+	JMP  LBB5_186                  // <--                                  // jmp	.LBB5_186
 
 LBB5_174:
-	ADDQ $0x10, DX  // <--                                  // add	rdx, 16
-	ADDQ $-0x10, SI // <--                                  // add	rsi, -16
+	MOVQ 0(SP), CX                 // <--                                  // mov	rcx, qword ptr [rsp]
+	LONG $0x16498b44               // MOVL 0x16(CX), R9                    // mov	r9d, dword ptr [rcx + 22]
+	LONG $0x0004be41; WORD $0x0000 // MOVL $0x4, R14                       // mov	r14d, 4
 
 LBB5_175:
-	WORD $0x8548; BYTE $0xf6 // TESTQ SI, SI                         // test	rsi, rsi
-	JLE  LBB5_180            // <--                                  // jle	.LBB5_180
-	XORL R8, R8              // <--                                  // xor	r8d, r8d
+	LONG $0x02c0f641               // TESTB $0x2, R8                       // test	r8b, 2
+	JNE  LBB5_177                  // <--                                  // jne	.LBB5_177
+	MOVQ 0(SP), CX                 // <--                                  // mov	rcx, qword ptr [rsp]
+	LONG $0x44b70f46; WORD $0x1631 // MOVZX 0x16(CX)(R14*1), R8            // movzx	r8d, word ptr [rcx + r14 + 22]
+	QUAD $0x00000000f50c8d42       // LEAL 0(R14*8), CX                    // lea	ecx, [8*r14]
+	SHLQ CL, R8                    // <--                                  // shl	r8, cl
+	ORQ  R8, R9                    // <--                                  // or	r9, r8
+	ORQ  $0x2, R14                 // <--                                  // or	r14, 2
 
 LBB5_177:
-	LONG $0x0cb60f46; BYTE $0x02 // MOVZX 0(DX)(R8*1), R9                // movzx	r9d, byte ptr [rdx + r8]
-	LONG $0x9f518d45             // LEAL -0x61(R9), R10                  // lea	r10d, [r9 - 97]
-	LONG $0xe0598d45             // LEAL -0x20(R9), R11                  // lea	r11d, [r9 - 32]
-	CMPB R10, $0x1a              // <--                                  // cmp	r10b, 26
-	LONG $0xd3b60f45             // MOVZX R11, R10                       // movzx	r10d, r11b
-	LONG $0xd1430f45             // CMOVAE R9, R10                       // cmovae	r10d, r9d
-	CMPB R10, CL                 // <--                                  // cmp	r10b, cl
-	JE   LBB5_179                // <--                                  // je	.LBB5_179
-	INCQ R8                      // <--                                  // inc	r8
-	CMPQ SI, R8                  // <--                                  // cmp	rsi, r8
-	JNE  LBB5_177                // <--                                  // jne	.LBB5_177
-	JMP  LBB5_180                // <--                                  // jmp	.LBB5_180
+	LONG $0x01c3f641               // TESTB $0x1, R11                      // test	r11b, 1
+	JE   LBB5_179                  // <--                                  // je	.LBB5_179
+	LONG $0x44b60f46; WORD $0x1833 // MOVZX 0x18(BX)(R14*1), R8            // movzx	r8d, byte ptr [rbx + r14 + 24]
+	LONG $0x03e6c141               // SHLL $0x3, R14                       // shl	r14d, 3
+	WORD $0x8944; BYTE $0xf1       // MOVL R14, CX                         // mov	ecx, r14d
+	SHLQ CL, R8                    // <--                                  // shl	r8, cl
+	ORQ  R8, R9                    // <--                                  // or	r9, r8
 
 LBB5_179:
-	SUBQ DI, DX   // <--                                  // sub	rdx, rdi
-	ADDQ R8, DX   // <--                                  // add	rdx, r8
-	MOVQ DX, AX   // <--                                  // mov	rax, rdx
-	JMP  LBB5_180 // <--                                  // jmp	.LBB5_180
+	LONG $0x6ef941c4; BYTE $0xf1   // VMOVQ R9, X14                        // vmovq	xmm14, r9
+	MOVQ 0(SP), CX                 // <--                                  // mov	rcx, qword ptr [rsp]
+	LONG $0x797e7ac5; BYTE $0x0e   // VMOVQ 0xe(CX), X15                   // vmovq	xmm15, qword ptr [rcx + 14]
+	LONG $0x6c01c1c4; BYTE $0xc6   // VPUNPCKLQDQ X14, X15, X0             // vpunpcklqdq	xmm0, xmm15, xmm14
+	LONG $0x7c7e7ac5; WORD $0x2824 // VMOVQ 0x28(SP), X15                  // vmovq	xmm15, qword ptr [rsp + 40]
+	LONG $0x747e7ac5; WORD $0x1824 // VMOVQ 0x18(SP), X14                  // vmovq	xmm14, qword ptr [rsp + 24]
+	LONG $0x6c0941c4; BYTE $0xf7   // VPUNPCKLQDQ X15, X14, X14            // vpunpcklqdq	xmm14, xmm14, xmm15
+	LONG $0x380d63c4; WORD $0x01f0 // VINSERTI128 $0x1, X0, Y14, Y14       // vinserti128	ymm14, ymm14, xmm0, 1
+	JMP  LBB5_186                  // <--                                  // jmp	.LBB5_186
 
-LBB5_182:
+LBB5_180:
+	MOVQ 0(SP), CX                 // <--                                  // mov	rcx, qword ptr [rsp]
+	LONG $0x0e498b44               // MOVL 0xe(CX), R9                     // mov	r9d, dword ptr [rcx + 14]
+	LONG $0x0004be41; WORD $0x0000 // MOVL $0x4, R14                       // mov	r14d, 4
+
+LBB5_181:
+	LONG $0x02c0f641               // TESTB $0x2, R8                       // test	r8b, 2
+	JNE  LBB5_183                  // <--                                  // jne	.LBB5_183
+	MOVQ 0(SP), CX                 // <--                                  // mov	rcx, qword ptr [rsp]
+	LONG $0x44b70f46; WORD $0x0e31 // MOVZX 0xe(CX)(R14*1), R8             // movzx	r8d, word ptr [rcx + r14 + 14]
+	QUAD $0x00000000f50c8d42       // LEAL 0(R14*8), CX                    // lea	ecx, [8*r14]
+	SHLQ CL, R8                    // <--                                  // shl	r8, cl
+	ORQ  R8, R9                    // <--                                  // or	r9, r8
+	ORQ  $0x2, R14                 // <--                                  // or	r14, 2
+
+LBB5_183:
+	LONG $0x01c3f641               // TESTB $0x1, R11                      // test	r11b, 1
+	JE   LBB5_185                  // <--                                  // je	.LBB5_185
+	LONG $0x44b60f46; WORD $0x1033 // MOVZX 0x10(BX)(R14*1), R8            // movzx	r8d, byte ptr [rbx + r14 + 16]
+	LONG $0x03e6c141               // SHLL $0x3, R14                       // shl	r14d, 3
+	WORD $0x8944; BYTE $0xf1       // MOVL R14, CX                         // mov	ecx, r14d
+	SHLQ CL, R8                    // <--                                  // shl	r8, cl
+	ORQ  R8, R9                    // <--                                  // or	r9, r8
+
+LBB5_185:
+	LONG $0x747e7ac5; WORD $0x2824 // VMOVQ 0x28(SP), X14                  // vmovq	xmm14, qword ptr [rsp + 40]
+	LONG $0x7c7e7ac5; WORD $0x1824 // VMOVQ 0x18(SP), X15                  // vmovq	xmm15, qword ptr [rsp + 24]
+	LONG $0x6c0141c4; BYTE $0xf6   // VPUNPCKLQDQ X14, X15, X14            // vpunpcklqdq	xmm14, xmm15, xmm14
+	LONG $0x6ef941c4; BYTE $0xf9   // VMOVQ R9, X15                        // vmovq	xmm15, r9
+	LONG $0x380d43c4; WORD $0x01f7 // VINSERTI128 $0x1, X15, Y14, Y14      // vinserti128	ymm14, ymm14, xmm15, 1
+
+LBB5_186:
+	MOVQ 0x8(SP), CX // <--                                  // mov	rcx, qword ptr [rsp + 8]
+	MOVQ R10, R14    // <--                                  // mov	r14, r10
+	JMP  LBB5_129    // <--                                  // jmp	.LBB5_129
+
+LBB5_190:
+	MOVQ BX, AX   // <--                                  // mov	rax, rbx
+	JMP  LBB5_189 // <--                                  // jmp	.LBB5_189
+
+LBB5_188:
+	MOVQ R9, AX   // <--                                  // mov	rax, r9
+	JMP  LBB5_189 // <--                                  // jmp	.LBB5_189
+
+LBB5_191:
 	QUAD $0xfffffffffffebf49; WORD $0x7fff // MOVQ $0x7ffffffffffffffe, R15        // movabs	r15, 9223372036854775806
 	MOVQ CX, R9                            // <--                                  // mov	r9, rcx
 	DECQ R9                                // <--                                  // dec	r9
-	MOVQ R9, 0x18(SP)                      // <--                                  // mov	qword ptr [rsp + 24], r9
-	JE   LBB5_186                          // <--                                  // je	.LBB5_186
+	MOVQ R9, 0x20(SP)                      // <--                                  // mov	qword ptr [rsp + 32], r9
+	JE   LBB5_195                          // <--                                  // je	.LBB5_195
 	MOVQ CX, R9                            // <--                                  // mov	r9, rcx
 	ANDQ R15, R9                           // <--                                  // and	r9, r15
 	XORL BX, BX                            // <--                                  // xor	ebx, ebx
 	XORL R11, R11                          // <--                                  // xor	r11d, r11d
 
-LBB5_184:
+LBB5_193:
 	LONG $0x93d36945; WORD $0x0001; BYTE $0x01 // IMULL $0x1000193, R11, R10           // imul	r10d, r11d, 16777619
 	LONG $0x1cb60f44; BYTE $0x1a               // MOVZX 0(DX)(BX*1), R11               // movzx	r11d, byte ptr [rdx + rbx]
 	LONG $0x64b60f44; WORD $0x011a             // MOVZX 0x1(DX)(BX*1), R12             // movzx	r12d, byte ptr [rdx + rbx + 1]
@@ -2730,17 +2802,17 @@ LBB5_184:
 	WORD $0x0145; BYTE $0xd3                   // ADDL R10, R11                        // add	r11d, r10d
 	ADDQ $0x2, BX                              // <--                                  // add	rbx, 2
 	CMPQ R9, BX                                // <--                                  // cmp	r9, rbx
-	JNE  LBB5_184                              // <--                                  // jne	.LBB5_184
+	JNE  LBB5_193                              // <--                                  // jne	.LBB5_193
 	LONG $0x93cb6945; WORD $0x0001; BYTE $0x01 // IMULL $0x1000193, R11, R9            // imul	r9d, r11d, 16777619
-	JMP  LBB5_187                              // <--                                  // jmp	.LBB5_187
+	JMP  LBB5_196                              // <--                                  // jmp	.LBB5_196
 
-LBB5_186:
+LBB5_195:
 	XORL BX, BX // <--                                  // xor	ebx, ebx
 	XORL R9, R9 // <--                                  // xor	r9d, r9d
 
-LBB5_187:
+LBB5_196:
 	WORD $0xc1f6; BYTE $0x01     // TESTL $0x1, CL                       // test	cl, 1
-	JE   LBB5_189                // <--                                  // je	.LBB5_189
+	JE   LBB5_198                // <--                                  // je	.LBB5_198
 	LONG $0x14b60f44; BYTE $0x1a // MOVZX 0(DX)(BX*1), R10               // movzx	r10d, byte ptr [rdx + rbx]
 	LONG $0x9f5a8d45             // LEAL -0x61(R10), R11                 // lea	r11d, [r10 - 97]
 	CMPB R11, $0x1a              // <--                                  // cmp	r11b, 26
@@ -2752,7 +2824,7 @@ LBB5_187:
 	WORD $0x0145; BYTE $0xd1     // ADDL R10, R9                         // add	r9d, r10d
 	WORD $0x8945; BYTE $0xcb     // MOVL R9, R11                         // mov	r11d, r9d
 
-LBB5_189:
+LBB5_198:
 	ADDQ R8, DI                    // <--                                  // add	rdi, r8
 	LONG $0x0193be41; WORD $0x0100 // MOVL $0x1000193, R14                 // mov	r14d, 16777619
 	LONG $0x0001ba41; WORD $0x0000 // MOVL $0x1, R10                       // mov	r10d, 1
@@ -2760,7 +2832,7 @@ LBB5_189:
 	LONG $0x000001bb; BYTE $0x00   // MOVL $0x1, BX                        // mov	ebx, 1
 	MOVQ CX, R13                   // <--                                  // mov	r13, rcx
 
-LBB5_190:
+LBB5_199:
 	LONG $0x01c4f641         // TESTB $0x1, R12                      // test	r12b, 1
 	WORD $0x8945; BYTE $0xf1 // MOVL R14, R9                         // mov	r9d, r14d
 	LONG $0xca440f45         // CMOVE R10, R9                        // cmove	r9d, r10d
@@ -2769,17 +2841,17 @@ LBB5_190:
 	SHRQ $0x1, R13           // <--                                  // shr	r13
 	CMPQ R12, $0x1           // <--                                  // cmp	r12, 1
 	MOVQ R13, R12            // <--                                  // mov	r12, r13
-	JA   LBB5_190            // <--                                  // ja	.LBB5_190
-	CMPQ 0x18(SP), $0x0      // <--                                  // cmp	qword ptr [rsp + 24], 0
-	MOVQ R8, 0x38(SP)        // <--                                  // mov	qword ptr [rsp + 56], r8
-	JE   LBB5_195            // <--                                  // je	.LBB5_195
+	JA   LBB5_199            // <--                                  // ja	.LBB5_199
+	CMPQ 0x20(SP), $0x0      // <--                                  // cmp	qword ptr [rsp + 32], 0
+	MOVQ R8, 0x18(SP)        // <--                                  // mov	qword ptr [rsp + 24], r8
+	JE   LBB5_204            // <--                                  // je	.LBB5_204
 	ANDQ CX, R15             // <--                                  // and	r15, rcx
 	XORL R12, R12            // <--                                  // xor	r12d, r12d
 	XORL R14, R14            // <--                                  // xor	r14d, r14d
 	MOVQ R15, R8             // <--                                  // mov	r8, r15
-	MOVQ 0x10(SP), R15       // <--                                  // mov	r15, qword ptr [rsp + 16]
+	MOVQ 0x8(SP), R15        // <--                                  // mov	r15, qword ptr [rsp + 8]
 
-LBB5_193:
+LBB5_202:
 	LONG $0x93ce6945; WORD $0x0001; BYTE $0x01 // IMULL $0x1000193, R14, R9            // imul	r9d, r14d, 16777619
 	LONG $0x54b60f47; WORD $0xff27             // MOVZX -0x1(R15)(R12*1), R10          // movzx	r10d, byte ptr [r15 + r12 - 1]
 	LONG $0x34b60f47; BYTE $0x27               // MOVZX 0(R15)(R12*1), R14             // movzx	r14d, byte ptr [r15 + r12]
@@ -2802,19 +2874,18 @@ LBB5_193:
 	WORD $0x0145; BYTE $0xce                   // ADDL R9, R14                         // add	r14d, r9d
 	ADDQ $0x2, R12                             // <--                                  // add	r12, 2
 	CMPQ R8, R12                               // <--                                  // cmp	r8, r12
-	JNE  LBB5_193                              // <--                                  // jne	.LBB5_193
+	JNE  LBB5_202                              // <--                                  // jne	.LBB5_202
 	LONG $0x93ce6945; WORD $0x0001; BYTE $0x01 // IMULL $0x1000193, R14, R9            // imul	r9d, r14d, 16777619
-	MOVQ 0x38(SP), R8                          // <--                                  // mov	r8, qword ptr [rsp + 56]
-	JMP  LBB5_196                              // <--                                  // jmp	.LBB5_196
+	MOVQ 0x18(SP), R8                          // <--                                  // mov	r8, qword ptr [rsp + 24]
+	JMP  LBB5_205                              // <--                                  // jmp	.LBB5_205
 
-LBB5_195:
+LBB5_204:
 	XORL R12, R12 // <--                                  // xor	r12d, r12d
 	XORL R9, R9   // <--                                  // xor	r9d, r9d
 
-LBB5_196:
+LBB5_205:
 	WORD $0xc1f6; BYTE $0x01     // TESTL $0x1, CL                       // test	cl, 1
-	MOVQ 0x20(SP), R13           // <--                                  // mov	r13, qword ptr [rsp + 32]
-	JE   LBB5_198                // <--                                  // je	.LBB5_198
+	JE   LBB5_207                // <--                                  // je	.LBB5_207
 	LONG $0x14b60f46; BYTE $0x27 // MOVZX 0(DI)(R12*1), R10              // movzx	r10d, byte ptr [rdi + r12]
 	LONG $0x9f728d45             // LEAL -0x61(R10), R14                 // lea	r14d, [r10 - 97]
 	CMPB R14, $0x1a              // <--                                  // cmp	r14b, 26
@@ -2826,62 +2897,65 @@ LBB5_196:
 	WORD $0x0145; BYTE $0xd1     // ADDL R10, R9                         // add	r9d, r10d
 	WORD $0x8945; BYTE $0xce     // MOVL R9, R14                         // mov	r14d, r9d
 
-LBB5_198:
-	CMPL R14, R11 // <--                                  // cmp	r14d, r11d
-	JNE  LBB5_209 // <--                                  // jne	.LBB5_209
-	CMPQ CX, $0x8 // <--                                  // cmp	rcx, 8
-	JAE  LBB5_205 // <--                                  // jae	.LBB5_205
-	XORL R10, R10 // <--                                  // xor	r10d, r10d
+LBB5_207:
+	CMPL R14, R11   // <--                                  // cmp	r14d, r11d
+	JNE  LBB5_218   // <--                                  // jne	.LBB5_218
+	CMPQ CX, $0x8   // <--                                  // cmp	rcx, 8
+	JAE  LBB5_214   // <--                                  // jae	.LBB5_214
+	XORL R10, R10   // <--                                  // xor	r10d, r10d
+	MOVQ 0(SP), R15 // <--                                  // mov	r15, qword ptr [rsp]
 
-LBB5_201:
+LBB5_210:
 	MOVQ CX, R9           // <--                                  // mov	r9, rcx
 	SUBQ R10, R9          // <--                                  // sub	r9, r10
-	MOVQ R9, 0x18(SP)     // <--                                  // mov	qword ptr [rsp + 24], r9
-	JBE  LBB5_224         // <--                                  // jbe	.LBB5_224
+	MOVQ R9, 0x20(SP)     // <--                                  // mov	qword ptr [rsp + 32], r9
+	JBE  LBB5_233         // <--                                  // jbe	.LBB5_233
 	LEAQ 0(DX)(R10*1), R9 // <--                                  // lea	r9, [rdx + r10]
-	MOVQ R9, 0(SP)        // <--                                  // mov	qword ptr [rsp], r9
-	ADDQ R10, R13         // <--                                  // add	r13, r10
+	MOVQ R9, 0x10(SP)     // <--                                  // mov	qword ptr [rsp + 16], r9
+	ADDQ R10, R15         // <--                                  // add	r15, r10
+	MOVQ R15, 0(SP)       // <--                                  // mov	qword ptr [rsp], r15
 	XORL R12, R12         // <--                                  // xor	r12d, r12d
-	MOVQ R13, 0x20(SP)    // <--                                  // mov	qword ptr [rsp + 32], r13
 
-LBB5_203:
-	LONG $0x54b60f47; WORD $0x0025 // MOVZX 0(R13)(R12*1), R10             // movzx	r10d, byte ptr [r13 + r12]
-	LONG $0x9f6a8d45               // LEAL -0x61(R10), R13                 // lea	r13d, [r10 - 97]
-	LONG $0xe07a8d45               // LEAL -0x20(R10), R15                 // lea	r15d, [r10 - 32]
-	CMPB R13, $0x1a                // <--                                  // cmp	r13b, 26
-	LONG $0xffb60f45               // MOVZX R15, R15                       // movzx	r15d, r15b
-	LONG $0xfa430f45               // CMOVAE R10, R15                      // cmovae	r15d, r10d
-	MOVQ 0(SP), R9                 // <--                                  // mov	r9, qword ptr [rsp]
-	LONG $0x14b60f47; BYTE $0x21   // MOVZX 0(R9)(R12*1), R10              // movzx	r10d, byte ptr [r9 + r12]
-	LONG $0x9f6a8d45               // LEAL -0x61(R10), R13                 // lea	r13d, [r10 - 97]
-	LONG $0xe04a8d45               // LEAL -0x20(R10), R9                  // lea	r9d, [r10 - 32]
-	CMPB R13, $0x1a                // <--                                  // cmp	r13b, 26
-	MOVQ 0x20(SP), R13             // <--                                  // mov	r13, qword ptr [rsp + 32]
-	LONG $0xc9b60f45               // MOVZX R9, R9                         // movzx	r9d, r9b
-	LONG $0xca430f45               // CMOVAE R10, R9                       // cmovae	r9d, r10d
-	CMPB R15, R9                   // <--                                  // cmp	r15b, r9b
-	JNE  LBB5_209                  // <--                                  // jne	.LBB5_209
-	INCQ R12                       // <--                                  // inc	r12
-	CMPQ 0x18(SP), R12             // <--                                  // cmp	qword ptr [rsp + 24], r12
-	JNE  LBB5_203                  // <--                                  // jne	.LBB5_203
-	JMP  LBB5_224                  // <--                                  // jmp	.LBB5_224
+LBB5_212:
+	MOVQ 0(SP), R9               // <--                                  // mov	r9, qword ptr [rsp]
+	LONG $0x14b60f47; BYTE $0x21 // MOVZX 0(R9)(R12*1), R10              // movzx	r10d, byte ptr [r9 + r12]
+	LONG $0x9f6a8d45             // LEAL -0x61(R10), R13                 // lea	r13d, [r10 - 97]
+	LONG $0xe07a8d45             // LEAL -0x20(R10), R15                 // lea	r15d, [r10 - 32]
+	CMPB R13, $0x1a              // <--                                  // cmp	r13b, 26
+	LONG $0xffb60f45             // MOVZX R15, R15                       // movzx	r15d, r15b
+	LONG $0xfa430f45             // CMOVAE R10, R15                      // cmovae	r15d, r10d
+	MOVQ 0x10(SP), R9            // <--                                  // mov	r9, qword ptr [rsp + 16]
+	LONG $0x14b60f47; BYTE $0x21 // MOVZX 0(R9)(R12*1), R10              // movzx	r10d, byte ptr [r9 + r12]
+	LONG $0x9f6a8d45             // LEAL -0x61(R10), R13                 // lea	r13d, [r10 - 97]
+	LONG $0xe04a8d45             // LEAL -0x20(R10), R9                  // lea	r9d, [r10 - 32]
+	CMPB R13, $0x1a              // <--                                  // cmp	r13b, 26
+	LONG $0xc9b60f45             // MOVZX R9, R9                         // movzx	r9d, r9b
+	LONG $0xca430f45             // CMOVAE R10, R9                       // cmovae	r9d, r10d
+	CMPB R15, R9                 // <--                                  // cmp	r15b, r9b
+	JNE  LBB5_218                // <--                                  // jne	.LBB5_218
+	INCQ R12                     // <--                                  // inc	r12
+	CMPQ 0x20(SP), R12           // <--                                  // cmp	qword ptr [rsp + 32], r12
+	JNE  LBB5_212                // <--                                  // jne	.LBB5_212
+	JMP  LBB5_233                // <--                                  // jmp	.LBB5_233
 
-LBB5_205:
-	XORL R9, R9   // <--                                  // xor	r9d, r9d
-	JMP  LBB5_207 // <--                                  // jmp	.LBB5_207
+LBB5_214:
+	XORL R9, R9     // <--                                  // xor	r9d, r9d
+	MOVQ 0(SP), R15 // <--                                  // mov	r15, qword ptr [rsp]
+	JMP  LBB5_216   // <--                                  // jmp	.LBB5_216
 
-LBB5_206:
+LBB5_215:
 	LEAQ 0x8(R9), R10 // <--                                  // lea	r10, [r9 + 8]
 	ADDQ $0x10, R9    // <--                                  // add	r9, 16
 	CMPQ R9, CX       // <--                                  // cmp	r9, rcx
 	MOVQ R10, R9      // <--                                  // mov	r9, r10
-	JA   LBB5_201     // <--                                  // ja	.LBB5_201
+	MOVQ 0(SP), R15   // <--                                  // mov	r15, qword ptr [rsp]
+	JA   LBB5_210     // <--                                  // ja	.LBB5_210
 
-LBB5_207:
-	MOVQ 0(R13)(R9*1), R10       // <--                                  // mov	r10, qword ptr [r13 + r9]
+LBB5_216:
+	MOVQ 0(R15)(R9*1), R10       // <--                                  // mov	r10, qword ptr [r15 + r9]
 	MOVQ 0(DX)(R9*1), R15        // <--                                  // mov	r15, qword ptr [rdx + r9]
 	CMPQ R10, R15                // <--                                  // cmp	r10, r15
-	JE   LBB5_206                // <--                                  // je	.LBB5_206
+	JE   LBB5_215                // <--                                  // je	.LBB5_215
 	LONG $0x6ef9c1c4; BYTE $0xc7 // VMOVQ R15, X0                        // vmovq	xmm0, r15
 	LONG $0x6ef9c1c4; BYTE $0xe2 // VMOVQ R10, X4                        // vmovq	xmm4, r10
 	LONG $0xc06cd9c5             // VPUNPCKLQDQ X0, X4, X0               // vpunpcklqdq	xmm0, xmm4, xmm0
@@ -2897,26 +2971,25 @@ LBB5_207:
 	LONG $0x2979e2c4; BYTE $0xc4 // VPCMPEQQ X4, X0, X0                  // vpcmpeqq	xmm0, xmm0, xmm4
 	LONG $0x7e79c1c4; BYTE $0xc2 // VMOVD X0, R10                        // vmovd	r10d, xmm0
 	LONG $0x01c2f641             // TESTB $0x1, R10                      // test	r10b, 1
-	JNE  LBB5_206                // <--                                  // jne	.LBB5_206
+	JNE  LBB5_215                // <--                                  // jne	.LBB5_215
 
-LBB5_209:
+LBB5_218:
 	SUBQ R8, SI   // <--                                  // sub	rsi, r8
 	CMPQ SI, CX   // <--                                  // cmp	rsi, rcx
-	JLE  LBB5_180 // <--                                  // jle	.LBB5_180
-	MOVQ CX, R12  // <--                                  // mov	r12, rcx
-	JMP  LBB5_212 // <--                                  // jmp	.LBB5_212
+	JLE  LBB5_189 // <--                                  // jle	.LBB5_189
+	MOVQ CX, R10  // <--                                  // mov	r10, rcx
+	JMP  LBB5_221 // <--                                  // jmp	.LBB5_221
 
-LBB5_211:
-	MOVQ R8, R12       // <--                                  // mov	r12, r8
-	INCQ R12           // <--                                  // inc	r12
-	INCQ R10           // <--                                  // inc	r10
-	MOVQ R10, 0x10(SP) // <--                                  // mov	qword ptr [rsp + 16], r10
-	CMPQ R12, SI       // <--                                  // cmp	r12, rsi
-	JE   LBB5_180      // <--                                  // je	.LBB5_180
+LBB5_220:
+	MOVQ R8, R10  // <--                                  // mov	r10, r8
+	INCQ R10      // <--                                  // inc	r10
+	INCQ 0x8(SP)  // <--                                  // inc	qword ptr [rsp + 8]
+	CMPQ R10, SI  // <--                                  // cmp	r10, rsi
+	JE   LBB5_189 // <--                                  // je	.LBB5_189
 
-LBB5_212:
+LBB5_221:
 	LONG $0x93ce6945; WORD $0x0001; BYTE $0x01 // IMULL $0x1000193, R14, R9            // imul	r9d, r14d, 16777619
-	LONG $0x34b60f46; BYTE $0x27               // MOVZX 0(DI)(R12*1), R14              // movzx	r14d, byte ptr [rdi + r12]
+	LONG $0x34b60f46; BYTE $0x17               // MOVZX 0(DI)(R10*1), R14              // movzx	r14d, byte ptr [rdi + r10]
 	LONG $0x9f7e8d45                           // LEAL -0x61(R14), R15                 // lea	r15d, [r14 - 97]
 	CMPB R15, $0x1a                            // <--                                  // cmp	r15b, 26
 	LONG $0xc7930f41                           // SETAE R15                            // setae	r15b
@@ -2925,10 +2998,10 @@ LBB5_212:
 	ADDB $0x80, R15                            // <--                                  // add	r15b, -128
 	LONG $0xf7b60f45                           // MOVZX R15, R14                       // movzx	r14d, r15b
 	WORD $0x0145; BYTE $0xce                   // ADDL R9, R14                         // add	r14d, r9d
-	MOVQ R12, R8                               // <--                                  // mov	r8, r12
-	SUBQ CX, R12                               // <--                                  // sub	r12, rcx
-	MOVQ R12, 0x18(SP)                         // <--                                  // mov	qword ptr [rsp + 24], r12
-	LONG $0x0cb60f46; BYTE $0x27               // MOVZX 0(DI)(R12*1), R9               // movzx	r9d, byte ptr [rdi + r12]
+	MOVQ R10, R8                               // <--                                  // mov	r8, r10
+	SUBQ CX, R10                               // <--                                  // sub	r10, rcx
+	MOVQ R10, 0x20(SP)                         // <--                                  // mov	qword ptr [rsp + 32], r10
+	LONG $0x0cb60f46; BYTE $0x17               // MOVZX 0(DI)(R10*1), R9               // movzx	r9d, byte ptr [rdi + r10]
 	LONG $0x9f618d45                           // LEAL -0x61(R9), R12                  // lea	r12d, [r9 - 97]
 	CMPB R12, $0x1a                            // <--                                  // cmp	r12b, 26
 	LONG $0xc4930f41                           // SETAE R12                            // setae	r12b
@@ -2939,17 +3012,17 @@ LBB5_212:
 	LONG $0xcbaf0f44                           // IMULL BX, R9                         // imul	r9d, ebx
 	WORD $0x2945; BYTE $0xce                   // SUBL R9, R14                         // sub	r14d, r9d
 	CMPL R14, R11                              // <--                                  // cmp	r14d, r11d
-	MOVQ 0x10(SP), R10                         // <--                                  // mov	r10, qword ptr [rsp + 16]
-	JNE  LBB5_211                              // <--                                  // jne	.LBB5_211
+	JNE  LBB5_220                              // <--                                  // jne	.LBB5_220
 	CMPQ CX, $0x8                              // <--                                  // cmp	rcx, 8
-	JAE  LBB5_218                              // <--                                  // jae	.LBB5_218
+	JAE  LBB5_227                              // <--                                  // jae	.LBB5_227
 	XORL R9, R9                                // <--                                  // xor	r9d, r9d
 
-LBB5_215:
+LBB5_224:
 	CMPQ R9, CX   // <--                                  // cmp	r9, rcx
-	JAE  LBB5_222 // <--                                  // jae	.LBB5_222
+	JAE  LBB5_231 // <--                                  // jae	.LBB5_231
 
-LBB5_216:
+LBB5_225:
+	MOVQ 0x8(SP), R10            // <--                                  // mov	r10, qword ptr [rsp + 8]
 	LONG $0x24b60f47; BYTE $0x0a // MOVZX 0(R10)(R9*1), R12              // movzx	r12d, byte ptr [r10 + r9]
 	LONG $0x246c8d45; BYTE $0x9f // LEAL -0x61(R12), R13                 // lea	r13d, [r12 - 97]
 	LONG $0x247c8d45; BYTE $0xe0 // LEAL -0x20(R12), R15                 // lea	r15d, [r12 - 32]
@@ -2963,29 +3036,29 @@ LBB5_216:
 	LONG $0xd2b60f45             // MOVZX R10, R10                       // movzx	r10d, r10b
 	LONG $0xd4430f45             // CMOVAE R12, R10                      // cmovae	r10d, r12d
 	CMPB R15, R10                // <--                                  // cmp	r15b, r10b
-	MOVQ 0x10(SP), R10           // <--                                  // mov	r10, qword ptr [rsp + 16]
-	JNE  LBB5_211                // <--                                  // jne	.LBB5_211
+	JNE  LBB5_220                // <--                                  // jne	.LBB5_220
 	INCQ R9                      // <--                                  // inc	r9
 	CMPQ CX, R9                  // <--                                  // cmp	rcx, r9
-	JNE  LBB5_216                // <--                                  // jne	.LBB5_216
-	JMP  LBB5_222                // <--                                  // jmp	.LBB5_222
+	JNE  LBB5_225                // <--                                  // jne	.LBB5_225
+	JMP  LBB5_231                // <--                                  // jmp	.LBB5_231
 
-LBB5_218:
+LBB5_227:
 	XORL R12, R12 // <--                                  // xor	r12d, r12d
-	JMP  LBB5_220 // <--                                  // jmp	.LBB5_220
+	JMP  LBB5_229 // <--                                  // jmp	.LBB5_229
 
-LBB5_219:
+LBB5_228:
 	LEAQ 0x8(R12), R9 // <--                                  // lea	r9, [r12 + 8]
 	ADDQ $0x10, R12   // <--                                  // add	r12, 16
 	CMPQ R12, CX      // <--                                  // cmp	r12, rcx
 	MOVQ R9, R12      // <--                                  // mov	r12, r9
-	JA   LBB5_215     // <--                                  // ja	.LBB5_215
+	JA   LBB5_224     // <--                                  // ja	.LBB5_224
 
-LBB5_220:
-	MOVQ 0(R10)(R12*1), R9       // <--                                  // mov	r9, qword ptr [r10 + r12]
+LBB5_229:
+	MOVQ 0x8(SP), R9             // <--                                  // mov	r9, qword ptr [rsp + 8]
+	MOVQ 0(R9)(R12*1), R9        // <--                                  // mov	r9, qword ptr [r9 + r12]
 	MOVQ 0(DX)(R12*1), R13       // <--                                  // mov	r13, qword ptr [rdx + r12]
 	CMPQ R9, R13                 // <--                                  // cmp	r9, r13
-	JE   LBB5_219                // <--                                  // je	.LBB5_219
+	JE   LBB5_228                // <--                                  // je	.LBB5_228
 	LONG $0x6ef9c1c4; BYTE $0xc5 // VMOVQ R13, X0                        // vmovq	xmm0, r13
 	LONG $0x6ef9c1c4; BYTE $0xe1 // VMOVQ R9, X4                         // vmovq	xmm4, r9
 	LONG $0xc06cd9c5             // VPUNPCKLQDQ X0, X4, X0               // vpunpcklqdq	xmm0, xmm4, xmm0
@@ -3001,17 +3074,17 @@ LBB5_220:
 	LONG $0x2979e2c4; BYTE $0xc4 // VPCMPEQQ X4, X0, X0                  // vpcmpeqq	xmm0, xmm0, xmm4
 	LONG $0x7e79c1c4; BYTE $0xc1 // VMOVD X0, R9                         // vmovd	r9d, xmm0
 	LONG $0x01c1f641             // TESTB $0x1, R9                       // test	r9b, 1
-	JNE  LBB5_219                // <--                                  // jne	.LBB5_219
-	JMP  LBB5_211                // <--                                  // jmp	.LBB5_211
+	JNE  LBB5_228                // <--                                  // jne	.LBB5_228
+	JMP  LBB5_220                // <--                                  // jmp	.LBB5_220
 
-LBB5_222:
-	MOVQ 0x18(SP), CX // <--                                  // mov	rcx, qword ptr [rsp + 24]
+LBB5_231:
+	MOVQ 0x20(SP), CX // <--                                  // mov	rcx, qword ptr [rsp + 32]
 	CMPQ CX, $-0x1    // <--                                  // cmp	rcx, -1
-	JL   LBB5_180     // <--                                  // jl	.LBB5_180
+	JL   LBB5_189     // <--                                  // jl	.LBB5_189
 	INCQ CX           // <--                                  // inc	rcx
-	MOVQ 0x38(SP), R8 // <--                                  // mov	r8, qword ptr [rsp + 56]
+	MOVQ 0x18(SP), R8 // <--                                  // mov	r8, qword ptr [rsp + 24]
 	ADDQ CX, R8       // <--                                  // add	r8, rcx
 
-LBB5_224:
+LBB5_233:
 	MOVQ R8, AX   // <--                                  // mov	rax, r8
-	JMP  LBB5_180 // <--                                  // jmp	.LBB5_180
+	JMP  LBB5_189 // <--                                  // jmp	.LBB5_189

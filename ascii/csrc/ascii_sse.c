@@ -192,7 +192,19 @@ static inline __m128i fold_to_upper_vec(__m128i v,
     return _mm_sub_epi8(v, sub_mask);
 }
 
-// Load 1-15 bytes into a 128-bit register (zero-padded)
+// Loads up to 16 bytes into a register, zero-padded beyond len.
+//
+// Default: branchless on the length. Reads 16 bytes that may extend past
+// [src, src+len) but never outside the page containing the input: if the
+// forward 16-byte read stays in src's page it is used and masked; otherwise
+// src is in the last 15 bytes of a page, so the 16 bytes ending at src+len are
+// in-page and PSHUFB shifts them down (indices with the high bit set read as
+// zero). The 4 KiB page constant is conservative for larger pages. See the
+// NEON source for the rationale and measurements.
+//
+// LOAD_DATA_SAFE: never reads outside [src, src+len); assembles the bytes in
+// general-purpose registers with length-dependent branches.
+#ifdef LOAD_DATA_SAFE
 static inline __m128i load_data16(const unsigned char *src, int64_t len) {
     if (len >= 16) {
         return _mm_loadu_si128((const __m128i *)src);
@@ -219,6 +231,26 @@ static inline __m128i load_data16(const unsigned char *src, int64_t len) {
 
     return _mm_set_epi64x(d1, d0);
 }
+#else
+static inline __m128i load_data16(const unsigned char *src, int64_t len) {
+    if (len >= 16) {
+        return _mm_loadu_si128((const __m128i *)src);
+    } else if (len <= 0) {
+        return _mm_setzero_si128();
+    }
+
+    const __m128i iota = _mm_setr_epi8(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
+
+    if (__builtin_expect(((uintptr_t)src & 4095) <= 4096 - 16, 1)) {
+        return _mm_and_si128(_mm_loadu_si128((const __m128i *)src), _mm_cmpgt_epi8(_mm_set1_epi8((char)len), iota));
+    }
+
+    const __m128i tail = _mm_loadu_si128((const __m128i *)(src + len - 16));
+    __m128i idx = _mm_add_epi8(iota, _mm_set1_epi8((char)(16 - len)));
+    idx = _mm_or_si128(idx, _mm_cmpgt_epi8(idx, _mm_set1_epi8(15)));   // >= 16 -> high bit -> zeroed by PSHUFB
+    return _mm_shuffle_epi8(tail, idx);
+}
+#endif
 
 static inline __m128i prepare_needle16(const uint16_t *needle,
                                        __m128i v_0x20, __m128i v_0x1f,
