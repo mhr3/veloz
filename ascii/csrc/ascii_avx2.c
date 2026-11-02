@@ -478,9 +478,13 @@ static inline __m128i fold_to_upper_vec_128(__m128i v,
     return _mm_sub_epi8(v, sub_mask);
 }
 
-// Helper to load 1-31 bytes into a 256-bit register (zero-padded)
-// Uses only registers, no stack buffer, no overlapping loads
-static inline __m256i load_data32_avx2(const unsigned char *src, int64_t len) {
+// Loads 1-31 bytes into a 256-bit register (zero-padded) from general-purpose
+// registers, never reading outside [src, src+len). Length-dependent branches.
+// Used directly under LOAD_DATA_SAFE, and as the rare page-end fallback of the
+// branchless loader below (AVX2 has no cheap cross-lane byte shift).
+// always_inline: gocc rejects calls between C functions, and clang stops
+// inlining this once the branchless loader references it from a second site.
+static inline __attribute__((always_inline)) __m256i load_data32_avx2_scalar(const unsigned char *src, int64_t len) {
     if (len >= 32) {
         return _mm256_loadu_si256((const __m256i *)src);
     } else if (len <= 0) {
@@ -539,6 +543,37 @@ static inline __m256i load_data32_avx2(const unsigned char *src, int64_t len) {
 
     return _mm256_set_epi64x(d3, d2, d1, d0);
 }
+
+// Loads up to 32 bytes into a register, zero-padded beyond len.
+//
+// Default: branchless on the length. Reads 32 bytes that may extend past
+// [src, src+len) but never outside the page containing the input; when src is
+// within 31 bytes of a page end (~0.8% of tail loads) it falls back to the
+// scalar builder. The 4 KiB page constant is conservative for larger pages.
+// See the NEON source for the rationale and measurements.
+//
+// LOAD_DATA_SAFE: always the scalar builder; never reads outside the input.
+#ifdef LOAD_DATA_SAFE
+static inline __m256i load_data32_avx2(const unsigned char *src, int64_t len) {
+    return load_data32_avx2_scalar(src, len);
+}
+#else
+static inline __m256i load_data32_avx2(const unsigned char *src, int64_t len) {
+    if (len >= 32) {
+        return _mm256_loadu_si256((const __m256i *)src);
+    } else if (len <= 0) {
+        return _mm256_setzero_si256();
+    }
+
+    if (__builtin_expect(((uintptr_t)src & 4095) <= 4096 - 32, 1)) {
+        const __m256i iota = _mm256_setr_epi8(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+                                              16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31);
+        return _mm256_and_si256(_mm256_loadu_si256((const __m256i *)src), _mm256_cmpgt_epi8(_mm256_set1_epi8((char)len), iota));
+    }
+
+    return load_data32_avx2_scalar(src, len);
+}
+#endif
 
 // Special case: search for a single byte case-insensitively
 static inline int64_t index_fold_1_byte_avx2(const unsigned char *haystack, int64_t haystack_len,

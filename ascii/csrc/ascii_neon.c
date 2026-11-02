@@ -452,7 +452,30 @@ bool equal_fold(unsigned char *a, uint64_t a_len, unsigned char *b, uint64_t b_l
     return equal_fold_long(a, b, a_len, table);
 }
 
-// loads up to 16 bytes of data into a 128-bit register
+// Loads up to 16 bytes into a register, zero-padded beyond len.
+//
+// Two implementations, selected with LOAD_DATA_SAFE (shared with the x86 sources):
+//
+// Default: branchless on the length, which matters because this runs once per
+// call with the haystack's tail length and the GPR-assembly version below
+// mispredicts most of its branches on real data (~5 ns per IndexFold row,
+// 1.25-1.3x on per-row IndexFold).
+// It reads 16 bytes that may extend past [src, src+len), but always within
+// the page that contains the input, so it cannot fault: if the forward
+// 16-byte read stays in src's page it is used and masked; otherwise src is in
+// the last 15 bytes of a page, so the 16 bytes ending at src+len are in-page,
+// and TBL shifts them down (indices >= 16 read as zero). The 4 KiB page
+// constant is conservative for larger pages - never unsafe, only a slower
+// path taken more often than needed.
+// Not MTE-safe: under memory tagging the unaligned over-read could cross into
+// a differently tagged 16-byte granule. Go's runtime uses the same technique
+// in internal/bytealg on arm64 and switches to aligned reads on Android for
+// that reason.
+//
+// LOAD_DATA_SAFE: never reads outside [src, src+len). Assembles the bytes
+// in general-purpose registers with length-dependent branches. Use it where
+// over-reads are unacceptable (MTE, sanitizers).
+#ifdef LOAD_DATA_SAFE
 static inline uint8x16_t load_data16(const unsigned char *src, int64_t len) {
     if (len >= 16) {
         return vld1q_u8(src);
@@ -502,53 +525,24 @@ static inline uint8x16_t load_data16(const unsigned char *src, int64_t len) {
     }
     return vcombine_u64(vcreate_u64(data64lo), vcreate_u64(data64));
 }
-
-// loads up to 16 bytes of data into a 128-bit register
-// requires stack space for 2 64-bit integers, gocc has trouble with that
-static inline uint8x16_t load_data16_v2(const unsigned char *src, int64_t len) {
+#else
+static inline uint8x16_t load_data16(const unsigned char *src, int64_t len) {
     if (len >= 16) {
         return vld1q_u8(src);
     } else if (len <= 0) {
         return vdupq_n_u8(0);
     }
 
-    const uint64_t orig_len = len;
-    const uint8_t *src_end = src + len;
-    uint64_t buf[2] = {0};
+    const uint8x16_t iota = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
 
-    uint8_t *dst = (uint8_t *)&buf[0];
-    uint8_t *dst_end = dst + len;
-
-    if (len & 8) {
-        // Copy 8-15 bytes when the 4th bit of length is set (length >= 8)
-        uint64_t lo64, hi64;
-        __builtin_memcpy(&lo64, src, sizeof(lo64));
-        __builtin_memcpy(&hi64, src_end - 8, sizeof(hi64));
-        __builtin_memcpy(dst, &lo64, sizeof(lo64));
-        __builtin_memcpy(dst_end - 8, &hi64, sizeof(hi64));
-
-        return vld1q_u8(dst);
+    if (__builtin_expect(((uintptr_t)src & 4095) <= 4096 - 16, 1)) {
+        return vandq_u8(vld1q_u8(src), vcltq_u8(iota, vdupq_n_u8((uint8_t)len)));
     }
 
-    if (len & 4) {
-        // Copy 4-7 bytes when the 3rd bit of length is set (length >= 4)
-        uint32_t lo32, hi32;
-        __builtin_memcpy(&lo32, src, sizeof(lo32));
-        __builtin_memcpy(&hi32, src_end - 4, sizeof(hi32));
-        __builtin_memcpy(dst, &lo32, sizeof(lo32));
-        __builtin_memcpy(dst_end - 4, &hi32, sizeof(hi32));
-
-        return vld1q_u8(dst);
-    }
-
-    // Copy 1-3 bytes
-    int idx = len >> 1;
-    dst[0] = src[0];
-    dst[idx] = src[idx];
-    dst_end[-1] = src_end[-1];
-
-    return vld1q_u8(dst);
+    const uint8x16_t tail = vld1q_u8(src + len - 16);
+    return vqtbl1q_u8(tail, vaddq_u8(iota, vdupq_n_u8((uint8_t)(16 - len))));
 }
+#endif
 
 static inline uint32_t rabin_karp_hash_string_fold(unsigned char *data, uint64_t data_len, uint32_t *pow_ret)
 {
