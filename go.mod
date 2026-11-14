@@ -1,6 +1,6 @@
 module github.com/mhr3/veloz
 
-go 1.22.4
+go 1.27.0
 
 require (
 	github.com/segmentio/asm v1.2.1
