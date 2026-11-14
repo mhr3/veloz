@@ -1,7 +1,6 @@
 /*
  * Adapted from https://github.com/cyb70289/utf8
  */
-#include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include <x86intrin.h>
