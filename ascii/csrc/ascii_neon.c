@@ -172,19 +172,17 @@ int64_t index_mask(unsigned char *data, uint64_t length, uint8_t mask)
         for (const unsigned char *data64_end = (data + length) - (length % ld4BlockSize); data < data64_end; data += ld4BlockSize)
         {
             uint8x16x4_t blocks = vld1q_u8_x4(data);       // Load 64 bytes of data
-            blocks.val[0] = vtstq_u8(blocks.val[0], mask_vec); // AND with the mask
-            blocks.val[1] = vtstq_u8(blocks.val[1], mask_vec); // AND with the mask
-            blocks.val[2] = vtstq_u8(blocks.val[2], mask_vec); // AND with the mask
-            blocks.val[3] = vtstq_u8(blocks.val[3], mask_vec); // AND with the mask
-
-            uint8x16_t result = vorrq_u8(vorrq_u8(blocks.val[0], blocks.val[1]), vorrq_u8(blocks.val[2], blocks.val[3])); // OR the results
+            // OR the raw blocks and test the mask once: (a|b|c|d)&m == (a&m)|(b&m)|(c&m)|(d&m),
+            // and this keeps the per-block mask tests out of the no-match path.
+            uint8x16_t merged = vorrq_u8(vorrq_u8(blocks.val[0], blocks.val[1]), vorrq_u8(blocks.val[2], blocks.val[3]));
+            uint8x16_t result = vtstq_u8(merged, mask_vec);
             // SHRN can be faster than UMAXV
             if (vget_lane_u64(vshrn_n_u16(result, 4), 0) > 0)
             {
                 // now a few operations to find the index of the first set bit
                 for (int j = 0; j < 4; j++)
                 {
-                    uint64_t data64 = vget_lane_u64(vshrn_n_u16(blocks.val[j], 4), 0);
+                    uint64_t data64 = vget_lane_u64(vshrn_n_u16(vtstq_u8(blocks.val[j], mask_vec), 4), 0);
                     if (data64 != 0)
                     {
                         int64_t offset = j*16 + __builtin_ctzll(data64) / 4;
