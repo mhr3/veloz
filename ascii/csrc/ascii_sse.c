@@ -534,6 +534,121 @@ static inline uint32_t index_fold_block(
     return (uint32_t)((valid_even << 1) | valid_odd);
 }
 
+// The first and the last 2 bytes of the needle, compared exactly, find the
+// candidates and the bytes in between get verified. For needles of 5 and more
+// bytes.
+//
+// Resumes a search at start, which is a whole number of blocks into the
+// haystack and not its beginning: the matches starting before start-1 are
+// dealt with, and the block in front of start can be loaded together with the
+// one needle_len-2 further.
+static inline __attribute__((always_inline)) int64_t index_fold_first2_last2(
+    const unsigned char *haystack, int64_t haystack_len,
+    const unsigned char *needle, int64_t needle_len, int64_t start) {
+
+    const __m128i v_0x20 = _mm_set1_epi8(0x20);
+    const __m128i v_0x1f = _mm_set1_epi8(0x1f);
+    const __m128i v_0x9a = _mm_set1_epi8((char)0x9a);
+
+    const __m128i first2 = prepare_needle16((const uint16_t *)needle, v_0x20, v_0x1f, v_0x9a);
+    const __m128i last2 = prepare_needle16((const uint16_t *)(needle + needle_len - 2), v_0x20, v_0x1f, v_0x9a);
+
+    const int64_t checked_len = haystack_len - needle_len;
+    // the block in front, the match starting at its last byte is found with it
+    __m128i prev_data = _mm_loadu_si128((const __m128i *)(haystack + start - 16));
+    __m128i prev_data_end = _mm_loadu_si128((const __m128i *)(haystack + start - 16 + needle_len - 2));
+    // the failures allowed up to here are used up, see the check below
+    int64_t failures = start >> 4;
+
+    for (int64_t i = start; i <= checked_len + 16; i += 16) {
+        int64_t remaining = haystack_len - i;
+        if (remaining <= 0) break;
+
+        __m128i data = (remaining >= 16) ? _mm_loadu_si128((const __m128i *)(haystack + i))
+                                          : load_data16(haystack + i, remaining);
+        int64_t end_remaining = remaining - needle_len + 2;
+        __m128i data_end = (end_remaining >= 16) ? _mm_loadu_si128((const __m128i *)(haystack + i + needle_len - 2))
+                                                  : (end_remaining > 0) ? load_data16(haystack + i + needle_len - 2, end_remaining)
+                                                                        : _mm_setzero_si128();
+
+        uint32_t candidates = index_fold_block(data, data_end, prev_data, prev_data_end,
+                                                first2, last2, v_0x20, v_0x1f, v_0x9a);
+        prev_data = data;
+        prev_data_end = data_end;
+
+        if (candidates) {
+            while (candidates) {
+                int pos = __builtin_ctz(candidates);
+                candidates &= candidates - 1;
+
+                int64_t match_pos = i + pos - 1;
+                if (match_pos > checked_len) continue;
+
+                if (equal_fold_scalar((const uint8_t *)(haystack + match_pos + 2),
+                                      (const uint8_t *)(needle + 2),
+                                      needle_len - 4)) {
+                    return match_pos;
+                }
+                failures++;
+            }
+
+            // Bail out to Rabin-Karp once false candidates dominate. Bit 15 of
+            // the block reported position i + 14, so i + 15 is still unchecked.
+            const int64_t rk_start = i + 15;
+            if (failures > 4 + (rk_start >> 4) && rk_start < checked_len) {
+                const int64_t rk_pos = index_fold_rabin_karp_core(haystack + rk_start,
+                                                                 haystack_len - rk_start,
+                                                                 needle, needle_len);
+                return rk_pos < 0 ? -1 : rk_start + rk_pos;
+            }
+        }
+    }
+
+    return -1;
+}
+
+// Mixes every byte with the byte that is a fixed distance further: the low
+// nibble of each. Bytes that are equal under case folding have the same low
+// nibble, so equal inputs always mix to equal results, while the case bit
+// (0x20) is left out and nothing needs to be folded. Different inputs can mix
+// to the same result too ('a' and 'q', '0' and 'p' share a nibble), whatever is
+// found this way has to be verified.
+//
+// There is no byte shift to move a nibble up with, PSHUFB does it: it indexes
+// by the low nibble, and high_nibbles has every nibble in the upper half. For
+// a byte with the high bit set PSHUFB gives zero instead, which serves as well
+// as its nibble would, equal bytes still mix to equal results.
+static inline __m128i index_fold_mix_nibbles(__m128i data, __m128i data_end,
+                                             __m128i high_nibbles, __m128i v_0x0f) {
+    return _mm_or_si128(_mm_shuffle_epi8(high_nibbles, data), _mm_and_si128(data_end, v_0x0f));
+}
+
+static inline __m128i index_fold_prepare_mixed_comparer(const unsigned char *needle, const unsigned char *needle_end,
+                                                        __m128i high_nibbles, __m128i v_0x0f) {
+    uint16_t needle16, needle_end16;
+    __builtin_memcpy(&needle16, needle, sizeof(needle16));
+    __builtin_memcpy(&needle_end16, needle_end, sizeof(needle_end16));
+    return index_fold_mix_nibbles(_mm_set1_epi16((short)needle16), _mm_set1_epi16((short)needle_end16), high_nibbles, v_0x0f);
+}
+
+// A match contains a 16-bit lane of the block either at its start or a byte
+// later, so instead of looking at the haystack at every offset, the lanes are
+// compared against the needle at offsets 0 and 1.
+static inline uint32_t index_fold_block_mixed(__m128i data, __m128i data_end,
+                                              __m128i searched0, __m128i searched1,
+                                              __m128i high_nibbles, __m128i v_0x0f) {
+    const __m128i mixed = index_fold_mix_nibbles(data, data_end, high_nibbles, v_0x0f);
+
+    // a lane equal to searched0 is a match starting at the lane, a lane equal
+    // to searched1 is one starting a byte before it. A lane sets two bits of
+    // the mask: the upper one is kept for the former, the lower one for the
+    // latter, and bit j of the result is a match at position j-1.
+    const int mask0 = _mm_movemask_epi8(_mm_cmpeq_epi16(mixed, searched0));
+    const int mask1 = _mm_movemask_epi8(_mm_cmpeq_epi16(mixed, searched1));
+
+    return (uint32_t)((mask0 & 0xAAAA) | (mask1 & 0x5555));
+}
+
 // gocc: indexFoldRabinKarpSse(a, b string) int
 int64_t index_fold_rabin_karp_sse(unsigned char *haystack, int64_t haystack_len,
                                   unsigned char *needle, int64_t needle_len) {
@@ -573,65 +688,77 @@ int64_t index_fold_sse(unsigned char *haystack, int64_t haystack_len,
         return index_fold_4_byte_sse(haystack, haystack_len, needle);
     }
 
-    // Needles of 5 and more bytes: the first and the last 2 bytes find the
-    // candidates, the bytes in between get verified.
+    // Needles of 5 and more bytes: 2 bytes from the start of the needle and 2
+    // from its end find the candidates, all 4 in a single comparison. Each
+    // byte of the haystack is mixed with the byte dist further, which is how
+    // far apart the two ends of the needle are, and the result is compared
+    // against the same mix of the needle. That takes no folding and half the
+    // comparisons of looking at the two ends separately, but it's not exact,
+    // so the whole candidate gets verified.
+    const __m128i v_0x0f = _mm_set1_epi8(0x0f);
+    const __m128i high_nibbles = _mm_setr_epi8(0x00, 0x10, 0x20, 0x30, 0x40, 0x50, 0x60, 0x70,
+                                               (char)0x80, (char)0x90, (char)0xa0, (char)0xb0,
+                                               (char)0xc0, (char)0xd0, (char)0xe0, (char)0xf0);
 
-    const __m128i v_0x20 = _mm_set1_epi8(0x20);
-    const __m128i v_0x1f = _mm_set1_epi8(0x1f);
-    const __m128i v_0x9a = _mm_set1_epi8((char)0x9a);
+    const int64_t dist = needle_len - 3;
+    const __m128i mixed0 = index_fold_prepare_mixed_comparer(needle, needle + dist, high_nibbles, v_0x0f);
+    const __m128i mixed1 = index_fold_prepare_mixed_comparer(needle + 1, needle + dist + 1, high_nibbles, v_0x0f);
 
-    const __m128i first2 = prepare_needle16((const uint16_t *)needle, v_0x20, v_0x1f, v_0x9a);
-    const __m128i last2 = prepare_needle16((const uint16_t *)(needle + needle_len - 2), v_0x20, v_0x1f, v_0x9a);
-
-    const int64_t checked_len = haystack_len - needle_len;
-    __m128i prev_data = _mm_setzero_si128();
-    __m128i prev_data_end = _mm_setzero_si128();
+    const unsigned char *data_start = haystack;
+    // the last position a match can start at
+    const unsigned char *last_start = haystack + haystack_len - needle_len;
     int64_t failures = 0;
 
-    for (int64_t i = 0; i <= checked_len + 16; i += 16) {
-        int64_t remaining = haystack_len - i;
-        if (remaining <= 0) break;
+    // a block reports matches up to 14 bytes into it; while all of those can
+    // be matches, both loads are within the haystack too
+    for (const unsigned char *data_bound = last_start - 14; haystack <= data_bound; haystack += 16) {
+        __m128i data = _mm_loadu_si128((const __m128i *)haystack);
+        __m128i data_end = _mm_loadu_si128((const __m128i *)(haystack + dist));
 
-        __m128i data = (remaining >= 16) ? _mm_loadu_si128((const __m128i *)(haystack + i))
-                                          : load_data16(haystack + i, remaining);
-        int64_t end_remaining = remaining - needle_len + 2;
-        __m128i data_end = (end_remaining >= 16) ? _mm_loadu_si128((const __m128i *)(haystack + i + needle_len - 2))
-                                                  : (end_remaining > 0) ? load_data16(haystack + i + needle_len - 2, end_remaining)
-                                                                        : _mm_setzero_si128();
-
-        uint32_t candidates = index_fold_block(data, data_end, prev_data, prev_data_end,
-                                                first2, last2, v_0x20, v_0x1f, v_0x9a);
-        prev_data = data;
-        prev_data_end = data_end;
-
-        if (i == 0) {
-            candidates &= ~1u;
-        }
-
+        uint32_t candidates = index_fold_block_mixed(data, data_end, mixed0, mixed1, high_nibbles, v_0x0f);
         if (candidates) {
+            // bit 0 of the first block is the position in front of the haystack
+            if (haystack == data_start) {
+                candidates &= ~1u;
+            }
+
             while (candidates) {
                 int pos = __builtin_ctz(candidates);
                 candidates &= candidates - 1;
 
-                int64_t match_pos = i + pos - 1;
-                if (match_pos < 0 || match_pos > checked_len) continue;
-
-                if (equal_fold_scalar((const uint8_t *)(haystack + match_pos + 2),
-                                      (const uint8_t *)(needle + 2),
-                                      needle_len - 4)) {
-                    return match_pos;
+                const unsigned char *match = haystack + pos - 1;
+                if (equal_fold_scalar(match, needle, needle_len)) {
+                    return match - data_start;
                 }
                 failures++;
             }
 
-            // Bail out to Rabin-Karp once false candidates dominate. Bit 15 of
-            // the block reported position i + 14, so i + 15 is still unchecked.
-            const int64_t rk_start = i + 15;
-            if (failures > 4 + (rk_start >> 4) && rk_start < checked_len) {
-                const int64_t rk_pos = index_fold_rabin_karp_core(haystack + rk_start,
-                                                                 haystack_len - rk_start,
-                                                                 needle, needle_len);
-                return rk_pos < 0 ? -1 : rk_start + rk_pos;
+            // the haystack is full of bytes the mix can't tell from the needle,
+            // compare exactly from the next block on, this one is dealt with
+            if (failures > 4 + ((haystack - data_start) >> 7)) {
+                return index_fold_first2_last2(data_start, haystack_len, needle, needle_len, haystack - data_start + 16);
+            }
+        }
+    }
+
+    for (; haystack <= last_start + 1; haystack += 16) {
+        const int64_t remaining = haystack_len - (haystack - data_start);
+        __m128i data = load_data16(haystack, remaining);
+        __m128i data_end = load_data16(haystack + dist, remaining - dist);
+
+        uint32_t candidates = index_fold_block_mixed(data, data_end, mixed0, mixed1, high_nibbles, v_0x0f);
+        if (haystack == data_start) {
+            candidates &= ~1u;
+        }
+
+        while (candidates) {
+            int pos = __builtin_ctz(candidates);
+            candidates &= candidates - 1;
+
+            // the tail got padded with zeroes, a match has to end within the actual data
+            const unsigned char *match = haystack + pos - 1;
+            if (match <= last_start && equal_fold_scalar(match, needle, needle_len)) {
+                return match - data_start;
             }
         }
     }

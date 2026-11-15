@@ -274,9 +274,9 @@ func TestIndexFoldShortNeedles(t *testing.T) {
 	}
 }
 
-// Needles of 5 and more bytes are found on NEON by a prefilter that looks at
-// the low nibbles of a few bytes only, so it can't tell the needle from bytes
-// that differ in the high nibble, and relies on the verification for that.
+// Needles of 5 and more bytes are found by a prefilter that looks at the low
+// nibbles of a few bytes only, so it can't tell the needle from bytes that
+// differ in the high nibble, and relies on the verification for that.
 // Fill the haystack with such lookalikes of the needle, different from it
 // throughout or just at the ends the prefilter looks at, which also drives the
 // kernel onto its exact fallback, and sweep every haystack length and match
