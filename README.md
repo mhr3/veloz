@@ -78,18 +78,18 @@ func main() {
 
 | Function           | CPU        | naive (MB/s) | veloz (MB/s) | Speedup |
 |--------------------|------------|--------------|--------------|---------|
-| ascii.ValidString  | AMD Zen 3  | 8,715        | 117,592      | 13.5x   |
-| ascii.EqualFold    | AMD Zen 3  | 1,742        | 33,300       | 19.1x   |
-| ascii.IndexFold    | AMD Zen 3  | 5,828        | 19,372       | 3.3x    |
-| ascii.IndexAny     | AMD Zen 3  | 1,716        | 8,775        | 5.1x    |
-| utf8.ValidString   | AMD Zen 3  | 1,184        | 11,291       | 9.5x    |
-| ascii.ValidString  | Graviton 2 | 4,902        | 33,642       | 6.9x    |
-| ascii.EqualFold    | Graviton 2 |   601        | 10,839       | 18.0x   |
-| ascii.IndexFold    | Graviton 2 | 2,728        | 8,431        | 3.1x    |
-| ascii.IndexAny     | Graviton 2 |   698        | 9,488        | 13.6x   |
-| utf8.ValidString   | Graviton 2 |   618        | 3,091        | 5.0x    |
-| ascii.ValidString  | Apple M2   | 12,256       | 89,227       | 7.3x    |
-| ascii.EqualFold    | Apple M2   | 1,949        | 31,804       | 16.3x   |
-| ascii.IndexFold    | Apple M2   | 7,117        | 29,046       | 4.1x    |
-| ascii.IndexAny     | Apple M2   | 1,950        | 28,527       | 14.6x   |
-| utf8.ValidString   | Apple M2   | 1,673        | 10,014       | 6.0x    |
+| ascii.ValidString  | AMD Zen 3  | 8,875        | 118,663      | 13.4x   |
+| ascii.EqualFold    | AMD Zen 3  | 2,269        | 33,270       | 14.7x   |
+| ascii.IndexFold    | AMD Zen 3  | 5,771        | 45,545       | 7.9x    |
+| ascii.IndexAny     | AMD Zen 3  | 3,254        | 8,077        | 2.5x    |
+| utf8.ValidString   | AMD Zen 3  | 1,532        | 11,330       | 7.4x    |
+| ascii.ValidString  | Graviton 2 | 5,330        | 33,768       | 6.3x    |
+| ascii.EqualFold    | Graviton 2 |   708        | 10,963       | 15.5x   |
+| ascii.IndexFold    | Graviton 2 | 2,638        | 12,250       | 4.6x    |
+| ascii.IndexAny     | Graviton 2 | 1,203        | 8,896        | 7.4x    |
+| utf8.ValidString   | Graviton 2 |   678        | 3,076        | 4.5x    |
+| ascii.ValidString  | Apple M2   | 12,132       | 88,602       | 7.3x    |
+| ascii.EqualFold    | Apple M2   | 1,899        | 31,959       | 16.8x   |
+| ascii.IndexFold    | Apple M2   | 7,024        | 42,335       | 6.0x    |
+| ascii.IndexAny     | Apple M2   | 2,866        | 25,698       | 9.0x    |
+| utf8.ValidString   | Apple M2   | 2,009        | 9,902        | 4.9x    |
