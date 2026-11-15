@@ -239,6 +239,41 @@ func TestIndexFoldPeriodic(t *testing.T) {
 	}
 }
 
+// Needles of up to 4 bytes have dedicated kernels, which carry state from one
+// block to the next, assume zeroes in front of the haystack and zero-pad its
+// tail. Sweep every haystack length and match position across a few blocks
+// (16 bytes on NEON and SSE, 32 on AVX2), with needles and fillers made of the
+// bytes those assumed positions look like: NUL is the padding everywhere and
+// the zero in front on x86, a backtick folds to the zero in front on NEON.
+func TestIndexFoldShortNeedles(t *testing.T) {
+	check := func(hay, needle string) {
+		t.Helper()
+		want := indexFoldGo(hay, needle)
+		if idx := IndexFold(hay, needle); idx != want {
+			t.Fatalf("IndexFold(%q, %q) = %v, want %v", hay, needle, idx, want)
+		}
+	}
+
+	for _, needle := range []string{
+		"a", "aB", "aBc", "aBcD", "aBcDe",
+		"`a", "``a", "`aa", "```a", "``aa", "`aaa",
+		"\x00a", "\x00\x00a", "\x00aa", "\x00\x00\x00a", "\x00\x00aa", "\x00aaa",
+		"a\x00", "a\x00\x00", "aa\x00", "a\x00\x00\x00", "aaa\x00",
+		"\x00\x00", "\x00\x00\x00", "\x00\x00\x00\x00",
+	} {
+		for _, filler := range []string{"x", "a", "`", "\x00"} {
+			for hayLen := range 100 {
+				base := strings.Repeat(filler, hayLen)
+				check(base, needle)
+
+				for pos := 0; pos+len(needle) <= hayLen; pos++ {
+					check(base[:pos]+strings.ToUpper(needle)+base[pos+len(needle):], needle)
+				}
+			}
+		}
+	}
+}
+
 func TestEqualFold(t *testing.T) {
 	equalFoldTests := []struct {
 		s, t string
