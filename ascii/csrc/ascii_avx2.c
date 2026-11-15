@@ -671,22 +671,17 @@ static inline uint32_t index_fold_2byte_block(
 // Special case: search for a 2-byte needle case-insensitively
 static inline int64_t index_fold_2_byte_avx2(const unsigned char *haystack, int64_t haystack_len,
                                               const uint16_t *needle) {
-    const int64_t checked_len = haystack_len - 2;
-    if (checked_len < 0) return -1;
-
     const __m256i v_0x20 = _mm256_set1_epi8(0x20);
     const __m256i v_0x1f = _mm256_set1_epi8(0x1f);
     const __m256i v_0x9a = _mm256_set1_epi8((char)0x9a);
     const __m256i needle_vec = prepare_needle16(needle, v_0x20, v_0x1f, v_0x9a);
 
     __m256i prev_folded = _mm256_setzero_si256();
+    int64_t i = 0;
 
-    for (int64_t i = 0; i <= checked_len + 32; i += 32) {
-        int64_t remaining = haystack_len - i;
-        if (remaining <= 0) break;
-
-        __m256i data = (remaining >= 32) ? _mm256_loadu_si256((const __m256i *)(haystack + i))
-                                          : load_data32_avx2(haystack + i, remaining);
+    // Full blocks: everything they report lies within the haystack.
+    for (const int64_t full_len = haystack_len - (haystack_len % 32); i < full_len; i += 32) {
+        __m256i data = _mm256_loadu_si256((const __m256i *)(haystack + i));
         __m256i folded = fold_to_upper_vec(data, v_0x20, v_0x1f, v_0x9a);
 
         uint32_t matches = index_fold_2byte_block(folded, prev_folded, needle_vec);
@@ -697,15 +692,174 @@ static inline int64_t index_fold_2_byte_avx2(const unsigned char *haystack, int6
             matches &= ~1u;
         }
 
-        while (matches) {
-            int pos = __builtin_ctz(matches);
-            matches &= matches - 1;  // Clear lowest bit
-
-            int64_t match_pos = i + pos - 1;
-            if (match_pos >= 0 && match_pos <= checked_len) {
-                return match_pos;
-            }
+        if (matches) {
+            return i + __builtin_ctz(matches) - 1;
         }
+    }
+
+    const int64_t remaining = haystack_len - i;
+    if (remaining == 0) return -1;
+
+    __m256i data = load_data32_avx2(haystack + i, remaining);
+    __m256i folded = fold_to_upper_vec(data, v_0x20, v_0x1f, v_0x9a);
+
+    uint32_t matches = index_fold_2byte_block(folded, prev_folded, needle_vec);
+    if (i == 0) {
+        matches &= ~1u;
+    }
+
+    if (matches) {
+        // The tail got padded with zeroes, a match has to end within the actual data
+        const int end = __builtin_ctz(matches);
+        return end >= remaining ? -1 : i + end - 1;
+    }
+
+    return -1;
+}
+
+// Process a 32-byte block for 3-byte needle search. Unlike the 2-byte case
+// this compares single bytes: every needle byte is matched against the block
+// moved back by its distance from the needle's last byte, so ANDing the
+// results marks the bytes where a match ends. Bit N in the result is a match
+// starting at position N-2. The whole needle is covered, there's nothing left
+// to verify.
+static inline uint32_t index_fold_3byte_block(
+    __m256i folded, __m256i prev_folded,
+    __m256i needle0, __m256i needle1, __m256i needle2) {
+
+    // [prev.high, curr.low], which lets the lane-local vpalignr shift across
+    // lanes and blocks, see shift_right_1
+    __m256i bridge = _mm256_permute2x128_si256(prev_folded, folded, 0x21);
+
+    __m256i cmp0 = _mm256_cmpeq_epi8(_mm256_alignr_epi8(folded, bridge, 14), needle0);
+    __m256i cmp1 = _mm256_cmpeq_epi8(_mm256_alignr_epi8(folded, bridge, 15), needle1);
+    __m256i cmp2 = _mm256_cmpeq_epi8(folded, needle2);
+
+    return (uint32_t)_mm256_movemask_epi8(_mm256_and_si256(_mm256_and_si256(cmp0, cmp1), cmp2));
+}
+
+// Special case: search for a 3-byte needle case-insensitively
+static inline int64_t index_fold_3_byte_avx2(const unsigned char *haystack, int64_t haystack_len,
+                                              const unsigned char *needle) {
+    const __m256i v_0x20 = _mm256_set1_epi8(0x20);
+    const __m256i v_0x1f = _mm256_set1_epi8(0x1f);
+    const __m256i v_0x9a = _mm256_set1_epi8((char)0x9a);
+
+    // Fold the whole needle at once, then spread each of its bytes over a register
+    const __m128i needle_vec = _mm256_castsi256_si128(fold_to_upper_vec(load_data32_avx2(needle, 3), v_0x20, v_0x1f, v_0x9a));
+    const __m256i needle0 = _mm256_broadcastb_epi8(needle_vec);
+    const __m256i needle1 = _mm256_broadcastb_epi8(_mm_srli_si128(needle_vec, 1));
+    const __m256i needle2 = _mm256_broadcastb_epi8(_mm_srli_si128(needle_vec, 2));
+
+    __m256i prev_folded = _mm256_setzero_si256();
+    int64_t i = 0;
+
+    // Full blocks: everything they report lies within the haystack.
+    for (const int64_t full_len = haystack_len - (haystack_len % 32); i < full_len; i += 32) {
+        __m256i data = _mm256_loadu_si256((const __m256i *)(haystack + i));
+        __m256i folded = fold_to_upper_vec(data, v_0x20, v_0x1f, v_0x9a);
+
+        uint32_t matches = index_fold_3byte_block(folded, prev_folded, needle0, needle1, needle2);
+        prev_folded = folded;
+
+        // On first iteration, clear the first 2 bits (positions that don't exist)
+        if (i == 0) {
+            matches &= ~3u;
+        }
+
+        if (matches) {
+            return i + __builtin_ctz(matches) - 2;
+        }
+    }
+
+    const int64_t remaining = haystack_len - i;
+    if (remaining == 0) return -1;
+
+    __m256i data = load_data32_avx2(haystack + i, remaining);
+    __m256i folded = fold_to_upper_vec(data, v_0x20, v_0x1f, v_0x9a);
+
+    uint32_t matches = index_fold_3byte_block(folded, prev_folded, needle0, needle1, needle2);
+    if (i == 0) {
+        matches &= ~3u;
+    }
+
+    if (matches) {
+        // The tail got padded with zeroes, a match has to end within the actual data
+        const int end = __builtin_ctz(matches);
+        return end >= remaining ? -1 : i + end - 2;
+    }
+
+    return -1;
+}
+
+// Same as the 3-byte case, with one more byte. Bit N in the result is a match
+// starting at position N-3.
+static inline uint32_t index_fold_4byte_block(
+    __m256i folded, __m256i prev_folded,
+    __m256i needle0, __m256i needle1, __m256i needle2, __m256i needle3) {
+
+    __m256i bridge = _mm256_permute2x128_si256(prev_folded, folded, 0x21);
+
+    __m256i cmp0 = _mm256_cmpeq_epi8(_mm256_alignr_epi8(folded, bridge, 13), needle0);
+    __m256i cmp1 = _mm256_cmpeq_epi8(_mm256_alignr_epi8(folded, bridge, 14), needle1);
+    __m256i cmp2 = _mm256_cmpeq_epi8(_mm256_alignr_epi8(folded, bridge, 15), needle2);
+    __m256i cmp3 = _mm256_cmpeq_epi8(folded, needle3);
+
+    return (uint32_t)_mm256_movemask_epi8(_mm256_and_si256(_mm256_and_si256(cmp0, cmp1), _mm256_and_si256(cmp2, cmp3)));
+}
+
+// Special case: search for a 4-byte needle case-insensitively
+static inline int64_t index_fold_4_byte_avx2(const unsigned char *haystack, int64_t haystack_len,
+                                              const unsigned char *needle) {
+    const __m256i v_0x20 = _mm256_set1_epi8(0x20);
+    const __m256i v_0x1f = _mm256_set1_epi8(0x1f);
+    const __m256i v_0x9a = _mm256_set1_epi8((char)0x9a);
+
+    // Fold the whole needle at once, then spread each of its bytes over a register
+    uint32_t needle32;
+    __builtin_memcpy(&needle32, needle, 4);
+    const __m128i needle_vec = _mm256_castsi256_si128(fold_to_upper_vec(_mm256_set1_epi32((int)needle32), v_0x20, v_0x1f, v_0x9a));
+    const __m256i needle0 = _mm256_broadcastb_epi8(needle_vec);
+    const __m256i needle1 = _mm256_broadcastb_epi8(_mm_srli_si128(needle_vec, 1));
+    const __m256i needle2 = _mm256_broadcastb_epi8(_mm_srli_si128(needle_vec, 2));
+    const __m256i needle3 = _mm256_broadcastb_epi8(_mm_srli_si128(needle_vec, 3));
+
+    __m256i prev_folded = _mm256_setzero_si256();
+    int64_t i = 0;
+
+    // Full blocks: everything they report lies within the haystack.
+    for (const int64_t full_len = haystack_len - (haystack_len % 32); i < full_len; i += 32) {
+        __m256i data = _mm256_loadu_si256((const __m256i *)(haystack + i));
+        __m256i folded = fold_to_upper_vec(data, v_0x20, v_0x1f, v_0x9a);
+
+        uint32_t matches = index_fold_4byte_block(folded, prev_folded, needle0, needle1, needle2, needle3);
+        prev_folded = folded;
+
+        // On first iteration, clear the first 3 bits (positions that don't exist)
+        if (i == 0) {
+            matches &= ~7u;
+        }
+
+        if (matches) {
+            return i + __builtin_ctz(matches) - 3;
+        }
+    }
+
+    const int64_t remaining = haystack_len - i;
+    if (remaining == 0) return -1;
+
+    __m256i data = load_data32_avx2(haystack + i, remaining);
+    __m256i folded = fold_to_upper_vec(data, v_0x20, v_0x1f, v_0x9a);
+
+    uint32_t matches = index_fold_4byte_block(folded, prev_folded, needle0, needle1, needle2, needle3);
+    if (i == 0) {
+        matches &= ~7u;
+    }
+
+    if (matches) {
+        // The tail got padded with zeroes, a match has to end within the actual data
+        const int end = __builtin_ctz(matches);
+        return end >= remaining ? -1 : i + end - 3;
     }
 
     return -1;
@@ -780,7 +934,14 @@ int64_t index_fold_avx2(unsigned char *haystack, int64_t haystack_len,
         return index_fold_1_byte_avx2(haystack, haystack_len, needle[0]);
     case 2:
         return index_fold_2_byte_avx2(haystack, haystack_len, (const uint16_t *)needle);
+    case 3:
+        return index_fold_3_byte_avx2(haystack, haystack_len, needle);
+    case 4:
+        return index_fold_4_byte_avx2(haystack, haystack_len, needle);
     }
+
+    // Needles of 5 and more bytes: the first and the last 2 bytes find the
+    // candidates, the bytes in between get verified.
 
     const __m256i v_0x20 = _mm256_set1_epi8(0x20);
     const __m256i v_0x1f = _mm256_set1_epi8(0x1f);
@@ -828,8 +989,7 @@ int64_t index_fold_avx2(unsigned char *haystack, int64_t haystack_len,
                 if (match_pos < 0 || match_pos > checked_len) continue;
 
                 // Verify the middle part of the needle (skip first2 and last2)
-                if (needle_len <= 4 ||
-                    equal_fold_scalar((const uint8_t *)(haystack + match_pos + 2),
+                if (equal_fold_scalar((const uint8_t *)(haystack + match_pos + 2),
                                       (const uint8_t *)(needle + 2),
                                       needle_len - 4)) {
                     return match_pos;

@@ -625,15 +625,20 @@ static inline int64_t index_fold_rabin_karp_core(unsigned char *haystack, const 
     return -1;
 }
 
+static inline uint8x16_t index_fold_prepare_byte_comparer(const unsigned char* needle, const uint8x16_t shift, const uint8x16x2_t table)
+{
+    uint8x16_t needle8vec = vld1q_dup_u8(needle);
+    needle8vec = vsubq_u8(needle8vec, shift);
+    return vsubq_u8(needle8vec, vqtbl2q_u8(table, needle8vec));
+}
+
 static inline int64_t index_fold_1_byte_needle(unsigned char *haystack, uint64_t haystack_len,
-    uint8_t needle, const uint8x16x2_t table)
+    const unsigned char* needle, const uint8x16x2_t table)
 {
     const uint64_t blockSize = 16; // NEON can process 128 bits (16 bytes) at a time
     const uint8x16_t shift = vdupq_n_u8(0x60);
 
-    if (needle >= 'a' && needle <= 'z') needle -= 32;
-    // the needle is uppercased and shifted
-    const uint8x16_t searched = vdupq_n_u8(needle-0x60);
+    const uint8x16_t searched = index_fold_prepare_byte_comparer(needle, shift, table);
 
     const unsigned char *data_start = haystack;
 
@@ -690,44 +695,202 @@ static inline uint16x8_t index_fold_prepare_comparer(const uint16_t* needle, con
     return vreinterpretq_u16_u8(needle8vec);
 }
 
+static inline uint64_t index_fold_2_byte_block(uint8x16_t data, const uint16x8_t searched,
+    const uint8x16x2_t table, const uint8x16_t shift, uint8x16_t* prev_data)
+{
+    data = vsubq_u8(data, shift);
+    data = vsubq_u8(data, vqtbl2q_u8(table, data));
+
+    // operating on shifted data
+    const uint16x8_t res1 = vceqq_u16(data, searched);
+    const uint16x8_t prev = vextq_u8(*prev_data, data, 15);
+    const uint16x8_t res2 = vceqq_u16(prev, searched);
+    *prev_data = data;
+
+    const uint16x8_t combined = vorrq_u16(vshlq_n_u16(res1, 8), vshrq_n_u16(res2, 8));
+    const uint8x8_t narrowed = vshrn_n_u16(combined, 4);
+
+    // the return contains 16 nibbles (0x0 or 0xF), each representing position of a match
+    // [-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+    return vget_lane_u64(narrowed, 0);
+}
+
 static inline int64_t index_fold_2_byte_needle(unsigned char *haystack, uint64_t haystack_len,
     const uint16_t* needle, const uint8x16x2_t table)
 {
     const uint64_t blockSize = 16; // NEON can process 128 bits (16 bytes) at a time
-    const uint64_t checked_len = haystack_len - 2;
     const uint8x16_t shift = vdupq_n_u8(0x60);
 
     const uint16x8_t searched = index_fold_prepare_comparer(needle, shift, table);
 
+    const unsigned char *data_start = haystack;
     uint8x16_t prev_data = vdupq_n_u8(0);
-    uint64_t curr_pos = 0;
 
-    for (const unsigned char *data_bound = haystack + checked_len + 1; haystack <= data_bound; haystack += blockSize, curr_pos += blockSize)
+    for (const unsigned char *data_bound = haystack + haystack_len - (haystack_len%blockSize); haystack < data_bound; haystack += blockSize)
     {
-        uint8x16_t data = load_data16(haystack, haystack_len - curr_pos);
-
-        data = vsubq_u8(data, shift);
-        data = vsubq_u8(data, vqtbl2q_u8(table, data));
-
-        // operating on shifted data
-        const uint16x8_t res1 = vceqq_u16(data, searched);
-        const uint16x8_t prev = vextq_u8(prev_data, data, 15);
-        const uint16x8_t res2 = vceqq_u16(prev, searched);
-        prev_data = data;
-
-        const uint16x8_t combined = vorrq_u16(vshlq_n_u16(res1, 8), vshrq_n_u16(res2, 8));
-        const uint8x8_t narrowed = vshrn_n_u16(combined, 4);
-
-        // these represent positions: [-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
-        uint64_t data64 = vget_lane_u64(narrowed, 0);
+        uint64_t data64 = index_fold_2_byte_block(vld1q_u8(haystack), searched, table, shift, &prev_data);
         // clear the 0th byte on the first iteration, we made up a 0 on that position
-        if (data64 && curr_pos == 0) data64 &= ~(0xF);
+        if (data64 && haystack == data_start) data64 &= ~(0xF);
         if (data64)
         {
             const int pos = (__builtin_ctzll(data64) / 4) - 1;
-            if (haystack+pos >= data_bound) return -1;
-            return curr_pos + pos;
+            return (haystack-data_start) + pos;
         }
+    }
+    haystack_len %= blockSize;
+
+    if (haystack_len == 0) {
+        return -1;
+    }
+
+    uint64_t data64 = index_fold_2_byte_block(load_data16(haystack, haystack_len), searched, table, shift, &prev_data);
+    if (data64 && haystack == data_start) data64 &= ~(0xF);
+    if (data64)
+    {
+        // the tail got padded with zeroes, a match has to end within the actual data
+        const int end = __builtin_ctzll(data64) / 4;
+        return end >= haystack_len ? -1 : (haystack-data_start) + end - 1;
+    }
+
+    return -1;
+}
+
+// Unlike the 2-byte case this compares single bytes: every needle byte is
+// matched against the block moved back by its distance from the needle's last
+// byte, so ANDing the results marks the bytes where an occurrence ends. The
+// whole needle is covered, there's nothing left to verify.
+static inline uint64_t index_fold_3_byte_block(uint8x16_t data, const uint8x16_t searched0, const uint8x16_t searched1, const uint8x16_t searched2,
+    const uint8x16x2_t table, const uint8x16_t shift, uint8x16_t* prev_data)
+{
+    data = vsubq_u8(data, shift);
+    data = vsubq_u8(data, vqtbl2q_u8(table, data));
+
+    // operating on shifted data
+    const uint8x16_t res0 = vceqq_u8(vextq_u8(*prev_data, data, 14), searched0);
+    const uint8x16_t res1 = vceqq_u8(vextq_u8(*prev_data, data, 15), searched1);
+    const uint8x16_t res2 = vceqq_u8(data, searched2);
+    *prev_data = data;
+
+    const uint8x16_t combined = vandq_u8(vandq_u8(res0, res1), res2);
+    const uint8x8_t narrowed = vshrn_n_u16(combined, 4);
+
+    // the return contains 16 nibbles (0x0 or 0xF), each representing position of a match
+    // [-2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+    return vget_lane_u64(narrowed, 0);
+}
+
+static inline int64_t index_fold_3_byte_needle(unsigned char *haystack, uint64_t haystack_len,
+    const unsigned char* needle, const uint8x16x2_t table)
+{
+    const uint64_t blockSize = 16; // NEON can process 128 bits (16 bytes) at a time
+    const uint8x16_t shift = vdupq_n_u8(0x60);
+
+    // fold the whole needle at once, then spread each of its bytes over a register
+    uint8x16_t needle8vec = load_data16(needle, 3);
+    needle8vec = vsubq_u8(needle8vec, shift);
+    needle8vec = vsubq_u8(needle8vec, vqtbl2q_u8(table, needle8vec));
+
+    const uint8x16_t searched0 = vdupq_laneq_u8(needle8vec, 0);
+    const uint8x16_t searched1 = vdupq_laneq_u8(needle8vec, 1);
+    const uint8x16_t searched2 = vdupq_laneq_u8(needle8vec, 2);
+
+    const unsigned char *data_start = haystack;
+    uint8x16_t prev_data = vdupq_n_u8(0);
+
+    for (const unsigned char *data_bound = haystack + haystack_len - (haystack_len%blockSize); haystack < data_bound; haystack += blockSize)
+    {
+        uint64_t data64 = index_fold_3_byte_block(vld1q_u8(haystack), searched0, searched1, searched2, table, shift, &prev_data);
+        // clear the first 2 positions on the first iteration, we made up zeroes there
+        if (data64 && haystack == data_start) data64 &= ~(0xFFull);
+        if (data64)
+        {
+            const int pos = (__builtin_ctzll(data64) / 4) - 2;
+            return (haystack-data_start) + pos;
+        }
+    }
+    haystack_len %= blockSize;
+
+    if (haystack_len == 0) {
+        return -1;
+    }
+
+    uint64_t data64 = index_fold_3_byte_block(load_data16(haystack, haystack_len), searched0, searched1, searched2, table, shift, &prev_data);
+    if (data64 && haystack == data_start) data64 &= ~(0xFFull);
+    if (data64)
+    {
+        // the tail got padded with zeroes, a match has to end within the actual data
+        const int end = __builtin_ctzll(data64) / 4;
+        return end >= haystack_len ? -1 : (haystack-data_start) + end - 2;
+    }
+
+    return -1;
+}
+
+// same as above, with one more byte
+static inline uint64_t index_fold_4_byte_block(uint8x16_t data, const uint8x16_t searched0, const uint8x16_t searched1, const uint8x16_t searched2, const uint8x16_t searched3,
+    const uint8x16x2_t table, const uint8x16_t shift, uint8x16_t* prev_data)
+{
+    data = vsubq_u8(data, shift);
+    data = vsubq_u8(data, vqtbl2q_u8(table, data));
+
+    // operating on shifted data
+    const uint8x16_t res0 = vceqq_u8(vextq_u8(*prev_data, data, 13), searched0);
+    const uint8x16_t res1 = vceqq_u8(vextq_u8(*prev_data, data, 14), searched1);
+    const uint8x16_t res2 = vceqq_u8(vextq_u8(*prev_data, data, 15), searched2);
+    const uint8x16_t res3 = vceqq_u8(data, searched3);
+    *prev_data = data;
+
+    const uint8x16_t combined = vandq_u8(vandq_u8(res0, res1), vandq_u8(res2, res3));
+    const uint8x8_t narrowed = vshrn_n_u16(combined, 4);
+
+    // the return contains 16 nibbles (0x0 or 0xF), each representing position of a match
+    // [-3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    return vget_lane_u64(narrowed, 0);
+}
+
+static inline int64_t index_fold_4_byte_needle(unsigned char *haystack, uint64_t haystack_len,
+    const unsigned char* needle, const uint8x16x2_t table)
+{
+    const uint64_t blockSize = 16; // NEON can process 128 bits (16 bytes) at a time
+    const uint8x16_t shift = vdupq_n_u8(0x60);
+
+    // fold the whole needle at once, then spread each of its bytes over a register
+    uint8x16_t needle8vec = vreinterpretq_u8_u32(vld1q_dup_u32((const uint32_t *)needle));
+    needle8vec = vsubq_u8(needle8vec, shift);
+    needle8vec = vsubq_u8(needle8vec, vqtbl2q_u8(table, needle8vec));
+
+    const uint8x16_t searched0 = vdupq_laneq_u8(needle8vec, 0);
+    const uint8x16_t searched1 = vdupq_laneq_u8(needle8vec, 1);
+    const uint8x16_t searched2 = vdupq_laneq_u8(needle8vec, 2);
+    const uint8x16_t searched3 = vdupq_laneq_u8(needle8vec, 3);
+
+    const unsigned char *data_start = haystack;
+    uint8x16_t prev_data = vdupq_n_u8(0);
+
+    for (const unsigned char *data_bound = haystack + haystack_len - (haystack_len%blockSize); haystack < data_bound; haystack += blockSize)
+    {
+        uint64_t data64 = index_fold_4_byte_block(vld1q_u8(haystack), searched0, searched1, searched2, searched3, table, shift, &prev_data);
+        // clear the first 3 positions on the first iteration, we made up zeroes there
+        if (data64 && haystack == data_start) data64 &= ~(0xFFFull);
+        if (data64)
+        {
+            const int pos = (__builtin_ctzll(data64) / 4) - 3;
+            return (haystack-data_start) + pos;
+        }
+    }
+    haystack_len %= blockSize;
+
+    if (haystack_len == 0) {
+        return -1;
+    }
+
+    uint64_t data64 = index_fold_4_byte_block(load_data16(haystack, haystack_len), searched0, searched1, searched2, searched3, table, shift, &prev_data);
+    if (data64 && haystack == data_start) data64 &= ~(0xFFFull);
+    if (data64)
+    {
+        // the tail got padded with zeroes, a match has to end within the actual data
+        const int end = __builtin_ctzll(data64) / 4;
+        return end >= haystack_len ? -1 : (haystack-data_start) + end - 3;
     }
 
     return -1;
@@ -774,7 +937,7 @@ int64_t index_fold_rabin_karp(unsigned char *haystack, const int64_t haystack_le
     {
     case 1:
         // special case for 1-byte needles
-        return index_fold_1_byte_needle(haystack, haystack_len, *(uint8_t *)needle, table);
+        return index_fold_1_byte_needle(haystack, haystack_len, needle, table);
     case 2:
         // special case for 2-byte needles, no need for two loads
         return index_fold_2_byte_needle(haystack, haystack_len, (uint16_t *)needle, table);
@@ -784,7 +947,6 @@ int64_t index_fold_rabin_karp(unsigned char *haystack, const int64_t haystack_le
 }
 
 #define MIN(a, b) ((a) > (b) ? (b) : (a))
-#define MAX(a, b) ((a) < (b) ? (b) : (a))
 
 // gocc: IndexFold(a, b string) int
 int64_t index_fold(unsigned char *haystack, int64_t haystack_len, unsigned char *needle, const int64_t needle_len)
@@ -804,11 +966,19 @@ int64_t index_fold(unsigned char *haystack, int64_t haystack_len, unsigned char 
     {
     case 1:
         // special case for 1-byte needles
-        return index_fold_1_byte_needle(haystack, haystack_len, *(uint8_t *)needle, table);
+        return index_fold_1_byte_needle(haystack, haystack_len, needle, table);
     case 2:
         // special case for 2-byte needles, no need for two loads
         return index_fold_2_byte_needle(haystack, haystack_len, (uint16_t *)needle, table);
+    case 3:
+        // special cases for 3 and 4-byte needles, one load and nothing to verify
+        return index_fold_3_byte_needle(haystack, haystack_len, needle, table);
+    case 4:
+        return index_fold_4_byte_needle(haystack, haystack_len, needle, table);
     }
+
+    // needles of 5 and more bytes: the first and the last 2 bytes find the
+    // candidates, the bytes in between get verified
 
     // load the first 2 bytes of the needle
     const uint16x8_t first2 = index_fold_prepare_comparer((uint16_t *)needle, shift, table);
@@ -838,7 +1008,7 @@ int64_t index_fold(unsigned char *haystack, int64_t haystack_len, unsigned char 
                 if (haystack == data_start && pos == 0) continue;
                 pos--;
 
-                if (equal_fold_core(haystack+pos+2, needle+2, MAX(needle_len-4, 0), table))
+                if (equal_fold_core(haystack+pos+2, needle+2, needle_len-4, table))
                 {
                     return haystack-data_start + pos;
                 }
@@ -877,7 +1047,7 @@ int64_t index_fold(unsigned char *haystack, int64_t haystack_len, unsigned char 
             if (haystack == data_start && pos == 0) continue;
             pos--;
 
-            if (haystack+pos < data_bound && equal_fold_core(haystack+pos+2, needle+2, MAX(needle_len-4, 0), table))
+            if (haystack+pos < data_bound && equal_fold_core(haystack+pos+2, needle+2, needle_len-4, table))
             {
                 return (haystack-data_start) + pos;
             }

@@ -317,40 +317,187 @@ static inline uint32_t index_fold_2byte_block(
 
 static inline int64_t index_fold_2_byte_sse(const unsigned char *haystack, int64_t haystack_len,
                                             const uint16_t *needle) {
-    const int64_t checked_len = haystack_len - 2;
-    if (checked_len < 0) return -1;
-
     const __m128i v_0x20 = _mm_set1_epi8(0x20);
     const __m128i v_0x1f = _mm_set1_epi8(0x1f);
     const __m128i v_0x9a = _mm_set1_epi8((char)0x9a);
     const __m128i needle_vec = prepare_needle16(needle, v_0x20, v_0x1f, v_0x9a);
 
     __m128i prev_folded = _mm_setzero_si128();
+    int64_t i = 0;
 
-    for (int64_t i = 0; i <= checked_len + 16; i += 16) {
-        int64_t remaining = haystack_len - i;
-        if (remaining <= 0) break;
-
-        __m128i data = (remaining >= 16) ? _mm_loadu_si128((const __m128i *)(haystack + i))
-                                          : load_data16(haystack + i, remaining);
+    // Full blocks: everything they report lies within the haystack.
+    for (const int64_t full_len = haystack_len - (haystack_len % 16); i < full_len; i += 16) {
+        __m128i data = _mm_loadu_si128((const __m128i *)(haystack + i));
         __m128i folded = fold_to_upper_vec(data, v_0x20, v_0x1f, v_0x9a);
 
         uint32_t matches = index_fold_2byte_block(folded, prev_folded, needle_vec);
         prev_folded = folded;
 
+        // Bit 0 of the first block is position -1, which doesn't exist
         if (i == 0) {
             matches &= ~1u;
         }
 
-        while (matches) {
-            int pos = __builtin_ctz(matches);
-            matches &= matches - 1;
-
-            int64_t match_pos = i + pos - 1;
-            if (match_pos >= 0 && match_pos <= checked_len) {
-                return match_pos;
-            }
+        if (matches) {
+            return i + __builtin_ctz(matches) - 1;
         }
+    }
+
+    const int64_t remaining = haystack_len - i;
+    if (remaining == 0) return -1;
+
+    __m128i data = load_data16(haystack + i, remaining);
+    __m128i folded = fold_to_upper_vec(data, v_0x20, v_0x1f, v_0x9a);
+
+    uint32_t matches = index_fold_2byte_block(folded, prev_folded, needle_vec);
+    if (i == 0) {
+        matches &= ~1u;
+    }
+
+    if (matches) {
+        // The tail got padded with zeroes, a match has to end within the actual data
+        const int end = __builtin_ctz(matches);
+        return end >= remaining ? -1 : i + end - 1;
+    }
+
+    return -1;
+}
+
+// Process a 16-byte block for 3-byte needle search, returns match mask.
+// Unlike the 2-byte case this compares single bytes: every needle byte is
+// matched against the block moved back by its distance from the needle's last
+// byte, so ANDing the results marks the bytes where a match ends. Bit N
+// represents a match starting at position N-2 (caller adjusts). The whole
+// needle is covered, there's nothing left to verify.
+static inline uint32_t index_fold_3byte_block(
+    __m128i folded, __m128i prev_folded,
+    __m128i needle0, __m128i needle1, __m128i needle2) {
+
+    __m128i cmp0 = _mm_cmpeq_epi8(_mm_alignr_epi8(folded, prev_folded, 14), needle0);
+    __m128i cmp1 = _mm_cmpeq_epi8(_mm_alignr_epi8(folded, prev_folded, 15), needle1);
+    __m128i cmp2 = _mm_cmpeq_epi8(folded, needle2);
+
+    return (uint32_t)_mm_movemask_epi8(_mm_and_si128(_mm_and_si128(cmp0, cmp1), cmp2));
+}
+
+static inline int64_t index_fold_3_byte_sse(const unsigned char *haystack, int64_t haystack_len,
+                                            const unsigned char *needle) {
+    const __m128i v_0x20 = _mm_set1_epi8(0x20);
+    const __m128i v_0x1f = _mm_set1_epi8(0x1f);
+    const __m128i v_0x9a = _mm_set1_epi8((char)0x9a);
+
+    // Fold the whole needle at once, then spread each of its bytes over a register
+    const __m128i needle_vec = fold_to_upper_vec(load_data16(needle, 3), v_0x20, v_0x1f, v_0x9a);
+    const __m128i needle0 = _mm_shuffle_epi8(needle_vec, _mm_setzero_si128());
+    const __m128i needle1 = _mm_shuffle_epi8(needle_vec, _mm_set1_epi8(1));
+    const __m128i needle2 = _mm_shuffle_epi8(needle_vec, _mm_set1_epi8(2));
+
+    __m128i prev_folded = _mm_setzero_si128();
+    int64_t i = 0;
+
+    // Full blocks: everything they report lies within the haystack.
+    for (const int64_t full_len = haystack_len - (haystack_len % 16); i < full_len; i += 16) {
+        __m128i data = _mm_loadu_si128((const __m128i *)(haystack + i));
+        __m128i folded = fold_to_upper_vec(data, v_0x20, v_0x1f, v_0x9a);
+
+        uint32_t matches = index_fold_3byte_block(folded, prev_folded, needle0, needle1, needle2);
+        prev_folded = folded;
+
+        // The first 2 bits of the first block are positions that don't exist
+        if (i == 0) {
+            matches &= ~3u;
+        }
+
+        if (matches) {
+            return i + __builtin_ctz(matches) - 2;
+        }
+    }
+
+    const int64_t remaining = haystack_len - i;
+    if (remaining == 0) return -1;
+
+    __m128i data = load_data16(haystack + i, remaining);
+    __m128i folded = fold_to_upper_vec(data, v_0x20, v_0x1f, v_0x9a);
+
+    uint32_t matches = index_fold_3byte_block(folded, prev_folded, needle0, needle1, needle2);
+    if (i == 0) {
+        matches &= ~3u;
+    }
+
+    if (matches) {
+        // The tail got padded with zeroes, a match has to end within the actual data
+        const int end = __builtin_ctz(matches);
+        return end >= remaining ? -1 : i + end - 2;
+    }
+
+    return -1;
+}
+
+// Same as the 3-byte case, with one more byte. Bit N represents a match
+// starting at position N-3.
+static inline uint32_t index_fold_4byte_block(
+    __m128i folded, __m128i prev_folded,
+    __m128i needle0, __m128i needle1, __m128i needle2, __m128i needle3) {
+
+    __m128i cmp0 = _mm_cmpeq_epi8(_mm_alignr_epi8(folded, prev_folded, 13), needle0);
+    __m128i cmp1 = _mm_cmpeq_epi8(_mm_alignr_epi8(folded, prev_folded, 14), needle1);
+    __m128i cmp2 = _mm_cmpeq_epi8(_mm_alignr_epi8(folded, prev_folded, 15), needle2);
+    __m128i cmp3 = _mm_cmpeq_epi8(folded, needle3);
+
+    return (uint32_t)_mm_movemask_epi8(_mm_and_si128(_mm_and_si128(cmp0, cmp1), _mm_and_si128(cmp2, cmp3)));
+}
+
+static inline int64_t index_fold_4_byte_sse(const unsigned char *haystack, int64_t haystack_len,
+                                            const unsigned char *needle) {
+    const __m128i v_0x20 = _mm_set1_epi8(0x20);
+    const __m128i v_0x1f = _mm_set1_epi8(0x1f);
+    const __m128i v_0x9a = _mm_set1_epi8((char)0x9a);
+
+    // Fold the whole needle at once, then spread each of its bytes over a register
+    uint32_t needle32;
+    __builtin_memcpy(&needle32, needle, 4);
+    const __m128i needle_vec = fold_to_upper_vec(_mm_cvtsi32_si128((int)needle32), v_0x20, v_0x1f, v_0x9a);
+    const __m128i needle0 = _mm_shuffle_epi8(needle_vec, _mm_setzero_si128());
+    const __m128i needle1 = _mm_shuffle_epi8(needle_vec, _mm_set1_epi8(1));
+    const __m128i needle2 = _mm_shuffle_epi8(needle_vec, _mm_set1_epi8(2));
+    const __m128i needle3 = _mm_shuffle_epi8(needle_vec, _mm_set1_epi8(3));
+
+    __m128i prev_folded = _mm_setzero_si128();
+    int64_t i = 0;
+
+    // Full blocks: everything they report lies within the haystack.
+    for (const int64_t full_len = haystack_len - (haystack_len % 16); i < full_len; i += 16) {
+        __m128i data = _mm_loadu_si128((const __m128i *)(haystack + i));
+        __m128i folded = fold_to_upper_vec(data, v_0x20, v_0x1f, v_0x9a);
+
+        uint32_t matches = index_fold_4byte_block(folded, prev_folded, needle0, needle1, needle2, needle3);
+        prev_folded = folded;
+
+        // The first 3 bits of the first block are positions that don't exist
+        if (i == 0) {
+            matches &= ~7u;
+        }
+
+        if (matches) {
+            return i + __builtin_ctz(matches) - 3;
+        }
+    }
+
+    const int64_t remaining = haystack_len - i;
+    if (remaining == 0) return -1;
+
+    __m128i data = load_data16(haystack + i, remaining);
+    __m128i folded = fold_to_upper_vec(data, v_0x20, v_0x1f, v_0x9a);
+
+    uint32_t matches = index_fold_4byte_block(folded, prev_folded, needle0, needle1, needle2, needle3);
+    if (i == 0) {
+        matches &= ~7u;
+    }
+
+    if (matches) {
+        // The tail got padded with zeroes, a match has to end within the actual data
+        const int end = __builtin_ctz(matches);
+        return end >= remaining ? -1 : i + end - 3;
     }
 
     return -1;
@@ -420,7 +567,14 @@ int64_t index_fold_sse(unsigned char *haystack, int64_t haystack_len,
         return index_fold_1_byte_sse(haystack, haystack_len, needle[0]);
     case 2:
         return index_fold_2_byte_sse(haystack, haystack_len, (const uint16_t *)needle);
+    case 3:
+        return index_fold_3_byte_sse(haystack, haystack_len, needle);
+    case 4:
+        return index_fold_4_byte_sse(haystack, haystack_len, needle);
     }
+
+    // Needles of 5 and more bytes: the first and the last 2 bytes find the
+    // candidates, the bytes in between get verified.
 
     const __m128i v_0x20 = _mm_set1_epi8(0x20);
     const __m128i v_0x1f = _mm_set1_epi8(0x1f);
@@ -462,8 +616,7 @@ int64_t index_fold_sse(unsigned char *haystack, int64_t haystack_len,
                 int64_t match_pos = i + pos - 1;
                 if (match_pos < 0 || match_pos > checked_len) continue;
 
-                if (needle_len <= 4 ||
-                    equal_fold_scalar((const uint8_t *)(haystack + match_pos + 2),
+                if (equal_fold_scalar((const uint8_t *)(haystack + match_pos + 2),
                                       (const uint8_t *)(needle + 2),
                                       needle_len - 4)) {
                     return match_pos;
