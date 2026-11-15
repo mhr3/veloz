@@ -274,6 +274,63 @@ func TestIndexFoldShortNeedles(t *testing.T) {
 	}
 }
 
+// Needles of 5 and more bytes are found on NEON by a prefilter that looks at
+// the low nibbles of a few bytes only, so it can't tell the needle from bytes
+// that differ in the high nibble, and relies on the verification for that.
+// Fill the haystack with such lookalikes of the needle, different from it
+// throughout or just at the ends the prefilter looks at, which also drives the
+// kernel onto its exact fallback, and sweep every haystack length and match
+// position across a few blocks. Each haystack is also cut by a byte on either
+// side, which leaves the rest of a match just outside of it; the needles
+// ending in 'p', '0', '@', a space or NUL look like the zero padding of the
+// tail to the prefilter, the ones ending in NUL to the exact fallback as well.
+func TestIndexFoldLookalikes(t *testing.T) {
+	check := func(hay, needle string) {
+		t.Helper()
+		want := indexFoldGo(hay, needle)
+		if idx := IndexFold(hay, needle); idx != want {
+			t.Fatalf("IndexFold(%q, %q) = %v, want %v", hay, needle, idx, want)
+		}
+	}
+
+	for _, needle := range []string{
+		"aBcDe", "status", "/2013/0", "hello world", "0123456789abcdef", "0123456789abcdefg",
+		"the quick brown fox jumps over it",
+		"aBcp0", "status @", "0123456789abcdP0", "aBc\x00\x00", "status\x00\x00",
+	} {
+		// a match cut at the front must not hide the one behind it
+		for _, sep := range []string{"", "-", strings.Repeat("-", 16)} {
+			check((needle + sep + strings.ToUpper(needle))[1:], needle)
+		}
+
+		// 0x10 turns a letter into another letter, 0x40 into punctuation or a
+		// control byte, 0x80 takes it out of ASCII
+		for _, flip := range []byte{0x10, 0x40, 0x80} {
+			for _, ends := range []int{len(needle), 2} {
+				lookalike := []byte(needle)
+				for i := range lookalike {
+					if i < ends || i >= len(needle)-ends {
+						lookalike[i] ^= flip
+					}
+				}
+				filler := strings.Repeat(string(lookalike), 120/len(needle)+1)
+
+				for hayLen := range 120 {
+					base := filler[:hayLen]
+					check(base, needle)
+
+					for pos := 0; pos+len(needle) <= hayLen; pos++ {
+						hay := base[:pos] + strings.ToUpper(needle) + base[pos+len(needle):]
+						check(hay, needle)
+						check(hay[1:], needle)
+						check(hay[:len(hay)-1], needle)
+					}
+				}
+			}
+		}
+	}
+}
+
 func TestEqualFold(t *testing.T) {
 	equalFoldTests := []struct {
 		s, t string
@@ -301,6 +358,36 @@ func TestEqualFold(t *testing.T) {
 		}
 		if out := EqualFold(tt.t, tt.s); out != tt.out {
 			t.Errorf("EqualFold(%#q, %#q) = %v, want %v", tt.t, tt.s, out, tt.out)
+		}
+	}
+}
+
+// On NEON, EqualFold compares inputs shorter than a block with a zero-padded
+// load that reads past their end, and finishes longer ones with a block that
+// overlaps the one before. Sweep the lengths across a few blocks and into the
+// 64-byte loop, with a difference at every position, and with the inputs cut
+// out of longer strings that go on differently: what follows an input must
+// not take part.
+func TestEqualFoldLengths(t *testing.T) {
+	const alphabet = "abcdefghijklmnopqrstuvwxyz0123456789-_"
+
+	for n := 0; n <= 300; n++ {
+		a := strings.Repeat(alphabet, n/len(alphabet)+1)[:n]
+		b := strings.ToUpper(a)
+
+		if !EqualFold(a, b) {
+			t.Fatalf("EqualFold(%q, %q) = false, want true", a, b)
+		}
+		if !EqualFold((a + "x")[:n], (b + "y")[:n]) {
+			t.Fatalf("EqualFold of %q and %q with different bytes behind them = false, want true", a, b)
+		}
+
+		for i := 0; i < n; i++ {
+			c := []byte(b)
+			c[i] ^= 0x10 // another letter or digit, not the other case
+			if EqualFold(a, string(c)) || EqualFold(string(c), a) {
+				t.Fatalf("EqualFold(%q, %q) = true, want false", a, c)
+			}
 		}
 	}
 }
