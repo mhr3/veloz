@@ -575,6 +575,29 @@ static inline __m256i load_data32_avx2(const unsigned char *src, int64_t len) {
 }
 #endif
 
+// Whether a and b are equal under case folding, for the candidates index_fold
+// has to verify: a block at a time, the last, partial one zero-padded by
+// load_data32_avx2, which reads past the end of both inputs within their page.
+static inline bool index_fold_verify(const unsigned char *a, const unsigned char *b, int64_t length) {
+    const __m256i v_0x20 = _mm256_set1_epi8(0x20);
+    const __m256i v_0x1f = _mm256_set1_epi8(0x1f);
+    const __m256i v_0x9a = _mm256_set1_epi8((char)0x9a);
+    const __m256i v_0x01 = _mm256_set1_epi8(0x01);
+    const __m256i all_ones = _mm256_set1_epi8(-1);
+
+    for (; length >= 32; a += 32, b += 32, length -= 32) {
+        __m256i eq = equal_fold_vec(_mm256_loadu_si256((const __m256i *)a), _mm256_loadu_si256((const __m256i *)b),
+                                    v_0x20, v_0x1f, v_0x9a, v_0x01);
+        if (!_mm256_testc_si256(eq, all_ones)) {
+            return false;
+        }
+    }
+
+    // both are zero-padded, a multiple of the block leaves nothing but the padding
+    __m256i eq = equal_fold_vec(load_data32_avx2(a, length), load_data32_avx2(b, length), v_0x20, v_0x1f, v_0x9a, v_0x01);
+    return _mm256_testc_si256(eq, all_ones);
+}
+
 // Special case: search for a single byte case-insensitively
 static inline int64_t index_fold_1_byte_avx2(const unsigned char *haystack, int64_t haystack_len,
                                               uint8_t needle) {
@@ -954,9 +977,7 @@ static inline __attribute__((always_inline)) int64_t index_fold_first2_last2(
                 if (match_pos > checked_len) continue;
 
                 // Verify the middle part of the needle (skip first2 and last2)
-                if (equal_fold_scalar((const uint8_t *)(haystack + match_pos + 2),
-                                      (const uint8_t *)(needle + 2),
-                                      needle_len - 4)) {
+                if (index_fold_verify(haystack + match_pos + 2, needle + 2, needle_len - 4)) {
                     return match_pos;
                 }
                 failures++;
@@ -1090,33 +1111,42 @@ int64_t index_fold_avx2(unsigned char *haystack, int64_t haystack_len,
 
     // a block reports matches up to 30 bytes into it; while all of those can
     // be matches, both loads are within the haystack too
-    for (const unsigned char *data_bound = last_start - 30; haystack <= data_bound; haystack += 32) {
-        __m256i data = _mm256_loadu_si256((const __m256i *)haystack);
-        __m256i data_end = _mm256_loadu_si256((const __m256i *)(haystack + dist));
+    for (const unsigned char *data_bound = last_start - 30;; haystack += 32) {
+        uint32_t candidates = 0;
 
-        uint32_t candidates = index_fold_block_mixed(data, data_end, mixed0, mixed1, high_nibbles, v_0x0f);
-        if (candidates) {
-            // bit 0 of the first block is the position in front of the haystack
-            if (haystack == data_start) {
-                candidates &= ~1u;
+        // Most of the haystack goes by in here. The candidates are dealt with
+        // outside of this loop: inside, what they need kept at hand takes more
+        // registers than there are, and every block pays for the spills.
+        for (; haystack <= data_bound; haystack += 32) {
+            __m256i data = _mm256_loadu_si256((const __m256i *)haystack);
+            __m256i data_end = _mm256_loadu_si256((const __m256i *)(haystack + dist));
+
+            candidates = index_fold_block_mixed(data, data_end, mixed0, mixed1, high_nibbles, v_0x0f);
+            if (candidates) break;
+        }
+
+        if (haystack > data_bound) break;
+
+        // bit 0 of the first block is the position in front of the haystack
+        if (haystack == data_start) {
+            candidates &= ~1u;
+        }
+
+        while (candidates) {
+            int pos = __builtin_ctz(candidates);
+            candidates &= candidates - 1;
+
+            const unsigned char *match = haystack + pos - 1;
+            if (index_fold_verify(match, needle, needle_len)) {
+                return match - data_start;
             }
+            failures++;
+        }
 
-            while (candidates) {
-                int pos = __builtin_ctz(candidates);
-                candidates &= candidates - 1;
-
-                const unsigned char *match = haystack + pos - 1;
-                if (equal_fold_scalar(match, needle, needle_len)) {
-                    return match - data_start;
-                }
-                failures++;
-            }
-
-            // the haystack is full of bytes the mix can't tell from the needle,
-            // compare exactly from the next block on, this one is dealt with
-            if (failures > 4 + ((haystack - data_start) >> 7)) {
-                return index_fold_first2_last2(data_start, haystack_len, needle, needle_len, haystack - data_start + 32);
-            }
+        // the haystack is full of bytes the mix can't tell from the needle,
+        // compare exactly from the next block on, this one is dealt with
+        if (failures > 4 + ((haystack - data_start) >> 7)) {
+            return index_fold_first2_last2(data_start, haystack_len, needle, needle_len, haystack - data_start + 32);
         }
     }
 
@@ -1136,7 +1166,7 @@ int64_t index_fold_avx2(unsigned char *haystack, int64_t haystack_len,
 
             // the tail got padded with zeroes, a match has to end within the actual data
             const unsigned char *match = haystack + pos - 1;
-            if (match <= last_start && equal_fold_scalar(match, needle, needle_len)) {
+            if (match <= last_start && index_fold_verify(match, needle, needle_len)) {
                 return match - data_start;
             }
         }
