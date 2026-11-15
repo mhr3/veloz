@@ -230,14 +230,10 @@ LBB2_3:
 
 LBB2_4:
 	VLD1   (R8), [V1.B16, V2.B16, V3.B16, V4.B16] // <--                                  // ld1	{ v1.16b, v2.16b, v3.16b, v4.16b }, [x8]
-	VAND   V0.B16, V1.B16, V5.B16                 // <--                                  // and	v5.16b, v1.16b, v0.16b
-	VAND   V0.B16, V2.B16, V6.B16                 // <--                                  // and	v6.16b, v2.16b, v0.16b
-	VAND   V0.B16, V3.B16, V7.B16                 // <--                                  // and	v7.16b, v3.16b, v0.16b
-	VAND   V0.B16, V4.B16, V16.B16                // <--                                  // and	v16.16b, v4.16b, v0.16b
-	VORR   V5.B16, V6.B16, V5.B16                 // <--                                  // orr	v5.16b, v6.16b, v5.16b
-	VORR   V16.B16, V7.B16, V7.B16                // <--                                  // orr	v7.16b, v7.16b, v16.16b
-	VORR   V5.B16, V7.B16, V5.B16                 // <--                                  // orr	v5.16b, v7.16b, v5.16b
-	VCMTST V5.B16, V5.B16, V5.B16                 // <--                                  // cmtst	v5.16b, v5.16b, v5.16b
+	VORR   V4.B16, V3.B16, V5.B16                 // <--                                  // orr	v5.16b, v3.16b, v4.16b
+	VORR   V1.B16, V2.B16, V6.B16                 // <--                                  // orr	v6.16b, v2.16b, v1.16b
+	VORR   V6.B16, V5.B16, V5.B16                 // <--                                  // orr	v5.16b, v5.16b, v6.16b
+	VCMTST V0.B16, V5.B16, V5.B16                 // <--                                  // cmtst	v5.16b, v5.16b, v0.16b
 	WORD   $0x0f0c84a5                            // VSHRN $4, V5.H8, V5.B8               // shrn	v5.8b, v5.8h, #4
 	FMOVD  F5, R12                                // <--                                  // fmov	x12, d5
 	CBZ    R12, LBB2_3                            // <--                                  // cbz	x12, .LBB2_3
