@@ -47,39 +47,43 @@ var validTests = []ValidTest{
 }
 
 func TestAscii(t *testing.T) {
-	for _, vt := range validTests {
-		if ValidString(vt.in) != vt.exp {
-			t.Errorf("ValidString(%q) = %v; want %v", vt.in, !vt.exp, vt.exp)
+	forEachKernel(t, func(t *testing.T) {
+		for _, vt := range validTests {
+			if ValidString(vt.in) != vt.exp {
+				t.Errorf("ValidString(%q) = %v; want %v", vt.in, !vt.exp, vt.exp)
+			}
 		}
-	}
 
-	for _, vt := range validTests {
-		pt := "0123456789ab" + vt.in
-		if ValidString(pt) != vt.exp {
-			t.Errorf("ValidString(%q) = %v; want %v", pt, !vt.exp, vt.exp)
+		for _, vt := range validTests {
+			pt := "0123456789ab" + vt.in
+			if ValidString(pt) != vt.exp {
+				t.Errorf("ValidString(%q) = %v; want %v", pt, !vt.exp, vt.exp)
+			}
 		}
-	}
+	})
 }
 
 func TestIndexMask(t *testing.T) {
-	for i := 4; i < 6400; i++ {
-		data := makeASCII(i)
-		if ValidString(string(data)) != true {
-			t.Errorf("ValidString(%q) = false; want true", data)
-		}
-		if res := IndexMask(string(data), 0x80); res != -1 {
-			t.Errorf("IndexMask([%d]) = %d; want %d", len(data), res, -1)
-		}
+	forEachKernel(t, func(t *testing.T) {
+		for i := 4; i < 6400; i++ {
+			data := makeASCII(i)
+			if ValidString(string(data)) != true {
+				t.Errorf("ValidString(%q) = false; want true", data)
+			}
+			if res := IndexMask(string(data), 0x80); res != -1 {
+				t.Errorf("IndexMask([%d]) = %d; want %d", len(data), res, -1)
+			}
 
-		idx := rand.Intn(i)
-		data[idx] |= 0x80
-		if ValidString(string(data)) != false {
-			t.Errorf("ValidString(%q) = true; want false", data)
+			idx := rand.Intn(i)
+			data[idx] |= 0x80
+			if ValidString(string(data)) != false {
+				t.Errorf("ValidString(%q) = true; want false", data)
+			}
+			if res := IndexMask(string(data), 0x80); res != idx {
+				t.Errorf("IndexMask([%d]) = %d; want %d", len(data), res, idx)
+			}
 		}
-		if res := IndexMask(string(data), 0x80); res != idx {
-			t.Errorf("IndexMask([%d]) = %d; want %d", len(data), res, idx)
-		}
-	}
+	})
 }
 
 func containsFold(s, substr string) bool {
@@ -180,21 +184,23 @@ func TestContainsFold(t *testing.T) {
 		{"0000", "\x00\x00\x00", false},
 	}
 
-	for _, ct := range containsTests {
-		if containsFold(ct.str, ct.substr) != ct.expected {
-			t.Errorf("ContainsFold(%s, %s) = %v, want %v",
-				ct.str, ct.substr, !ct.expected, ct.expected)
+	forEachKernel(t, func(t *testing.T) {
+		for _, ct := range containsTests {
+			if containsFold(ct.str, ct.substr) != ct.expected {
+				t.Errorf("ContainsFold(%s, %s) = %v, want %v",
+					ct.str, ct.substr, !ct.expected, ct.expected)
+			}
+			want := indexFoldGo(ct.str, ct.substr)
+			if idx := IndexFold(ct.str, ct.substr); idx != want {
+				t.Errorf("IndexFold(%s, %s) = %v, want %v",
+					ct.str, ct.substr, idx, want)
+			}
+			if idx := indexFoldRabinKarp(ct.str, ct.substr); idx != want {
+				t.Errorf("indexFoldRabinKarp(%s, %s) = %v, want %v",
+					ct.str, ct.substr, idx, want)
+			}
 		}
-		want := indexFoldGo(ct.str, ct.substr)
-		if idx := IndexFold(ct.str, ct.substr); idx != want {
-			t.Errorf("IndexFold(%s, %s) = %v, want %v",
-				ct.str, ct.substr, idx, want)
-		}
-		if idx := indexFoldRabinKarp(ct.str, ct.substr); idx != want {
-			t.Errorf("indexFoldRabinKarp(%s, %s) = %v, want %v",
-				ct.str, ct.substr, idx, want)
-		}
-	}
+	})
 }
 
 // Periodic inputs make the first2/last2 prefilter produce a candidate at almost
@@ -205,38 +211,40 @@ func TestContainsFold(t *testing.T) {
 // succeed, and a genuine occurrence is planted in the trailing run - the
 // fallback has to find it and report it in the original coordinates.
 func TestIndexFoldPeriodic(t *testing.T) {
-	for _, period := range []string{"ab", "abc", "aBcD", "abcdefg"} {
-		for _, reps := range []int{2, 3, 5, 17, 64} {
-			needle := strings.Repeat(period, reps)
+	forEachKernel(t, func(t *testing.T) {
+		for _, period := range []string{"ab", "abc", "aBcD", "abcdefg"} {
+			for _, reps := range []int{2, 3, 5, 17, 64} {
+				needle := strings.Repeat(period, reps)
 
-			for _, lead := range []int{0, 1, 2, reps - 1} {
-				if lead < 0 {
-					continue
-				}
-				head := strings.Repeat(period, lead)
+				for _, lead := range []int{0, 1, 2, reps - 1} {
+					if lead < 0 {
+						continue
+					}
+					head := strings.Repeat(period, lead)
 
-				for _, poison := range []string{"\x00", "123", strings.Repeat("z", 40)} {
-					for _, hay := range []string{
-						// match reachable only after the poison
-						head + poison + strings.Repeat(period, reps),
-						head + poison + strings.Repeat(strings.ToUpper(period), reps+8),
-						// no match at all
-						head + poison + strings.Repeat(period, reps-1),
-						// poison in the middle of every otherwise matching window
-						head + needle[:len(needle)/2] + poison + needle[len(needle)/2:] + head,
-					} {
-						want := indexFoldGo(hay, needle)
-						if idx := IndexFold(hay, needle); idx != want {
-							t.Fatalf("IndexFold(%q, %q) = %v, want %v", hay, needle, idx, want)
-						}
-						if idx := indexFoldRabinKarp(hay, needle); idx != want {
-							t.Fatalf("indexFoldRabinKarp(%q, %q) = %v, want %v", hay, needle, idx, want)
+					for _, poison := range []string{"\x00", "123", strings.Repeat("z", 40)} {
+						for _, hay := range []string{
+							// match reachable only after the poison
+							head + poison + strings.Repeat(period, reps),
+							head + poison + strings.Repeat(strings.ToUpper(period), reps+8),
+							// no match at all
+							head + poison + strings.Repeat(period, reps-1),
+							// poison in the middle of every otherwise matching window
+							head + needle[:len(needle)/2] + poison + needle[len(needle)/2:] + head,
+						} {
+							want := indexFoldGo(hay, needle)
+							if idx := IndexFold(hay, needle); idx != want {
+								t.Fatalf("IndexFold(%q, %q) = %v, want %v", hay, needle, idx, want)
+							}
+							if idx := indexFoldRabinKarp(hay, needle); idx != want {
+								t.Fatalf("indexFoldRabinKarp(%q, %q) = %v, want %v", hay, needle, idx, want)
+							}
 						}
 					}
 				}
 			}
 		}
-	}
+	})
 }
 
 // Needles of up to 4 bytes have dedicated kernels, which carry state from one
@@ -246,32 +254,34 @@ func TestIndexFoldPeriodic(t *testing.T) {
 // bytes those assumed positions look like: NUL is the padding everywhere and
 // the zero in front on x86, a backtick folds to the zero in front on NEON.
 func TestIndexFoldShortNeedles(t *testing.T) {
-	check := func(hay, needle string) {
-		t.Helper()
-		want := indexFoldGo(hay, needle)
-		if idx := IndexFold(hay, needle); idx != want {
-			t.Fatalf("IndexFold(%q, %q) = %v, want %v", hay, needle, idx, want)
+	forEachKernel(t, func(t *testing.T) {
+		check := func(hay, needle string) {
+			t.Helper()
+			want := indexFoldGo(hay, needle)
+			if idx := IndexFold(hay, needle); idx != want {
+				t.Fatalf("IndexFold(%q, %q) = %v, want %v", hay, needle, idx, want)
+			}
 		}
-	}
 
-	for _, needle := range []string{
-		"a", "aB", "aBc", "aBcD", "aBcDe",
-		"`a", "``a", "`aa", "```a", "``aa", "`aaa",
-		"\x00a", "\x00\x00a", "\x00aa", "\x00\x00\x00a", "\x00\x00aa", "\x00aaa",
-		"a\x00", "a\x00\x00", "aa\x00", "a\x00\x00\x00", "aaa\x00",
-		"\x00\x00", "\x00\x00\x00", "\x00\x00\x00\x00",
-	} {
-		for _, filler := range []string{"x", "a", "`", "\x00"} {
-			for hayLen := range 100 {
-				base := strings.Repeat(filler, hayLen)
-				check(base, needle)
+		for _, needle := range []string{
+			"a", "aB", "aBc", "aBcD", "aBcDe",
+			"`a", "``a", "`aa", "```a", "``aa", "`aaa",
+			"\x00a", "\x00\x00a", "\x00aa", "\x00\x00\x00a", "\x00\x00aa", "\x00aaa",
+			"a\x00", "a\x00\x00", "aa\x00", "a\x00\x00\x00", "aaa\x00",
+			"\x00\x00", "\x00\x00\x00", "\x00\x00\x00\x00",
+		} {
+			for _, filler := range []string{"x", "a", "`", "\x00"} {
+				for hayLen := range 100 {
+					base := strings.Repeat(filler, hayLen)
+					check(base, needle)
 
-				for pos := 0; pos+len(needle) <= hayLen; pos++ {
-					check(base[:pos]+strings.ToUpper(needle)+base[pos+len(needle):], needle)
+					for pos := 0; pos+len(needle) <= hayLen; pos++ {
+						check(base[:pos]+strings.ToUpper(needle)+base[pos+len(needle):], needle)
+					}
 				}
 			}
 		}
-	}
+	})
 }
 
 // Needles of 5 and more bytes are found by a prefilter that looks at the low
@@ -285,50 +295,52 @@ func TestIndexFoldShortNeedles(t *testing.T) {
 // ending in 'p', '0', '@', a space or NUL look like the zero padding of the
 // tail to the prefilter, the ones ending in NUL to the exact fallback as well.
 func TestIndexFoldLookalikes(t *testing.T) {
-	check := func(hay, needle string) {
-		t.Helper()
-		want := indexFoldGo(hay, needle)
-		if idx := IndexFold(hay, needle); idx != want {
-			t.Fatalf("IndexFold(%q, %q) = %v, want %v", hay, needle, idx, want)
-		}
-	}
-
-	for _, needle := range []string{
-		"aBcDe", "status", "/2013/0", "hello world", "0123456789abcdef", "0123456789abcdefg",
-		"the quick brown fox jumps over it",
-		"aBcp0", "status @", "0123456789abcdP0", "aBc\x00\x00", "status\x00\x00",
-	} {
-		// a match cut at the front must not hide the one behind it
-		for _, sep := range []string{"", "-", strings.Repeat("-", 16)} {
-			check((needle + sep + strings.ToUpper(needle))[1:], needle)
+	forEachKernel(t, func(t *testing.T) {
+		check := func(hay, needle string) {
+			t.Helper()
+			want := indexFoldGo(hay, needle)
+			if idx := IndexFold(hay, needle); idx != want {
+				t.Fatalf("IndexFold(%q, %q) = %v, want %v", hay, needle, idx, want)
+			}
 		}
 
-		// 0x10 turns a letter into another letter, 0x40 into punctuation or a
-		// control byte, 0x80 takes it out of ASCII
-		for _, flip := range []byte{0x10, 0x40, 0x80} {
-			for _, ends := range []int{len(needle), 2} {
-				lookalike := []byte(needle)
-				for i := range lookalike {
-					if i < ends || i >= len(needle)-ends {
-						lookalike[i] ^= flip
+		for _, needle := range []string{
+			"aBcDe", "status", "/2013/0", "hello world", "0123456789abcdef", "0123456789abcdefg",
+			"the quick brown fox jumps over it",
+			"aBcp0", "status @", "0123456789abcdP0", "aBc\x00\x00", "status\x00\x00",
+		} {
+			// a match cut at the front must not hide the one behind it
+			for _, sep := range []string{"", "-", strings.Repeat("-", 16)} {
+				check((needle + sep + strings.ToUpper(needle))[1:], needle)
+			}
+
+			// 0x10 turns a letter into another letter, 0x40 into punctuation or a
+			// control byte, 0x80 takes it out of ASCII
+			for _, flip := range []byte{0x10, 0x40, 0x80} {
+				for _, ends := range []int{len(needle), 2} {
+					lookalike := []byte(needle)
+					for i := range lookalike {
+						if i < ends || i >= len(needle)-ends {
+							lookalike[i] ^= flip
+						}
 					}
-				}
-				filler := strings.Repeat(string(lookalike), 120/len(needle)+1)
+					filler := strings.Repeat(string(lookalike), 120/len(needle)+1)
 
-				for hayLen := range 120 {
-					base := filler[:hayLen]
-					check(base, needle)
+					for hayLen := range 120 {
+						base := filler[:hayLen]
+						check(base, needle)
 
-					for pos := 0; pos+len(needle) <= hayLen; pos++ {
-						hay := base[:pos] + strings.ToUpper(needle) + base[pos+len(needle):]
-						check(hay, needle)
-						check(hay[1:], needle)
-						check(hay[:len(hay)-1], needle)
+						for pos := 0; pos+len(needle) <= hayLen; pos++ {
+							hay := base[:pos] + strings.ToUpper(needle) + base[pos+len(needle):]
+							check(hay, needle)
+							check(hay[1:], needle)
+							check(hay[:len(hay)-1], needle)
+						}
 					}
 				}
 			}
 		}
-	}
+	})
 }
 
 func TestEqualFold(t *testing.T) {
@@ -352,14 +364,16 @@ func TestEqualFold(t *testing.T) {
 		{"oh hello there!! friend!", "oh HELLO there!! FRIEND!", true},
 	}
 
-	for _, tt := range equalFoldTests {
-		if out := EqualFold(tt.s, tt.t); out != tt.out {
-			t.Errorf("EqualFold(%#q, %#q) = %v, want %v", tt.s, tt.t, out, tt.out)
+	forEachKernel(t, func(t *testing.T) {
+		for _, tt := range equalFoldTests {
+			if out := EqualFold(tt.s, tt.t); out != tt.out {
+				t.Errorf("EqualFold(%#q, %#q) = %v, want %v", tt.s, tt.t, out, tt.out)
+			}
+			if out := EqualFold(tt.t, tt.s); out != tt.out {
+				t.Errorf("EqualFold(%#q, %#q) = %v, want %v", tt.t, tt.s, out, tt.out)
+			}
 		}
-		if out := EqualFold(tt.t, tt.s); out != tt.out {
-			t.Errorf("EqualFold(%#q, %#q) = %v, want %v", tt.t, tt.s, out, tt.out)
-		}
-	}
+	})
 }
 
 // On NEON, EqualFold compares inputs shorter than a block with a zero-padded
@@ -371,25 +385,27 @@ func TestEqualFold(t *testing.T) {
 func TestEqualFoldLengths(t *testing.T) {
 	const alphabet = "abcdefghijklmnopqrstuvwxyz0123456789-_"
 
-	for n := 0; n <= 300; n++ {
-		a := strings.Repeat(alphabet, n/len(alphabet)+1)[:n]
-		b := strings.ToUpper(a)
+	forEachKernel(t, func(t *testing.T) {
+		for n := 0; n <= 300; n++ {
+			a := strings.Repeat(alphabet, n/len(alphabet)+1)[:n]
+			b := strings.ToUpper(a)
 
-		if !EqualFold(a, b) {
-			t.Fatalf("EqualFold(%q, %q) = false, want true", a, b)
-		}
-		if !EqualFold((a + "x")[:n], (b + "y")[:n]) {
-			t.Fatalf("EqualFold of %q and %q with different bytes behind them = false, want true", a, b)
-		}
+			if !EqualFold(a, b) {
+				t.Fatalf("EqualFold(%q, %q) = false, want true", a, b)
+			}
+			if !EqualFold((a + "x")[:n], (b + "y")[:n]) {
+				t.Fatalf("EqualFold of %q and %q with different bytes behind them = false, want true", a, b)
+			}
 
-		for i := 0; i < n; i++ {
-			c := []byte(b)
-			c[i] ^= 0x10 // another letter or digit, not the other case
-			if EqualFold(a, string(c)) || EqualFold(string(c), a) {
-				t.Fatalf("EqualFold(%q, %q) = true, want false", a, c)
+			for i := 0; i < n; i++ {
+				c := []byte(b)
+				c[i] ^= 0x10 // another letter or digit, not the other case
+				if EqualFold(a, string(c)) || EqualFold(string(c), a) {
+					t.Fatalf("EqualFold(%q, %q) = true, want false", a, c)
+				}
 			}
 		}
-	}
+	})
 }
 
 func TestHasPrefixFold(t *testing.T) {
@@ -657,15 +673,17 @@ func FuzzEqualFold(f *testing.F) {
 			t.Skip()
 		}
 
-		res := EqualFold(in1, in2)
-		stdRes := strings.EqualFold(in1, in2)
-		if res != stdRes {
-			t.Fatalf("EqualFold(%q, %q) = %v; want %v", in1, in2, res, stdRes)
-		}
-		goRes := equalFoldGo(in1, in2)
-		if goRes != stdRes {
-			t.Fatalf("equalFoldGo(%q, %q) = %v; want %v", in1, in2, goRes, stdRes)
-		}
+		forEachKernel(t, func(t *testing.T) {
+			res := EqualFold(in1, in2)
+			stdRes := strings.EqualFold(in1, in2)
+			if res != stdRes {
+				t.Fatalf("EqualFold(%q, %q) = %v; want %v", in1, in2, res, stdRes)
+			}
+			goRes := equalFoldGo(in1, in2)
+			if goRes != stdRes {
+				t.Fatalf("equalFoldGo(%q, %q) = %v; want %v", in1, in2, goRes, stdRes)
+			}
+		})
 	})
 }
 
@@ -683,16 +701,18 @@ func FuzzIndexFold(f *testing.F) {
 			t.Skip()
 		}
 
-		res := IndexFold(istr, isubstr)
-		goRes := indexFoldGo(istr, isubstr)
-		if res != goRes {
-			t.Fatalf("IndexFold(%q, %q) = %v; want %v", istr, isubstr, res, goRes)
-		}
+		forEachKernel(t, func(t *testing.T) {
+			res := IndexFold(istr, isubstr)
+			goRes := indexFoldGo(istr, isubstr)
+			if res != goRes {
+				t.Fatalf("IndexFold(%q, %q) = %v; want %v", istr, isubstr, res, goRes)
+			}
 
-		res = indexFoldRabinKarp(istr, isubstr)
-		if res != goRes {
-			t.Fatalf("indexFoldRabinKarp(%q, %q) = %v; want %v", istr, isubstr, res, goRes)
-		}
+			res = indexFoldRabinKarp(istr, isubstr)
+			if res != goRes {
+				t.Fatalf("indexFoldRabinKarp(%q, %q) = %v; want %v", istr, isubstr, res, goRes)
+			}
+		})
 	})
 }
 
