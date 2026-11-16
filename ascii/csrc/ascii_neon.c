@@ -305,151 +305,6 @@ static inline bool equal_fold_has_diff(uint8x16_t diff)
     return vmaxvq_u32(vreinterpretq_u32_u8(diff)) != 0;
 }
 
-// One 16-byte block per iteration. index_fold inlines this at every candidate
-// it has to verify, so it's kept small; equal_fold_long adds the unrolled loop
-// for the call sites where the inputs are expected to be long.
-static inline bool equal_fold_core(unsigned char *a, unsigned char *b, int64_t length,
-    const uint8x16x2_t table)
-{
-    const uint64_t blockSize = 16; // NEON can process 128 bits (16 bytes) at a time
-    // uppercasingTable is indexed by (a & b) - 0x40 here, not by the 0x60 shift
-    // the folding paths in this file use
-    const uint8x16_t offset = vdupq_n_u8(0x40);
-
-    if (length < 0) return false;
-
-    for (const unsigned char *data_bound = (a + length) - (length % blockSize); a < data_bound; a += blockSize, b += blockSize)
-    {
-        uint8x16_t diff = equal_fold_diff16(vld1q_u8(a), vld1q_u8(b), table, offset);
-        if (equal_fold_has_diff(diff))
-        {
-            return false;
-        }
-    }
-    length %= blockSize;
-
-    if (length >= 8)
-    {
-        uint8x8_t diff = equal_fold_diff8(vld1_u8(a), vld1_u8(b), table, vget_low_u8(offset));
-        if (vget_lane_u64(vreinterpret_u64_u8(diff), 0) != 0)
-        {
-            return false;
-        }
-        a += 8;
-        b += 8;
-        length %= 8;
-    }
-
-    if (length == 0) {
-        return true;
-    }
-
-    uint64_t a_data64 = 0;
-    uint64_t b_data64 = 0;
-
-    if (length >= 4)
-    {
-        a_data64 = *(uint32_t *)(a);
-        a += 4;
-        b_data64 = *(uint32_t *)(b);
-        b += 4;
-        length -= 4;
-    }
-
-    // FIXME: this is reordering the bytes, though does it for both a and b, so it's fine
-    switch (length)
-    {
-    case 3:
-        a_data64 <<= 24;
-        a_data64 |= *(uint16_t *)(a) << 8;
-        a_data64 |= a[2];
-        // same for b
-        b_data64 <<= 24;
-        b_data64 |= *(uint16_t *)(b) << 8;
-        b_data64 |= b[2];
-        break;
-    case 2:
-        a_data64 <<= 16;
-        a_data64 |= *(uint16_t *)(a);
-        // same for b
-        b_data64 <<= 16;
-        b_data64 |= *(uint16_t *)(b);
-        break;
-    case 1:
-        a_data64 <<= 8;
-        a_data64 |= *a;
-        // same for b
-        b_data64 <<= 8;
-        b_data64 |= *b;
-        break;
-    }
-
-    uint8x8_t diff = equal_fold_diff8(vcreate_u8(a_data64), vcreate_u8(b_data64), table, vget_low_u8(offset));
-
-    return vget_lane_u64(vreinterpret_u64_u8(diff), 0) == 0;
-}
-
-// Chews through 64 bytes per iteration before handing the rest to
-// equal_fold_core. Worth it only once there's more than one such block.
-static inline bool equal_fold_long(unsigned char *a, unsigned char *b, int64_t length,
-    const uint8x16x2_t table)
-{
-#ifndef SKIP_LD1x4
-    const uint64_t blockSize = 16;
-    const uint64_t ld4BlockSize = blockSize * 4;
-    const uint8x16_t offset = vdupq_n_u8(0x40);
-
-    // the unrolled loop only reports a mismatch once per 64 bytes, so probe the
-    // first block on its own - mismatches tend to be near the start of the data.
-    // The comparison is unsigned so that negative lengths are handled in here
-    // too, which leaves equal_fold_core's own check for them provably dead.
-    if (__builtin_expect((uint64_t)length >= ld4BlockSize * 2, 0))
-    {
-        if (length < 0) return false;
-
-        if (equal_fold_has_diff(equal_fold_diff16(vld1q_u8(a), vld1q_u8(b), table, offset)))
-        {
-            return false;
-        }
-        a += blockSize;
-        b += blockSize;
-        length -= blockSize;
-
-        // separate loads rather than vld1q_u8_x4: clang folds them into LDP,
-        // which is both faster and keeps fewer vectors live - loading all four
-        // at once pushed index_fold into spilling a callee-saved one
-        for (const unsigned char *data_bound = (a + length) - (length % ld4BlockSize); a < data_bound; a += ld4BlockSize, b += ld4BlockSize)
-        {
-            uint8x16_t diff = equal_fold_diff16(vld1q_u8(a), vld1q_u8(b), table, offset);
-            diff = vorrq_u8(diff, equal_fold_diff16(vld1q_u8(a + 16), vld1q_u8(b + 16), table, offset));
-            diff = vorrq_u8(diff, equal_fold_diff16(vld1q_u8(a + 32), vld1q_u8(b + 32), table, offset));
-            diff = vorrq_u8(diff, equal_fold_diff16(vld1q_u8(a + 48), vld1q_u8(b + 48), table, offset));
-
-            if (equal_fold_has_diff(diff))
-            {
-                return false;
-            }
-        }
-        length %= ld4BlockSize;
-    }
-#endif
-
-    return equal_fold_core(a, b, length, table);
-}
-
-// gocc: EqualFold(a, b string) bool
-bool equal_fold(unsigned char *a, uint64_t a_len, unsigned char *b, uint64_t b_len)
-{
-    if (a_len != b_len)
-    {
-        return false;
-    }
-
-    const uint8x16x2_t table = vld1q_u8_x2(uppercasingTable);
-
-    return equal_fold_long(a, b, a_len, table);
-}
-
 // Loads up to 16 bytes into a register, zero-padded beyond len.
 //
 // Two implementations, selected with LOAD_DATA_SAFE (shared with the x86 sources):
@@ -541,6 +396,117 @@ static inline uint8x16_t load_data16(const unsigned char *src, int64_t len) {
     return vqtbl1q_u8(tail, vaddq_u8(iota, vdupq_n_u8((uint8_t)(16 - len))));
 }
 #endif
+
+// One 16-byte block per iteration, then whatever is left as a zero-padded
+// block from load_data16, which reads past the end of the inputs within their
+// page. index_fold inlines this at every candidate it has to verify, so it's
+// kept small and out of the general-purpose registers: with the tail put
+// together in those, index_fold ran short of them, and the spills came with a
+// stack frame that every call paid for.
+static inline bool equal_fold_core(unsigned char *a, unsigned char *b, int64_t length,
+    const uint8x16x2_t table)
+{
+    const uint64_t blockSize = 16; // NEON can process 128 bits (16 bytes) at a time
+    // uppercasingTable is indexed by (a & b) - 0x40 here, not by the 0x60 shift
+    // the folding paths in this file use
+    const uint8x16_t offset = vdupq_n_u8(0x40);
+
+    if (length < 0) return false;
+
+    for (const unsigned char *data_bound = (a + length) - (length % blockSize); a < data_bound; a += blockSize, b += blockSize)
+    {
+        uint8x16_t diff = equal_fold_diff16(vld1q_u8(a), vld1q_u8(b), table, offset);
+        if (equal_fold_has_diff(diff))
+        {
+            return false;
+        }
+    }
+    length %= blockSize;
+
+    // both are zero-padded, a multiple of the block leaves nothing but the padding
+    uint8x16_t diff = equal_fold_diff16(load_data16(a, length), load_data16(b, length), table, offset);
+    return !equal_fold_has_diff(diff);
+}
+
+// For inputs of a block and more: chews through 64 bytes per iteration once
+// there's more than one such block, then goes block by block. The last block
+// is placed at the end of the inputs, where it overlaps what's compared
+// already; that takes no padding and reads nothing outside of the inputs.
+//
+// None of this can move into equal_fold_core. With the 64-byte loop there,
+// index_fold needs a stack frame under every clang from 17 to 21 and is over
+// half as big again; with just the overlapping last block, under four of the
+// five.
+static inline bool equal_fold_long(unsigned char *a, unsigned char *b, int64_t length,
+    const uint8x16x2_t table)
+{
+    const uint64_t blockSize = 16;
+    const uint8x16_t offset = vdupq_n_u8(0x40);
+
+    // less than a block, negative lengths included
+    if (length < (int64_t)blockSize)
+    {
+        return equal_fold_core(a, b, length, table);
+    }
+
+#ifndef SKIP_LD1x4
+    const uint64_t ld4BlockSize = blockSize * 4;
+
+    // the unrolled loop only reports a mismatch once per 64 bytes, so probe the
+    // first block on its own - mismatches tend to be near the start of the data.
+    if (__builtin_expect(length >= (int64_t)(ld4BlockSize * 2), 0))
+    {
+        if (equal_fold_has_diff(equal_fold_diff16(vld1q_u8(a), vld1q_u8(b), table, offset)))
+        {
+            return false;
+        }
+        a += blockSize;
+        b += blockSize;
+        length -= blockSize;
+
+        // separate loads rather than vld1q_u8_x4: clang folds them into LDP,
+        // which is both faster and keeps fewer vectors live - loading all four
+        // at once pushed index_fold into spilling a callee-saved one
+        for (const unsigned char *data_bound = (a + length) - (length % ld4BlockSize); a < data_bound; a += ld4BlockSize, b += ld4BlockSize)
+        {
+            uint8x16_t diff = equal_fold_diff16(vld1q_u8(a), vld1q_u8(b), table, offset);
+            diff = vorrq_u8(diff, equal_fold_diff16(vld1q_u8(a + 16), vld1q_u8(b + 16), table, offset));
+            diff = vorrq_u8(diff, equal_fold_diff16(vld1q_u8(a + 32), vld1q_u8(b + 32), table, offset));
+            diff = vorrq_u8(diff, equal_fold_diff16(vld1q_u8(a + 48), vld1q_u8(b + 48), table, offset));
+
+            if (equal_fold_has_diff(diff))
+            {
+                return false;
+            }
+        }
+        length %= ld4BlockSize;
+    }
+#endif
+
+    for (; length > (int64_t)blockSize; a += blockSize, b += blockSize, length -= blockSize)
+    {
+        if (equal_fold_has_diff(equal_fold_diff16(vld1q_u8(a), vld1q_u8(b), table, offset)))
+        {
+            return false;
+        }
+    }
+
+    // up to a block is left, and at least a block is behind
+    return !equal_fold_has_diff(equal_fold_diff16(vld1q_u8(a + length - blockSize), vld1q_u8(b + length - blockSize), table, offset));
+}
+
+// gocc: EqualFold(a, b string) bool
+bool equal_fold(unsigned char *a, uint64_t a_len, unsigned char *b, uint64_t b_len)
+{
+    if (a_len != b_len)
+    {
+        return false;
+    }
+
+    const uint8x16x2_t table = vld1q_u8_x2(uppercasingTable);
+
+    return equal_fold_long(a, b, a_len, table);
+}
 
 static inline uint32_t rabin_karp_hash_string_fold(unsigned char *data, uint64_t data_len, uint32_t *pow_ret)
 {
@@ -921,78 +887,38 @@ static inline uint64_t index_fold_process_block(uint8x16_t data, uint8x16_t data
     return vget_lane_u64(narrowed, 0);
 }
 
-// gocc: indexFoldRabinKarp(a, b string) int
-int64_t index_fold_rabin_karp(unsigned char *haystack, const int64_t haystack_len, unsigned char *needle, const int64_t needle_len)
-{
-    const uint64_t blockSize = 16; // NEON can process 128 bits (16 bytes) at a time
-    const uint8x16x2_t table = vld1q_u8_x2(uppercasingTable);
-
-    if (haystack_len < needle_len) return -1;
-    if (needle_len == 0) return 0;
-    if (haystack_len == needle_len) {
-        return equal_fold_long(haystack, needle, needle_len, table) ? 0 : -1;
-    }
-
-    switch (needle_len)
-    {
-    case 1:
-        // special case for 1-byte needles
-        return index_fold_1_byte_needle(haystack, haystack_len, needle, table);
-    case 2:
-        // special case for 2-byte needles, no need for two loads
-        return index_fold_2_byte_needle(haystack, haystack_len, (uint16_t *)needle, table);
-    }
-
-    return index_fold_rabin_karp_core(haystack, haystack_len, needle, needle_len, table);
-}
-
 #define MIN(a, b) ((a) > (b) ? (b) : (a))
 
-// gocc: IndexFold(a, b string) int
-int64_t index_fold(unsigned char *haystack, int64_t haystack_len, unsigned char *needle, const int64_t needle_len)
+// The first and the last 2 bytes of the needle, compared exactly, find the
+// candidates and the bytes in between get verified. For needles of 5 and more
+// bytes.
+//
+// Resumes a search of the haystack that starts at data_start: haystack is a
+// whole number of blocks into it, the matches starting before haystack-1 are
+// dealt with, and the block in front of haystack was loaded together with the
+// one needle_len-2 further. Returns the position from data_start, so that
+// nothing is left to do with it. It is inlined into the one place that uses
+// it, where carrying anything across it costs IndexFold its frameless code.
+static inline __attribute__((always_inline)) int64_t index_fold_first2_last2(const unsigned char *data_start, unsigned char *haystack, int64_t haystack_len,
+    unsigned char *needle, const int64_t needle_len, const uint8x16x2_t table, const uint8x16_t shift)
 {
     const uint64_t blockSize = 16; // NEON can process 128 bits (16 bytes) at a time
-
-    const uint8x16x2_t table = vld1q_u8_x2(uppercasingTable);
-    const uint8x16_t shift = vdupq_n_u8(0x60);
-
-    if (haystack_len < needle_len) return -1;
-    if (needle_len <= 0) return 0;
-    if (haystack_len == needle_len) {
-        return equal_fold_long(haystack, needle, needle_len, table) ? 0 : -1;
-    }
-
-    switch (needle_len)
-    {
-    case 1:
-        // special case for 1-byte needles
-        return index_fold_1_byte_needle(haystack, haystack_len, needle, table);
-    case 2:
-        // special case for 2-byte needles, no need for two loads
-        return index_fold_2_byte_needle(haystack, haystack_len, (uint16_t *)needle, table);
-    case 3:
-        // special cases for 3 and 4-byte needles, one load and nothing to verify
-        return index_fold_3_byte_needle(haystack, haystack_len, needle, table);
-    case 4:
-        return index_fold_4_byte_needle(haystack, haystack_len, needle, table);
-    }
-
-    // needles of 5 and more bytes: the first and the last 2 bytes find the
-    // candidates, the bytes in between get verified
 
     // load the first 2 bytes of the needle
     const uint16x8_t first2 = index_fold_prepare_comparer((uint16_t *)needle, shift, table);
     // load the last 2 bytes of the needle
     const uint16x8_t last2 = index_fold_prepare_comparer((uint16_t *)(needle + needle_len - 2), shift, table);
 
-    const unsigned char *data_start = haystack;
-
     const int64_t checked_len = haystack_len - needle_len;
     uint8x16_t prev_data = vdupq_n_u8(0);
     uint8x16_t prev_data_end = vdupq_n_u8(0);
-    uint64_t failures = 0;
+    // the block in front goes through for what it leaves behind, the match
+    // starting at its last byte is found with that
+    index_fold_process_block(vld1q_u8(haystack - blockSize), vld1q_u8(haystack - blockSize + needle_len - 2), first2, last2, table, shift, &prev_data, &prev_data_end);
+    // the failures allowed up to here are used up, see the check below
+    uint64_t failures = (haystack - data_start) / blockSize;
 
-    for (const unsigned char *data_bound = haystack + MIN(checked_len - (checked_len%blockSize), haystack_len-blockSize); haystack < data_bound; haystack += blockSize)
+    for (const unsigned char *data_bound = data_start + MIN(checked_len - (checked_len%blockSize), haystack_len-blockSize); haystack < data_bound; haystack += blockSize)
     {
         uint8x16_t data = vld1q_u8(haystack);
         uint8x16_t data_end = vld1q_u8(haystack + needle_len - 2);
@@ -1004,8 +930,6 @@ int64_t index_fold(unsigned char *haystack, int64_t haystack_len, unsigned char 
                 int pos = __builtin_ctzll(data64) / 4;
                 // clear this byte position
                 data64 &= ~(0xFull << (pos * 4));
-                // disregard 0th byte on the first iteration, we made up a 0 on that position
-                if (haystack == data_start && pos == 0) continue;
                 pos--;
 
                 if (equal_fold_core(haystack+pos+2, needle+2, needle_len-4, table))
@@ -1043,11 +967,176 @@ int64_t index_fold(unsigned char *haystack, int64_t haystack_len, unsigned char 
             int pos = __builtin_ctzll(data64) / 4;
             // clear this byte position
             data64 &= ~(0xFull << (pos * 4));
-            // disregard 0th byte on the first iteration, we made up a 0 on that position
-            if (haystack == data_start && pos == 0) continue;
             pos--;
 
             if (haystack+pos < data_bound && equal_fold_core(haystack+pos+2, needle+2, needle_len-4, table))
+            {
+                return (haystack-data_start) + pos;
+            }
+        }
+    }
+
+    return -1;
+}
+
+// Mixes every byte with the byte that is a fixed distance further: the low
+// nibble of each. Bytes that are equal under case folding have the same low
+// nibble, so equal inputs always mix to equal results, while the case bit
+// (0x20) is left out and nothing needs to be folded. Different inputs can mix
+// to the same result too ('a' and 'q', '0' and 'p' share a nibble), whatever is
+// found this way has to be verified.
+//
+// SLI overwrites the operand it inserts into. That is data_end, because data
+// is looked at again when the search moves on to the exact comparison, and
+// would have to be copied in every iteration to survive.
+static inline uint16x8_t index_fold_mix_nibbles(uint8x16_t data, uint8x16_t data_end)
+{
+    return vreinterpretq_u16_u8(vsliq_n_u8(data_end, data, 4));
+}
+
+static inline uint16x8_t index_fold_prepare_mixed_comparer(const unsigned char* needle, const unsigned char* needle_end)
+{
+    const uint8x16_t needle8vec = vreinterpretq_u8_u16(vld1q_dup_u16((const uint16_t *)needle));
+    const uint8x16_t needle_end8vec = vreinterpretq_u8_u16(vld1q_dup_u16((const uint16_t *)needle_end));
+    return index_fold_mix_nibbles(needle8vec, needle_end8vec);
+}
+
+// A match contains a 16-bit lane of the block either at its start or a byte
+// later, so instead of looking at the haystack at every offset, the lanes are
+// compared against the needle at offsets 0 and 1.
+static inline uint64_t index_fold_process_block_mixed(uint8x16_t data, uint8x16_t data_end, const uint16x8_t searched0, const uint16x8_t searched1)
+{
+    const uint16x8_t mixed = index_fold_mix_nibbles(data, data_end);
+
+    // a lane equal to searched0 is a match starting at the lane, a lane equal
+    // to searched1 is one starting a byte before it: low byte for the earlier one
+    const uint16x8_t combined = vsriq_n_u16(vceqq_u16(mixed, searched0), vceqq_u16(mixed, searched1), 8);
+    const uint8x8_t narrowed = vshrn_n_u16(combined, 4);
+
+    // the return contains 16 nibbles (0x0 or 0xF), each representing position of a match
+    // [-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+    return vget_lane_u64(narrowed, 0);
+}
+
+// gocc: indexFoldRabinKarp(a, b string) int
+int64_t index_fold_rabin_karp(unsigned char *haystack, const int64_t haystack_len, unsigned char *needle, const int64_t needle_len)
+{
+    const uint64_t blockSize = 16; // NEON can process 128 bits (16 bytes) at a time
+    const uint8x16x2_t table = vld1q_u8_x2(uppercasingTable);
+
+    if (haystack_len < needle_len) return -1;
+    if (needle_len == 0) return 0;
+    if (haystack_len == needle_len) {
+        return equal_fold_long(haystack, needle, needle_len, table) ? 0 : -1;
+    }
+
+    switch (needle_len)
+    {
+    case 1:
+        // special case for 1-byte needles
+        return index_fold_1_byte_needle(haystack, haystack_len, needle, table);
+    case 2:
+        // special case for 2-byte needles, no need for two loads
+        return index_fold_2_byte_needle(haystack, haystack_len, (uint16_t *)needle, table);
+    }
+
+    return index_fold_rabin_karp_core(haystack, haystack_len, needle, needle_len, table);
+}
+
+// gocc: IndexFold(a, b string) int
+int64_t index_fold(unsigned char *haystack, int64_t haystack_len, unsigned char *needle, const int64_t needle_len)
+{
+    const uint64_t blockSize = 16; // NEON can process 128 bits (16 bytes) at a time
+
+    const uint8x16x2_t table = vld1q_u8_x2(uppercasingTable);
+    const uint8x16_t shift = vdupq_n_u8(0x60);
+
+    if (haystack_len < needle_len) return -1;
+    if (needle_len <= 0) return 0;
+    if (haystack_len == needle_len) {
+        return equal_fold_long(haystack, needle, needle_len, table) ? 0 : -1;
+    }
+
+    switch (needle_len)
+    {
+    case 1:
+        // special case for 1-byte needles
+        return index_fold_1_byte_needle(haystack, haystack_len, needle, table);
+    case 2:
+        // special case for 2-byte needles, no need for two loads
+        return index_fold_2_byte_needle(haystack, haystack_len, (uint16_t *)needle, table);
+    case 3:
+        // special cases for 3 and 4-byte needles, one load and nothing to verify
+        return index_fold_3_byte_needle(haystack, haystack_len, needle, table);
+    case 4:
+        return index_fold_4_byte_needle(haystack, haystack_len, needle, table);
+    }
+
+    // Needles of 5 and more bytes: 2 bytes from the start of the needle and 2
+    // from its end find the candidates, all 4 in a single comparison. Each
+    // byte of the haystack is mixed with the byte dist further, which is how
+    // far apart the two ends of the needle are, and the result is compared
+    // against the same mix of the needle. That takes no folding and half the
+    // comparisons of looking at the two ends separately, but it's not exact,
+    // so the whole candidate gets verified.
+    const int64_t dist = needle_len - 3;
+    const uint16x8_t mixed0 = index_fold_prepare_mixed_comparer(needle, needle + dist);
+    const uint16x8_t mixed1 = index_fold_prepare_mixed_comparer(needle + 1, needle + dist + 1);
+
+    const unsigned char *data_start = haystack;
+    // the last position a match can start at
+    const unsigned char *last_start = haystack + haystack_len - needle_len;
+    uint64_t failures = 0;
+
+    // a block reports matches up to 14 bytes into it; while all of those can
+    // be matches, both loads are within the haystack too
+    for (const unsigned char *data_bound = last_start - (blockSize - 2); haystack <= data_bound; haystack += blockSize)
+    {
+        uint8x16_t data = vld1q_u8(haystack);
+        uint8x16_t data_end = vld1q_u8(haystack + dist);
+
+        uint64_t data64 = index_fold_process_block_mixed(data, data_end, mixed0, mixed1);
+        if (data64) {
+            while (data64)
+            {
+                int pos = __builtin_ctzll(data64) / 4;
+                // clear this byte position
+                data64 &= ~(0xFull << (pos * 4));
+                // disregard 0th byte on the first iteration, it's in front of the haystack
+                if (haystack == data_start && pos == 0) continue;
+                pos--;
+
+                if (equal_fold_core(haystack+pos, needle, needle_len, table))
+                {
+                    return haystack-data_start + pos;
+                }
+                failures++;
+            }
+            if (failures > 4 + ((haystack-data_start)>>7)) {
+                // the haystack is full of bytes the mix can't tell from the needle,
+                // compare exactly from the next block on, this one is dealt with
+                return index_fold_first2_last2(data_start, haystack + blockSize, haystack_len, needle, needle_len, table, shift);
+            }
+        }
+    }
+
+    for (; haystack <= last_start + 1; haystack += blockSize)
+    {
+        const int64_t data_len = haystack_len - (haystack - data_start);
+        uint8x16_t data = load_data16(haystack, data_len);
+        uint8x16_t data_end = load_data16(haystack + dist, data_len - dist);
+
+        uint64_t data64 = index_fold_process_block_mixed(data, data_end, mixed0, mixed1);
+        while (data64)
+        {
+            int pos = __builtin_ctzll(data64) / 4;
+            // clear this byte position
+            data64 &= ~(0xFull << (pos * 4));
+            // disregard 0th byte on the first iteration, it's in front of the haystack
+            if (haystack == data_start && pos == 0) continue;
+            pos--;
+
+            if (haystack+pos <= last_start && equal_fold_core(haystack+pos, needle, needle_len, table))
             {
                 return (haystack-data_start) + pos;
             }

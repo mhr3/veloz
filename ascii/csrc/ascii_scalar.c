@@ -79,10 +79,11 @@ static inline uint32_t rabin_karp_hash_fold(const unsigned char *data, int64_t d
 // haystack byte a fixed number of times, so it can't degenerate. Used as the
 // bailout when the SIMD prefilter produces too many false candidates.
 //
-// Verification is deliberately scalar: the callers inline this whole function,
-// and any extra vector constant would spill an XMM register. Spilled XMM slots
-// need a 16-byte aligned frame, which makes clang emit a real "and rsp, -16"
-// that gocc cannot reconcile with a Go stack frame.
+// Verification is scalar here: it only runs on a hash match, and this file is
+// shared by the SSE and the AVX2 unit. It used to be scalar in the SIMD
+// kernels too, because a spilled XMM register takes an aligned frame that
+// gocc couldn't fit into a Go stack frame; since gocc can, they verify their
+// candidates with index_fold_verify.
 static inline int64_t index_fold_rabin_karp_core(const unsigned char *haystack, int64_t haystack_len,
                                                 const unsigned char *needle, int64_t needle_len)
 {
