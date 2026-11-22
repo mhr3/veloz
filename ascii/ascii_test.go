@@ -771,11 +771,13 @@ func TestIndexAny(t *testing.T) {
 		{strings.Repeat("a", 33) + "x", "x", 33},
 	}
 
-	for _, tt := range tests {
-		if got := IndexAny(tt.s, tt.chars); got != tt.want {
-			t.Errorf("IndexAny(%q, %q) = %d, want %d", tt.s, tt.chars, got, tt.want)
+	forEachKernel(t, func(t *testing.T) {
+		for _, tt := range tests {
+			if got := IndexAny(tt.s, tt.chars); got != tt.want {
+				t.Errorf("IndexAny(%q, %q) = %d, want %d", tt.s, tt.chars, got, tt.want)
+			}
 		}
-	}
+	})
 }
 
 func TestByteSetIndex(t *testing.T) {
@@ -807,16 +809,18 @@ func TestByteSetIndex(t *testing.T) {
 		{strings.Repeat("x", 1000), "abc", -1},
 	}
 
-	for _, tt := range tests {
-		bs := NewByteSet(tt.chars)
-		if got := bs.Index(tt.s); got != tt.want {
-			t.Errorf("ByteSet(%q).Index(%q) = %d, want %d", tt.chars, tt.s, got, tt.want)
+	forEachKernel(t, func(t *testing.T) {
+		for _, tt := range tests {
+			bs := NewByteSet(tt.chars)
+			if got := bs.Index(tt.s); got != tt.want {
+				t.Errorf("ByteSet(%q).Index(%q) = %d, want %d", tt.chars, tt.s, got, tt.want)
+			}
+			// Verify matches IndexAny
+			if got := IndexAny(tt.s, tt.chars); got != tt.want {
+				t.Errorf("IndexAny(%q, %q) = %d, want %d", tt.s, tt.chars, got, tt.want)
+			}
 		}
-		// Verify matches IndexAny
-		if got := IndexAny(tt.s, tt.chars); got != tt.want {
-			t.Errorf("IndexAny(%q, %q) = %d, want %d", tt.s, tt.chars, got, tt.want)
-		}
-	}
+	})
 }
 
 // A kernel finds the bit of a byte in the bitset from the bits of that byte.
@@ -1005,9 +1009,11 @@ func FuzzIndexAny(f *testing.F) {
 	f.Fuzz(func(t *testing.T, s, chars string) {
 		want := indexAnyNaive(s, chars)
 
-		got := IndexAny(s, chars)
-		if got != want {
-			t.Fatalf("IndexAny(%q, %q) = %d, want %d", s, chars, got, want)
-		}
+		forEachKernel(t, func(t *testing.T) {
+			got := IndexAny(s, chars)
+			if got != want {
+				t.Fatalf("IndexAny(%q, %q) = %d, want %d", s, chars, got, want)
+			}
+		})
 	})
 }

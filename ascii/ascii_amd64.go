@@ -79,6 +79,9 @@ func (bs ByteSet) Index(s string) int {
 	if hasAVX2 && len(s) >= 32 {
 		return indexAnyAvx2(s, &bs.bitset)
 	}
+	if hasSSE41 && len(s) >= 16 {
+		return indexAnySse(s, &bs.bitset)
+	}
 	return indexAnyGo(s, &bs.bitset)
 }
 
