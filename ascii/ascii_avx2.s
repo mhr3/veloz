@@ -131,197 +131,111 @@ LBB0_20:
 	MOVB  AX, ret+16(FP)      // <--
 	RET                       // <--                                  // ret
 
-DATA LCPI1_0<>+0x00(SB)/8, $0xf0f0f0f0f0f0f0f0
-DATA LCPI1_0<>+0x08(SB)/8, $0xf0f0f0f0f0f0f0f0
-DATA LCPI1_0<>+0x10(SB)/8, $0xf0f0f0f0f0f0f0f0
-DATA LCPI1_0<>+0x18(SB)/8, $0xf0f0f0f0f0f0f0f0
+DATA LCPI1_0<>+0x00(SB)/8, $0x0f0f0f0f0f0f0f0f
+DATA LCPI1_0<>+0x08(SB)/8, $0x0f0f0f0f0f0f0f0f
+DATA LCPI1_0<>+0x10(SB)/8, $0x0f0f0f0f0f0f0f0f
+DATA LCPI1_0<>+0x18(SB)/8, $0x0f0f0f0f0f0f0f0f
 GLOBL LCPI1_0<>(SB), (RODATA|NOPTR), $32
 
-DATA LCPI1_2<>+0x00(SB)/8, $0xf8f8f8f8f8f8f8f8
-DATA LCPI1_2<>+0x08(SB)/8, $0xf8f8f8f8f8f8f8f8
-DATA LCPI1_2<>+0x10(SB)/8, $0xf8f8f8f8f8f8f8f8
-DATA LCPI1_2<>+0x18(SB)/8, $0xf8f8f8f8f8f8f8f8
+DATA LCPI1_1<>+0x00(SB)/8, $0x0707070707070707
+DATA LCPI1_1<>+0x08(SB)/8, $0x0707070707070707
+DATA LCPI1_1<>+0x10(SB)/8, $0x0707070707070707
+DATA LCPI1_1<>+0x18(SB)/8, $0x0707070707070707
+GLOBL LCPI1_1<>(SB), (RODATA|NOPTR), $32
+
+DATA LCPI1_2<>+0x00(SB)/8, $0x8040201008040201
+DATA LCPI1_2<>+0x08(SB)/8, $0x8040201008040201
+DATA LCPI1_2<>+0x10(SB)/8, $0x8040201008040201
+DATA LCPI1_2<>+0x18(SB)/8, $0x8040201008040201
 GLOBL LCPI1_2<>(SB), (RODATA|NOPTR), $32
 
-DATA LCPI1_4<>+0x00(SB)/8, $0xfcfcfcfcfcfcfcfc
-DATA LCPI1_4<>+0x08(SB)/8, $0xfcfcfcfcfcfcfcfc
-DATA LCPI1_4<>+0x10(SB)/8, $0xfcfcfcfcfcfcfcfc
-DATA LCPI1_4<>+0x18(SB)/8, $0xfcfcfcfcfcfcfcfc
-GLOBL LCPI1_4<>(SB), (RODATA|NOPTR), $32
+DATA LCPI1_3<>+0x00(SB)/1, $0x0f
+GLOBL LCPI1_3<>(SB), (RODATA|NOPTR), $1
 
-DATA LCPI1_6<>+0x00(SB)/8, $0x0707070707070707
-DATA LCPI1_6<>+0x08(SB)/8, $0x0707070707070707
-DATA LCPI1_6<>+0x10(SB)/8, $0x0707070707070707
-DATA LCPI1_6<>+0x18(SB)/8, $0x0707070707070707
-GLOBL LCPI1_6<>(SB), (RODATA|NOPTR), $32
+DATA LCPI1_4<>+0x00(SB)/1, $0x07
+GLOBL LCPI1_4<>(SB), (RODATA|NOPTR), $1
 
-DATA LCPI1_7<>+0x00(SB)/8, $0x8040201008040201
-DATA LCPI1_7<>+0x08(SB)/8, $0x8040201008040201
-DATA LCPI1_7<>+0x10(SB)/8, $0x8040201008040201
-DATA LCPI1_7<>+0x18(SB)/8, $0x8040201008040201
-GLOBL LCPI1_7<>(SB), (RODATA|NOPTR), $32
-
-DATA LCPI1_8<>+0x00(SB)/8, $0xffffffffffffffff
-DATA LCPI1_8<>+0x08(SB)/8, $0xffffffffffffffff
-DATA LCPI1_8<>+0x10(SB)/8, $0xffffffffffffffff
-DATA LCPI1_8<>+0x18(SB)/8, $0xffffffffffffffff
-GLOBL LCPI1_8<>(SB), (RODATA|NOPTR), $32
-
-DATA LCPI1_1<>+0x00(SB)/8, $0x0101010101010101
-GLOBL LCPI1_1<>(SB), (RODATA|NOPTR), $8
-
-DATA LCPI1_3<>+0x00(SB)/8, $0x0202020202020202
-GLOBL LCPI1_3<>(SB), (RODATA|NOPTR), $8
-
-DATA LCPI1_5<>+0x00(SB)/8, $0x0404040404040404
+DATA LCPI1_5<>+0x00(SB)/8, $0x8040201008040201
 GLOBL LCPI1_5<>(SB), (RODATA|NOPTR), $8
 
-DATA LCPI1_9<>+0x00(SB)/8, $0x8040201008040201
-GLOBL LCPI1_9<>(SB), (RODATA|NOPTR), $8
-
-TEXT ·indexAnyAvxBitset(SB), NOSPLIT, $0-56
-	MOVQ         data_base+0(FP), DI
-	MOVQ         data_len+8(FP), SI
-	MOVQ         bitset0+16(FP), DX
-	MOVQ         bitset1+24(FP), CX
-	MOVQ         bitset2+32(FP), R8
-	MOVQ         bitset3+40(FP), R9
-	MOVQ         $-0x1, AX           // <--                                  // mov	rax, -1
-	TESTQ        SI, SI              // <--                                  // test	rsi, rsi
-	JE           LBB1_18             // <--                                  // je	.LBB1_18
-	NOP                              // (skipped)                            // push	rbp
-	NOP                              // (skipped)                            // mov	rbp, rsp
-	NOP                              // (skipped)                            // push	r15
-	NOP                              // (skipped)                            // push	r14
-	NOP                              // (skipped)                            // push	rbx
-	NOP                              // (skipped)                            // and	rsp, -8
-	LEAQ         0(DI)(SI*1), R11    // <--                                  // lea	r11, [rdi + rsi]
-	ANDL         $0x1f, SI           // <--                                  // and	esi, 31
-	SUBQ         SI, R11             // <--                                  // sub	r11, rsi
-	MOVQ         DI, R10             // <--                                  // mov	r10, rdi
-	CMPQ         R11, DI             // <--                                  // cmp	r11, rdi
-	JBE          LBB1_6              // <--                                  // jbe	.LBB1_6
-	VMOVQ        DX, X0              // <--                                  // vmovq	xmm0, rdx
-	VPBROADCASTQ X0, Y0              // <--                                  // vpbroadcastq	ymm0, xmm0
-	VMOVQ        CX, X1              // <--                                  // vmovq	xmm1, rcx
-	VPBROADCASTQ X1, Y1              // <--                                  // vpbroadcastq	ymm1, xmm1
-	VMOVQ        R8, X2              // <--                                  // vmovq	xmm2, r8
-	VPBROADCASTQ X2, Y2              // <--                                  // vpbroadcastq	ymm2, xmm2
-	VMOVQ        R9, X3              // <--                                  // vmovq	xmm3, r9
-	VPBROADCASTQ X3, Y3              // <--                                  // vpbroadcastq	ymm3, xmm3
-	XORL         R10, R10            // <--                                  // xor	r10d, r10d
-	VPXOR        X4, X4, X4          // <--                                  // vpxor	xmm4, xmm4, xmm4
-	VPBROADCASTQ LCPI1_1<>(SB), Y6   // <--                                  // vpbroadcastq	ymm6, qword ptr [rip + .LCPI1_1]
-	VPBROADCASTQ LCPI1_3<>(SB), Y8   // <--                                  // vpbroadcastq	ymm8, qword ptr [rip + .LCPI1_3]
-	VPBROADCASTQ LCPI1_5<>(SB), Y9   // <--                                  // vpbroadcastq	ymm9, qword ptr [rip + .LCPI1_5]
+TEXT ·indexAnyAvx2(SB), NOSPLIT, $0-32
+	MOVQ           data_base+0(FP), DI
+	MOVQ           data_len+8(FP), SI
+	MOVQ           bitset+16(FP), DX
+	MOVQ           $-0x1, AX           // <--                                  // mov	rax, -1
+	TESTQ          SI, SI              // <--                                  // test	rsi, rsi
+	JE             LBB1_13             // <--                                  // je	.LBB1_13
+	NOP                                // (skipped)                            // push	rbp
+	NOP                                // (skipped)                            // mov	rbp, rsp
+	NOP                                // (skipped)                            // and	rsp, -8
+	LEAQ           0(DI)(SI*1), R8     // <--                                  // lea	r8, [rdi + rsi]
+	ANDL           $0x1f, SI           // <--                                  // and	esi, 31
+	SUBQ           SI, R8              // <--                                  // sub	r8, rsi
+	MOVQ           DI, CX              // <--                                  // mov	rcx, rdi
+	CMPQ           R8, DI              // <--                                  // cmp	r8, rdi
+	JBE            LBB1_6              // <--                                  // jbe	.LBB1_6
+	VBROADCASTI128 0(DX), Y0           // <--                                  // vbroadcasti128	ymm0, xmmword ptr [rdx]
+	VBROADCASTI128 0x10(DX), Y1        // <--                                  // vbroadcasti128	ymm1, xmmword ptr [rdx + 16]
+	XORL           CX, CX              // <--                                  // xor	ecx, ecx
+	VPBROADCASTB   LCPI1_3<>(SB), Y2   // <--                                  // vpbroadcastb	ymm2, byte ptr [rip + .LCPI1_3]
+	VPBROADCASTB   LCPI1_4<>(SB), Y3   // <--                                  // vpbroadcastb	ymm3, byte ptr [rip + .LCPI1_4]
+	VPBROADCASTQ   LCPI1_5<>(SB), Y4   // <--                                  // vpbroadcastq	ymm4, qword ptr [rip + .LCPI1_5]
 
 LBB1_3:
-	VMOVDQU      0(DI)(R10*1), Y14       // <--                                  // vmovdqu	ymm14, ymmword ptr [rdi + r10]
-	VPSLLW       $0x4, Y14, Y15          // <--                                  // vpsllw	ymm15, ymm14, 4
-	VPAND        LCPI1_0<>(SB), Y15, Y15 // <--                                  // vpand	ymm15, ymm15, ymmword ptr [rip + .LCPI1_0]
-	VPCMPGTB     Y15, Y4, Y15            // <--                                  // vpcmpgtb	ymm15, ymm4, ymm15
-	VPAND        Y6, Y15, Y15            // <--                                  // vpand	ymm15, ymm15, ymm6
-	VPSLLW       $0x3, Y14, Y5           // <--                                  // vpsllw	ymm5, ymm14, 3
-	VPAND        LCPI1_2<>(SB), Y5, Y5   // <--                                  // vpand	ymm5, ymm5, ymmword ptr [rip + .LCPI1_2]
-	VPCMPGTB     Y5, Y4, Y5              // <--                                  // vpcmpgtb	ymm5, ymm4, ymm5
-	VPAND        Y5, Y8, Y5              // <--                                  // vpand	ymm5, ymm8, ymm5
-	VPOR         Y5, Y15, Y5             // <--                                  // vpor	ymm5, ymm15, ymm5
-	VPSLLW       $0x2, Y14, Y15          // <--                                  // vpsllw	ymm15, ymm14, 2
-	VPAND        LCPI1_4<>(SB), Y15, Y15 // <--                                  // vpand	ymm15, ymm15, ymmword ptr [rip + .LCPI1_4]
-	VPCMPGTB     Y15, Y4, Y15            // <--                                  // vpcmpgtb	ymm15, ymm4, ymm15
-	VPAND        Y9, Y15, Y15            // <--                                  // vpand	ymm15, ymm15, ymm9
-	VPOR         Y5, Y15, Y5             // <--                                  // vpor	ymm5, ymm15, ymm5
-	VPAND        LCPI1_6<>(SB), Y14, Y15 // <--                                  // vpand	ymm15, ymm14, ymmword ptr [rip + .LCPI1_6]
-	VPBROADCASTQ LCPI1_9<>(SB), Y7       // <--                                  // vpbroadcastq	ymm7, qword ptr [rip + .LCPI1_9]
-	VPSHUFB      Y15, Y7, Y15            // <--                                  // vpshufb	ymm15, ymm7, ymm15
-	VPADDB       Y14, Y14, Y7            // <--                                  // vpaddb	ymm7, ymm14, ymm14
-	VPCMPGTB     Y7, Y4, Y7              // <--                                  // vpcmpgtb	ymm7, ymm4, ymm7
-	VPCMPGTB     Y14, Y4, Y10            // <--                                  // vpcmpgtb	ymm10, ymm4, ymm14
-	VPSHUFB      Y5, Y0, Y11             // <--                                  // vpshufb	ymm11, ymm0, ymm5
-	VPSHUFB      Y5, Y1, Y12             // <--                                  // vpshufb	ymm12, ymm1, ymm5
-	VPSHUFB      Y5, Y2, Y13             // <--                                  // vpshufb	ymm13, ymm2, ymm5
-	VPSHUFB      Y5, Y3, Y5              // <--                                  // vpshufb	ymm5, ymm3, ymm5
-	VPAND        Y15, Y11, Y11           // <--                                  // vpand	ymm11, ymm11, ymm15
-	VPAND        Y15, Y12, Y12           // <--                                  // vpand	ymm12, ymm12, ymm15
-	VPAND        Y15, Y13, Y13           // <--                                  // vpand	ymm13, ymm13, ymm15
-	VPAND        Y5, Y15, Y5             // <--                                  // vpand	ymm5, ymm15, ymm5
-	VPCMPEQB     Y4, Y11, Y11            // <--                                  // vpcmpeqb	ymm11, ymm11, ymm4
-	VPOR         Y7, Y10, Y15            // <--                                  // vpor	ymm15, ymm10, ymm7
-	VPOR         Y15, Y11, Y11           // <--                                  // vpor	ymm11, ymm11, ymm15
-	VPCMPEQB     Y4, Y12, Y12            // <--                                  // vpcmpeqb	ymm12, ymm12, ymm4
-	VPXOR        LCPI1_8<>(SB), Y11, Y11 // <--                                  // vpxor	ymm11, ymm11, ymmword ptr [rip + .LCPI1_8]
-	VPOR         Y12, Y10, Y12           // <--                                  // vpor	ymm12, ymm10, ymm12
-	VPANDN       Y7, Y12, Y12            // <--                                  // vpandn	ymm12, ymm12, ymm7
-	VPOR         Y11, Y12, Y11           // <--                                  // vpor	ymm11, ymm12, ymm11
-	VPCMPEQB     Y4, Y13, Y12            // <--                                  // vpcmpeqb	ymm12, ymm13, ymm4
-	VPOR         Y7, Y12, Y12            // <--                                  // vpor	ymm12, ymm12, ymm7
-	VPANDN       Y14, Y12, Y12           // <--                                  // vpandn	ymm12, ymm12, ymm14
-	VPCMPEQB     Y4, Y5, Y5              // <--                                  // vpcmpeqb	ymm5, ymm5, ymm4
-	VPANDN       Y10, Y5, Y5             // <--                                  // vpandn	ymm5, ymm5, ymm10
-	VPAND        Y5, Y7, Y5              // <--                                  // vpand	ymm5, ymm7, ymm5
-	VPOR         Y5, Y12, Y5             // <--                                  // vpor	ymm5, ymm12, ymm5
-	VPOR         Y5, Y11, Y5             // <--                                  // vpor	ymm5, ymm11, ymm5
-	VPMOVMSKB    Y5, BX                  // <--                                  // vpmovmskb	ebx, ymm5
-	TESTL        BX, BX                  // <--                                  // test	ebx, ebx
-	JNE          LBB1_15                 // <--                                  // jne	.LBB1_15
-	LEAQ         0(DI)(R10*1), BX        // <--                                  // lea	rbx, [rdi + r10]
-	ADDQ         $0x20, BX               // <--                                  // add	rbx, 32
-	ADDQ         $0x20, R10              // <--                                  // add	r10, 32
-	CMPQ         BX, R11                 // <--                                  // cmp	rbx, r11
-	JB           LBB1_3                  // <--                                  // jb	.LBB1_3
-	ADDQ         DI, R10                 // <--                                  // add	r10, rdi
+	VMOVDQU   0(DI)(CX*1), Y5 // <--                                  // vmovdqu	ymm5, ymmword ptr [rdi + rcx]
+	VPSRLW    $0x3, Y5, Y6    // <--                                  // vpsrlw	ymm6, ymm5, 3
+	VPAND     Y2, Y6, Y6      // <--                                  // vpand	ymm6, ymm6, ymm2
+	VPSHUFB   Y6, Y0, Y7      // <--                                  // vpshufb	ymm7, ymm0, ymm6
+	VPSHUFB   Y6, Y1, Y6      // <--                                  // vpshufb	ymm6, ymm1, ymm6
+	VPBLENDVB Y5, Y6, Y7, Y6  // <--                                  // vpblendvb	ymm6, ymm7, ymm6, ymm5
+	VPAND     Y3, Y5, Y5      // <--                                  // vpand	ymm5, ymm5, ymm3
+	VPSHUFB   Y5, Y4, Y5      // <--                                  // vpshufb	ymm5, ymm4, ymm5
+	VPAND     Y6, Y5, Y6      // <--                                  // vpand	ymm6, ymm5, ymm6
+	VPCMPEQB  Y5, Y6, Y5      // <--                                  // vpcmpeqb	ymm5, ymm6, ymm5
+	VPMOVMSKB Y5, R9          // <--                                  // vpmovmskb	r9d, ymm5
+	TESTL     R9, R9          // <--                                  // test	r9d, r9d
+	JNE       LBB1_10         // <--                                  // jne	.LBB1_10
+	LEAQ      0(DI)(CX*1), R9 // <--                                  // lea	r9, [rdi + rcx]
+	ADDQ      $0x20, R9       // <--                                  // add	r9, 32
+	ADDQ      $0x20, CX       // <--                                  // add	rcx, 32
+	CMPQ      R9, R8          // <--                                  // cmp	r9, r8
+	JB        LBB1_3          // <--                                  // jb	.LBB1_3
+	ADDQ      DI, CX          // <--                                  // add	rcx, rdi
 
 LBB1_6:
-	TESTQ SI, SI   // <--                                  // test	rsi, rsi
-	JE    LBB1_17  // <--                                  // je	.LBB1_17
-	XORL  R11, R11 // <--                                  // xor	r11d, r11d
+	TESTQ SI, SI  // <--                                  // test	rsi, rsi
+	JE    LBB1_12 // <--                                  // je	.LBB1_12
+	XORL  R8, R8  // <--                                  // xor	r8d, r8d
 
 LBB1_8:
-	LONG  $0x1cb60f43; BYTE $0x1a // MOVZX 0(R10)(R11*1), BX              // movzx	ebx, byte ptr [r10 + r11]
-	MOVL  BX, R15                 // <--                                  // mov	r15d, ebx
-	SHRL  $0x6, R15               // <--                                  // shr	r15d, 6
-	CMPL  R15, $0x1               // <--                                  // cmp	r15d, 1
-	JG    LBB1_11                 // <--                                  // jg	.LBB1_11
-	MOVQ  DX, R14                 // <--                                  // mov	r14, rdx
-	TESTL R15, R15                // <--                                  // test	r15d, r15d
-	JE    LBB1_13                 // <--                                  // je	.LBB1_13
-	MOVQ  CX, R14                 // <--                                  // mov	r14, rcx
-	JMP   LBB1_13                 // <--                                  // jmp	.LBB1_13
+	LONG $0x0cb60f46; BYTE $0x01 // MOVZX 0(CX)(R8*1), R9                // movzx	r9d, byte ptr [rcx + r8]
+	MOVL R9, R10                 // <--                                  // mov	r10d, r9d
+	SHRL $0x6, R10               // <--                                  // shr	r10d, 6
+	MOVQ 0(DX)(R10*8), R10       // <--                                  // mov	r10, qword ptr [rdx + 8*r10]
+	BTQ  R9, R10                 // <--                                  // bt	r10, r9
+	JB   LBB1_11                 // <--                                  // jb	.LBB1_11
+	INCQ R8                      // <--                                  // inc	r8
+	CMPQ SI, R8                  // <--                                  // cmp	rsi, r8
+	JNE  LBB1_8                  // <--                                  // jne	.LBB1_8
+	JMP  LBB1_12                 // <--                                  // jmp	.LBB1_12
+
+LBB1_10:
+	LONG $0xbc0f41f3; BYTE $0xc1 // TZCNT R9, AX                         // rep		bsf	eax, r9d
+	ADDQ CX, AX                  // <--                                  // add	rax, rcx
+	JMP  LBB1_12                 // <--                                  // jmp	.LBB1_12
 
 LBB1_11:
-	MOVQ R8, R14   // <--                                  // mov	r14, r8
-	CMPL R15, $0x2 // <--                                  // cmp	r15d, 2
-	JE   LBB1_13   // <--                                  // je	.LBB1_13
-	MOVQ R9, R14   // <--                                  // mov	r14, r9
+	SUBQ DI, CX // <--                                  // sub	rcx, rdi
+	ADDQ R8, CX // <--                                  // add	rcx, r8
+	MOVQ CX, AX // <--                                  // mov	rax, rcx
 
-LBB1_13:
-	BTQ  BX, R14 // <--                                  // bt	r14, rbx
-	JB   LBB1_16 // <--                                  // jb	.LBB1_16
-	INCQ R11     // <--                                  // inc	r11
-	CMPQ SI, R11 // <--                                  // cmp	rsi, r11
-	JNE  LBB1_8  // <--                                  // jne	.LBB1_8
-	JMP  LBB1_17 // <--                                  // jmp	.LBB1_17
-
-LBB1_15:
-	LONG $0xc3bc0ff3 // TZCNT BX, AX                         // rep		bsf	eax, ebx
-	ADDQ R10, AX     // <--                                  // add	rax, r10
-	JMP  LBB1_17     // <--                                  // jmp	.LBB1_17
-
-LBB1_16:
-	SUBQ DI, R10  // <--                                  // sub	r10, rdi
-	ADDQ R11, R10 // <--                                  // add	r10, r11
-	MOVQ R10, AX  // <--                                  // mov	rax, r10
-
-LBB1_17:
-	NOP // (skipped)                            // lea	rsp, [rbp - 24]
-	NOP // (skipped)                            // pop	rbx
-	NOP // (skipped)                            // pop	r14
-	NOP // (skipped)                            // pop	r15
+LBB1_12:
+	NOP // (skipped)                            // mov	rsp, rbp
 	NOP // (skipped)                            // pop	rbp
 
-LBB1_18:
+LBB1_13:
 	VZEROUPPER          // <--                                  // vzeroupper
-	MOVQ AX, ret+48(FP) // <--
+	MOVQ AX, ret+24(FP) // <--
 	RET                 // <--                                  // ret
 
 DATA LCPI2_0<>+0x00(SB)/8, $0x2020202020202020

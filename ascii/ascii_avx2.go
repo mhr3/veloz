@@ -8,7 +8,7 @@ package ascii
 func isAsciiAvx(src string) bool
 
 //go:noescape
-func indexAnyAvxBitset(data string, bitset0 uint64, bitset1 uint64, bitset2 uint64, bitset3 uint64) int
+func indexAnyAvx2(data string, bitset *[4]uint64) int
 
 //go:noescape
 func equalFoldAvx(a string, b string) bool
