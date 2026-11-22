@@ -77,9 +77,9 @@ func (bs ByteSet) Index(s string) int {
 		return -1
 	}
 	if hasAVX2 && len(s) >= 32 {
-		return indexAnyAvxBitset(s, &bs.bitset)
+		return indexAnyAvx2(s, &bs.bitset)
 	}
-	return indexAnyGoBitset(s, &bs.bitset)
+	return indexAnyGo(s, &bs.bitset)
 }
 
 // Match reports whether any byte in s is in the ByteSet.

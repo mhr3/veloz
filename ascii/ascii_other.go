@@ -33,7 +33,7 @@ func (bs ByteSet) Index(s string) int {
 	if bs.bitset == [4]uint64{} {
 		return -1
 	}
-	return indexAnyGoBitset(s, &bs.bitset)
+	return indexAnyGo(s, &bs.bitset)
 }
 
 // Match reports whether any byte in s is in the ByteSet.

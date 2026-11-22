@@ -6,8 +6,8 @@
 // Supports unlimited search chars with consistent O(n) performance.
 // The bitset is built in Go: bit c of its 256 is set when byte c is searched for.
 //
-// gocc: indexAnyNeonBitset(data string, bitset *[4]uint64) int
-int64_t index_any_neon_bitset(unsigned char *data, uint64_t data_len, const uint64_t *bitset)
+// gocc: indexAnyNeon(data string, bitset *[4]uint64) int
+int64_t index_any_neon(unsigned char *data, uint64_t data_len, const uint64_t *bitset)
 {
     if (data_len == 0) {
         return -1;

@@ -9,9 +9,9 @@ func (bs ByteSet) Index(s string) int {
 		return -1
 	}
 	if len(s) < 16 {
-		return indexAnyGoBitset(s, &bs.bitset)
+		return indexAnyGo(s, &bs.bitset)
 	}
-	return indexAnyNeonBitset(s, &bs.bitset)
+	return indexAnyNeon(s, &bs.bitset)
 }
 
 // Match reports whether any byte in s is in the ByteSet.

@@ -96,8 +96,8 @@ bool is_ascii_avx(unsigned char *src, uint64_t src_len)
 // IndexAny using 256-bit bitset approach.
 // The bitset is built in Go: bit c of its 256 is set when byte c is searched for.
 //
-// gocc: indexAnyAvxBitset(data string, bitset *[4]uint64) int
-int64_t index_any_avx_bitset(unsigned char *data, uint64_t data_len, const uint64_t *bitset)
+// gocc: indexAnyAvx2(data string, bitset *[4]uint64) int
+int64_t index_any_avx2(unsigned char *data, uint64_t data_len, const uint64_t *bitset)
 {
     if (data_len == 0) {
         return -1;
