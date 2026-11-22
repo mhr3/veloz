@@ -11,7 +11,7 @@ func (bs ByteSet) Index(s string) int {
 	if len(s) < 16 {
 		return indexAnyGoBitset(s, &bs.bitset)
 	}
-	return indexAnyNeonBitset(s, bs.bitset[0], bs.bitset[1], bs.bitset[2], bs.bitset[3])
+	return indexAnyNeonBitset(s, &bs.bitset)
 }
 
 // Match reports whether any byte in s is in the ByteSet.

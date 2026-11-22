@@ -100,9 +100,8 @@ static inline __m256i broadcast_word_bytes(uint64_t word)
     return _mm256_broadcastsi128_si256(table);
 }
 
-// gocc: indexAnyAvxBitset(data string, bitset0 uint64, bitset1 uint64, bitset2 uint64, bitset3 uint64) int
-int64_t index_any_avx_bitset(unsigned char *data, uint64_t data_len,
-    uint64_t bitset0, uint64_t bitset1, uint64_t bitset2, uint64_t bitset3)
+// gocc: indexAnyAvxBitset(data string, bitset *[4]uint64) int
+int64_t index_any_avx_bitset(unsigned char *data, uint64_t data_len, const uint64_t *bitset)
 {
     if (data_len == 0) {
         return -1;
@@ -123,10 +122,10 @@ int64_t index_any_avx_bitset(unsigned char *data, uint64_t data_len,
     const __m256i mask80 = _mm256_set1_epi8((char)0x80);
     const __m256i bit_lut = broadcast_word_bytes(0x8040201008040201ULL);
 
-    const __m256i table0 = broadcast_word_bytes(bitset0);
-    const __m256i table1 = broadcast_word_bytes(bitset1);
-    const __m256i table2 = broadcast_word_bytes(bitset2);
-    const __m256i table3 = broadcast_word_bytes(bitset3);
+    const __m256i table0 = broadcast_word_bytes(bitset[0]);
+    const __m256i table1 = broadcast_word_bytes(bitset[1]);
+    const __m256i table2 = broadcast_word_bytes(bitset[2]);
+    const __m256i table3 = broadcast_word_bytes(bitset[3]);
 
     for (const unsigned char *data32_end = (data + data_len) - (data_len % 32); data < data32_end; data += 32)
     {
@@ -186,14 +185,7 @@ int64_t index_any_avx_bitset(unsigned char *data, uint64_t data_len,
     // Scalar tail for remaining bytes
     for (uint64_t i = 0; i < data_len; i++) {
         unsigned char c = data[i];
-        uint64_t word;
-        switch (c >> 6) {
-            case 0: word = bitset0; break;
-            case 1: word = bitset1; break;
-            case 2: word = bitset2; break;
-            default: word = bitset3; break;
-        }
-        if (word & (1ULL << (c & 63))) {
+        if (bitset[c >> 6] & (1ULL << (c & 63))) {
             return (data - data_start) + i;
         }
     }
