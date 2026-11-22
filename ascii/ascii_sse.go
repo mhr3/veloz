@@ -8,6 +8,9 @@ package ascii
 func isAsciiSse(src string) bool
 
 //go:noescape
+func indexAnySse(data string, bitset *[4]uint64) int
+
+//go:noescape
 func equalFoldSse(a string, b string) bool
 
 //go:noescape

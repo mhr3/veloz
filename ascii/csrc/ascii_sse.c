@@ -84,6 +84,70 @@ bool is_ascii_sse(unsigned char *src, uint64_t src_len)
     return (data32 & 0x80808080) ? false : true;
 }
 
+// IndexAny using 256-bit bitset approach.
+// The bitset is built in Go: bit c of its 256 is set when byte c is searched for.
+//
+// gocc: indexAnySse(data string, bitset *[4]uint64) int
+int64_t index_any_sse(unsigned char *data, uint64_t data_len, const uint64_t *bitset)
+{
+    if (data_len == 0) {
+        return -1;
+    }
+
+    const unsigned char *data_start = data;
+
+    // The 256 bits as 32 bytes: 16 for the bytes below 0x80 and 16 for the rest.
+    // A shuffle looks one of 16 bytes up.
+    const __m128i table_lo = _mm_loadu_si128((const __m128i *)bitset);
+    const __m128i table_hi = _mm_loadu_si128((const __m128i *)(bitset + 2));
+
+    // Mask to extract bit position (0-7) and index (0-15)
+    const __m128i mask7 = _mm_set1_epi8(7);
+    const __m128i mask15 = _mm_set1_epi8(15);
+
+    // Bit position lookup table: 1<<0, 1<<1, ..., 1<<7 (repeated)
+    const __m128i bit_lut = _mm_set1_epi64x((long long)0x8040201008040201ULL);
+
+    for (const unsigned char *data16_end = (data + data_len) - (data_len % 16); data < data16_end; data += 16)
+    {
+        __m128i d = _mm_loadu_si128((const __m128i *)data);
+
+        // idx = (d >> 3) & 15 (which byte in its 16 bytes of the bitset); there is
+        // no shift of bytes, the bits a shift of words brings in are masked off
+        __m128i idx = _mm_and_si128(_mm_srli_epi16(d, 3), mask15);
+
+        // bit_pos = d & 7 (which bit within that byte)
+        __m128i bit_pos = _mm_and_si128(d, mask7);
+
+        // Look up the bitset byte for each lane: the top bit of d is which 16
+        // bytes it is in, and that bit is what blendv goes by
+        __m128i bitset_bytes = _mm_blendv_epi8(_mm_shuffle_epi8(table_lo, idx), _mm_shuffle_epi8(table_hi, idx), d);
+
+        // Look up the bit mask for each lane (bit_lut[bit_pos] = 1 << bit_pos)
+        __m128i bit_masks = _mm_shuffle_epi8(bit_lut, bit_pos);
+
+        // Check if the bit is set: (bitset_bytes & bit_masks) == bit_masks
+        __m128i match = _mm_cmpeq_epi8(_mm_and_si128(bitset_bytes, bit_masks), bit_masks);
+
+        int hit_mask = _mm_movemask_epi8(match);
+        if (hit_mask != 0) {
+            return (data - data_start) + __builtin_ctz(hit_mask);
+        }
+    }
+
+    data_len %= 16;
+
+    // Scalar tail for remaining bytes
+    for (uint64_t i = 0; i < data_len; i++) {
+        unsigned char c = data[i];
+        if (bitset[c >> 6] & (1ULL << (c & 63))) {
+            return (data - data_start) + i;
+        }
+    }
+
+    return -1;
+}
+
 #include "ascii_scalar.c"
 
 // Returns mask where 0xFF = match, 0x00 = mismatch under ASCII case folding.

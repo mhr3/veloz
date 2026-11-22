@@ -27,8 +27,8 @@ func IndexNonASCII(data string) int {
 	return IndexMask(data, 0x80)
 }
 
-// indexAnyGoBitset scans s for any byte in the 256-bit bitset.
-func indexAnyGoBitset(s string, bitset *[4]uint64) int {
+// indexAnyGo scans s for any byte in the 256-bit bitset.
+func indexAnyGo(s string, bitset *[4]uint64) int {
 	for i := 0; i < len(s); i++ {
 		c := s[i]
 		if bitset[c>>6]&(1<<(c&63)) != 0 {
