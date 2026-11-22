@@ -12,7 +12,7 @@ Another motivation for veloz is maintainability. Many Go packages rely on hand-r
 - Case-insensitive ASCII string comparison (`EqualFold`)
 - Case-insensitive ASCII substring search (`IndexFold`)
 - Fast UTF-8 validation
-- SIMD support for amd64 (AVX2, SSE4.1) and arm64 (NEON)
+- SIMD support for amd64 (AVX-512, AVX2, SSE4.1) and arm64 (NEON)
 - Pure Go fallback for other architectures
 
 ## Installation
@@ -78,18 +78,23 @@ func main() {
 
 | Function           | CPU        | naive (MB/s) | veloz (MB/s) | Speedup |
 |--------------------|------------|--------------|--------------|---------|
-| ascii.ValidString  | AMD Zen 3  | 8,875        | 118,663      | 13.4x   |
-| ascii.EqualFold    | AMD Zen 3  | 2,269        | 33,270       | 14.7x   |
-| ascii.IndexFold    | AMD Zen 3  | 5,771        | 45,545       | 7.9x    |
-| ascii.IndexAny     | AMD Zen 3  | 3,254        | 8,077        | 2.5x    |
-| utf8.ValidString   | AMD Zen 3  | 1,532        | 11,330       | 7.4x    |
+| ascii.ValidString  | AMD Zen 3  | 8,905        | 119,152      | 13.4x   |
+| ascii.EqualFold    | AMD Zen 3  | 2,268        | 33,342       | 14.7x   |
+| ascii.IndexFold    | AMD Zen 3  | 6,359        | 45,606       | 7.2x    |
+| ascii.IndexAny     | AMD Zen 3  | 3,316        | 8,061        | 2.4x    |
+| utf8.ValidString   | AMD Zen 3  | 1,535        | 14,387       | 9.4x    |
+| ascii.ValidString  | AMD Zen 5  | 11,899       | 185,774      | 15.6x   |
+| ascii.EqualFold    | AMD Zen 5  | 3,344        | 51,082       | 15.3x   |
+| ascii.IndexFold    | AMD Zen 5  | 9,007        | 68,491       | 7.6x    |
+| ascii.IndexAny     | AMD Zen 5  | 3,999        | 10,682       | 2.7x    |
+| utf8.ValidString   | AMD Zen 5  | 2,338        | 78,415       | 33.5x   |
 | ascii.ValidString  | Graviton 2 | 5,330        | 33,768       | 6.3x    |
 | ascii.EqualFold    | Graviton 2 |   708        | 10,963       | 15.5x   |
 | ascii.IndexFold    | Graviton 2 | 2,638        | 12,250       | 4.6x    |
 | ascii.IndexAny     | Graviton 2 | 1,203        | 8,896        | 7.4x    |
-| utf8.ValidString   | Graviton 2 |   678        | 3,076        | 4.5x    |
-| ascii.ValidString  | Apple M2   | 12,132       | 88,602       | 7.3x    |
-| ascii.EqualFold    | Apple M2   | 1,899        | 31,959       | 16.8x   |
-| ascii.IndexFold    | Apple M2   | 7,024        | 42,335       | 6.0x    |
-| ascii.IndexAny     | Apple M2   | 2,866        | 25,698       | 9.0x    |
-| utf8.ValidString   | Apple M2   | 2,009        | 9,902        | 4.9x    |
+| utf8.ValidString   | Graviton 2 |   678        | 4,514        | 6.7x    |
+| ascii.ValidString  | Apple M2   | 12,187       | 90,323       | 7.4x    |
+| ascii.EqualFold    | Apple M2   | 1,950        | 31,952       | 16.4x   |
+| ascii.IndexFold    | Apple M2   | 7,251        | 41,168       | 5.7x    |
+| ascii.IndexAny     | Apple M2   | 2,852        | 25,595       | 9.0x    |
+| utf8.ValidString   | Apple M2   | 2,000        | 12,558       | 6.3x    |
