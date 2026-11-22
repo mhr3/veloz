@@ -5,7 +5,7 @@
 #include <stdbool.h>
 #include <arm_neon.h>
 
-#include "range_naive.h"
+#include "range_scalar.h"
 
 /*
  * Every byte has to be within a range, which the three bytes in front of it
@@ -179,5 +179,5 @@ bool utf8_valid_range(const unsigned char *src, int64_t src_len)
         src_len += lookahead;
     }
 
-    return utf8_valid_naive(src, src_len);
+    return utf8_valid_scalar(src, src_len);
 }

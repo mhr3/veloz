@@ -3,7 +3,7 @@
  */
 #include <stdbool.h>
 
-static bool utf8_valid_naive(const unsigned char *src, int src_len)
+static bool utf8_valid_scalar(const unsigned char *src, int src_len)
 {
     int err_pos = 1;
 
