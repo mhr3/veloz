@@ -81,12 +81,12 @@ func main() {
 | ascii.ValidString  | AMD Zen 3  | 8,905        | 119,152      | 13.4x   |
 | ascii.EqualFold    | AMD Zen 3  | 2,268        | 33,342       | 14.7x   |
 | ascii.IndexFold    | AMD Zen 3  | 6,359        | 45,606       | 7.2x    |
-| ascii.IndexAny     | AMD Zen 3  | 3,316        | 8,061        | 2.4x    |
+| ascii.IndexAny     | AMD Zen 3  | 3,305        | 26,172       | 7.9x    |
 | utf8.ValidString   | AMD Zen 3  | 1,535        | 14,387       | 9.4x    |
 | ascii.ValidString  | AMD Zen 5  | 11,899       | 185,774      | 15.6x   |
 | ascii.EqualFold    | AMD Zen 5  | 3,344        | 51,082       | 15.3x   |
 | ascii.IndexFold    | AMD Zen 5  | 9,007        | 68,491       | 7.6x    |
-| ascii.IndexAny     | AMD Zen 5  | 3,999        | 10,682       | 2.7x    |
+| ascii.IndexAny     | AMD Zen 5  | 3,874        | 41,099       | 10.6x   |
 | utf8.ValidString   | AMD Zen 5  | 2,338        | 78,415       | 33.5x   |
 | ascii.ValidString  | Graviton 2 | 5,330        | 33,768       | 6.3x    |
 | ascii.EqualFold    | Graviton 2 |   708        | 10,963       | 15.5x   |
