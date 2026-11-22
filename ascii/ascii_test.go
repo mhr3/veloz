@@ -819,6 +819,51 @@ func TestByteSetIndex(t *testing.T) {
 	}
 }
 
+// A kernel finds the bit of a byte in the bitset from the bits of that byte.
+// Try every byte against every set of one byte, and against every set of all
+// bytes but one, in an input long enough for the kernels. Every other byte of
+// the input is the inverse of the one tried: the bits of a neighbour must not
+// get into the lookup.
+func TestByteSetIndexEveryByte(t *testing.T) {
+	var inputs [256]string
+	for v := range inputs {
+		inputs[v] = strings.Repeat(string([]byte{byte(v), ^byte(v)}), 24)
+	}
+
+	forEachKernel(t, func(t *testing.T) {
+		for set := 0; set < 256; set++ {
+			var others []byte
+			for c := 0; c < 256; c++ {
+				if c != set {
+					others = append(others, byte(c))
+				}
+			}
+			one, allButOne := NewByteSet(string([]byte{byte(set)})), NewByteSet(string(others))
+
+			for v, s := range inputs {
+				want := -1
+				switch byte(set) {
+				case byte(v):
+					want = 0
+				case ^byte(v):
+					want = 1
+				}
+				if got := one.Index(s); got != want {
+					t.Fatalf("ByteSet(%#02x).Index(%#02x %#02x ...) = %d, want %d", set, byte(v), ^byte(v), got, want)
+				}
+
+				want = 0
+				if v == set {
+					want = 1
+				}
+				if got := allButOne.Index(s); got != want {
+					t.Fatalf("ByteSet(all but %#02x).Index(%#02x %#02x ...) = %d, want %d", set, byte(v), ^byte(v), got, want)
+				}
+			}
+		}
+	})
+}
+
 func TestByteSetMatch(t *testing.T) {
 	tests := []struct {
 		s, chars string
