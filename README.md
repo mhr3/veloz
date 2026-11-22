@@ -93,6 +93,11 @@ func main() {
 | ascii.IndexFold    | Graviton 2 | 2,638        | 12,250       | 4.6x    |
 | ascii.IndexAny     | Graviton 2 | 1,203        | 8,896        | 7.4x    |
 | utf8.ValidString   | Graviton 2 |   678        | 4,514        | 6.7x    |
+| ascii.ValidString  | Graviton 4 | 10,852       | 74,648       | 6.9x    |
+| ascii.EqualFold    | Graviton 4 | 1,381        | 21,536       | 15.6x   |
+| ascii.IndexFold    | Graviton 4 | 5,901        | 27,432       | 4.6x    |
+| ascii.IndexAny     | Graviton 4 | 2,414        | 17,402       | 7.2x    |
+| utf8.ValidString   | Graviton 4 | 1,638        | 9,169        | 5.6x    |
 | ascii.ValidString  | Apple M2   | 12,187       | 90,323       | 7.4x    |
 | ascii.EqualFold    | Apple M2   | 1,950        | 31,952       | 16.4x   |
 | ascii.IndexFold    | Apple M2   | 7,251        | 41,168       | 5.7x    |
