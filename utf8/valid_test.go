@@ -156,6 +156,56 @@ func TestValid(t *testing.T) {
 	}
 }
 
+// The kernels take the input in blocks and carry what a block ends with over
+// to the next one; the NEON one also steps over ASCII that follows a block
+// ending in ASCII. Put every kind of sequence at every place in a few blocks,
+// behind ASCII and behind longer characters, with nothing, a little and a lot
+// of ASCII after it. The character in front keeps ValidString from skipping
+// the ASCII before the kernel gets to see it.
+func TestValidBlocks(t *testing.T) {
+	sequences := []string{
+		"é", "日", "😀",
+		// cut short, or without a lead byte
+		"\x80", "\xc2", "\xe6\x97", "\xf0\x9f\x98",
+		// never valid
+		"\xc0\x80", "\xe0\x9f\xbf", "\xed\xa0\x80", "\xf4\x90\x80\x80", "\xff",
+	}
+
+	for _, filler := range []string{"a", "é", "日"} {
+		for at := 0; at < 200; at++ {
+			front := "é" + strings.Repeat("a", at%len(filler)) + strings.Repeat(filler, at/len(filler))
+
+			for _, seq := range sequences {
+				for _, after := range []int{0, 9, 150} {
+					s := front + seq + strings.Repeat("a", after)
+					if got, want := ValidString(s), stdlib.ValidString(s); got != want {
+						t.Fatalf("ValidString(%q) = %v, want %v", s, got, want)
+					}
+				}
+			}
+		}
+	}
+}
+
+func FuzzValidString(f *testing.F) {
+	f.Add("0123456789日本語日本語日本語日abcdefghijklmnopqrstuvwx", uint16(0), uint16(0))
+	f.Add("\xf4\x8f\xbf\xbf0123456789abcdef\xed\xa0\x80", uint16(61), uint16(70))
+	f.Add("\xe6\x97", uint16(60), uint16(100))
+
+	f.Fuzz(func(t *testing.T, s string, before, between uint16) {
+		// the input as it is, and twice in a longer text, with ASCII in front
+		// of it and in between: at any place in the blocks of the kernels,
+		// and with ASCII for them to skip
+		long := "é" + strings.Repeat("a", int(before%300)) + s + strings.Repeat("a", int(between%300)) + s
+
+		for _, in := range []string{s, long} {
+			if got, want := ValidString(in), stdlib.ValidString(in); got != want {
+				t.Fatalf("ValidString(%q) = %v, want %v", in, got, want)
+			}
+		}
+	})
+}
+
 var ascii100000 = strings.Repeat("0123456789", 10000)
 var longStringMostlyASCII string // ~100KB, ~97% ASCII
 var longStringJapanese string    // ~100KB, non-ASCII
