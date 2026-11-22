@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 	stdlib "unicode/utf8"
+	"unsafe"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -151,9 +152,119 @@ func TestValid(t *testing.T) {
 	for _, tt := range examples {
 		t.Run(tt, func(t *testing.T) {
 			expected := stdlib.ValidString(tt)
-			assert.Equal(t, expected, ValidString(tt))
+			forEachKernel(func(kernel string) {
+				assert.Equal(t, expected, ValidString(tt), kernel)
+			})
 		})
 	}
+}
+
+// An empty string does not have to point at anything: the kernels get a nil
+// pointer for one that never had data.
+func TestValidEmpty(t *testing.T) {
+	var noData []byte
+
+	for _, s := range []string{"", string(noData), "a"[:0]} {
+		forEachKernel(func(kernel string) {
+			if !ValidString(s) {
+				t.Fatalf("%s: ValidString(%q) = false, want true", kernel, s)
+			}
+		})
+	}
+}
+
+// The kernels take the input in blocks and carry what a block ends with over
+// to the next one, and they step over ASCII: the NEON one after a block that
+// ends in ASCII, the AVX2 one at the start of the input and after 512 bytes
+// of it, the AVX-512 one at the start. Put every kind of sequence at every
+// place in the blocks, behind ASCII and behind longer characters, with
+// nothing, a little and a lot of ASCII after it. All of that with a character
+// in front as well, for the ASCII not to be the start of the input, which on
+// arm64 the kernel does not get to see.
+func TestValidBlocks(t *testing.T) {
+	sequences := []string{
+		"é", "日", "😀",
+		// cut short, or without a lead byte
+		"\x80", "\xc2", "\xe6\x97", "\xf0\x9f\x98",
+		// never valid
+		"\xc0\x80", "\xe0\x9f\xbf", "\xed\xa0\x80", "\xf4\x90\x80\x80", "\xff",
+	}
+
+	forEachKernel(func(kernel string) {
+		for _, start := range []string{"é", ""} {
+			for _, filler := range []string{"a", "é", "日"} {
+				for at := 0; at < 800; at++ {
+					front := start + strings.Repeat("a", at%len(filler)) + strings.Repeat(filler, at/len(filler))
+
+					for _, seq := range sequences {
+						for _, after := range []int{0, 9, 150} {
+							s := front + seq + strings.Repeat("a", after)
+							if got, want := ValidString(s), stdlib.ValidString(s); got != want {
+								t.Fatalf("%s: ValidString(%q) = %v, want %v", kernel, s, got, want)
+							}
+						}
+					}
+				}
+			}
+		}
+	})
+}
+
+// What the AVX-512 kernel reads of a short input, and of the end of a longer
+// one, depends on where the page ends. Put inputs up against the end of a
+// page and across it.
+func TestValidPageEnd(t *testing.T) {
+	const page = 4096
+	buf := make([]byte, 3*page)
+	// the end of a page that has a page of buf in front of it and one after it
+	end := 2*page - int(uintptr(unsafe.Pointer(unsafe.SliceData(buf)))%page)
+
+	sequences := []string{"a", "é", "日", "😀", "\xc2", "\xe6\x97", "\xf0\x9f\x98", "\xed\xa0\x80"}
+
+	forEachKernel(func(kernel string) {
+		for _, seq := range sequences {
+			for _, front := range []string{"", "é"} {
+				for n := len(front) + len(seq); n <= 140; n++ {
+					for at := end - 140; at <= end; at++ {
+						in := buf[at : at+n]
+						for i := range in {
+							in[i] = 'a'
+						}
+						copy(in, front)
+						copy(in[n-len(seq):], seq)
+
+						s := unsafe.String(unsafe.SliceData(in), n)
+						if got, want := ValidString(s), stdlib.ValidString(s); got != want {
+							t.Fatalf("%s: ValidString(%q) = %v, want %v, %d bytes in front of the end of the page", kernel, s, got, want, end-at)
+						}
+					}
+				}
+			}
+		}
+	})
+}
+
+func FuzzValidString(f *testing.F) {
+	f.Add("0123456789日本語日本語日本語日abcdefghijklmnopqrstuvwx", uint16(0), uint16(0))
+	f.Add("\xf4\x8f\xbf\xbf0123456789abcdef\xed\xa0\x80", uint16(61), uint16(70))
+	f.Add("\xe6\x97", uint16(60), uint16(700))
+
+	f.Fuzz(func(t *testing.T, s string, before, between uint16) {
+		// the input as it is, and twice in a longer text, with ASCII in front
+		// of it and in between: at any place in the blocks of the kernels,
+		// and with ASCII for them to skip, behind a character and at the
+		// start
+		long := "é" + strings.Repeat("a", int(before%1000)) + s + strings.Repeat("a", int(between%1000)) + s
+
+		for _, in := range []string{s, long, long[len("é"):]} {
+			want := stdlib.ValidString(in)
+			forEachKernel(func(kernel string) {
+				if got := ValidString(in); got != want {
+					t.Fatalf("%s: ValidString(%q) = %v, want %v", kernel, in, got, want)
+				}
+			})
+		}
+	})
 }
 
 var ascii100000 = strings.Repeat("0123456789", 10000)
