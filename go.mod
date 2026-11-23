@@ -6,6 +6,7 @@ require (
 	github.com/segmentio/asm v1.2.1
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/sys v0.0.0-20220412211240-33da011f77ad
+	golang.org/x/text v0.22.0
 )
 
 require (
