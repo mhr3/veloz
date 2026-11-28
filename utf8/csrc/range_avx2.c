@@ -167,8 +167,8 @@ static inline void utf8_range_skip_ascii(const unsigned char **src, int64_t *src
     *src_len -= at;
 }
 
-// gocc: utf8_valid_range_avx2(src string) bool
-// gocc-variant: utf8_valid_range_avx2_bytes(src []byte) bool
+// gocc: utf8_valid_range_avx2(src []byte) bool
+// gocc-variant: utf8_valid_range_avx2_string(src string) bool
 bool utf8_valid_range_avx2(const unsigned char *src, int64_t src_len)
 {
     /*

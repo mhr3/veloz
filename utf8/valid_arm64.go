@@ -6,16 +6,6 @@ import (
 	"github.com/mhr3/veloz/ascii"
 )
 
-func ValidString(s string) bool {
-	// speed up the common case
-	idx := ascii.IndexMask(s, 0x80)
-	if idx == -1 {
-		return true
-	}
-
-	return utf8_valid_range(s[idx:])
-}
-
 func Valid(p []byte) bool {
 	// speed up the common case; IndexMask has no []byte form, and it only
 	// reads the bytes
@@ -24,5 +14,15 @@ func Valid(p []byte) bool {
 		return true
 	}
 
-	return utf8_valid_range_bytes(p[idx:])
+	return utf8_valid_range(p[idx:])
+}
+
+func ValidString(s string) bool {
+	// speed up the common case
+	idx := ascii.IndexMask(s, 0x80)
+	if idx == -1 {
+		return true
+	}
+
+	return utf8_valid_range_string(s[idx:])
 }

@@ -124,8 +124,8 @@ static inline __m512i utf8_range_load_tail(const unsigned char *src, int64_t src
     return _mm512_maskz_permutexvar_epi8(left, from, _mm512_loadu_si512(src + src_len - 64));
 }
 
-// gocc: utf8_valid_range_avx512(src string) bool
-// gocc-variant: utf8_valid_range_avx512_bytes(src []byte) bool
+// gocc: utf8_valid_range_avx512(src []byte) bool
+// gocc-variant: utf8_valid_range_avx512_string(src string) bool
 bool utf8_valid_range_avx512(const unsigned char *src, int64_t src_len)
 {
     /*

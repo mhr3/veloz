@@ -107,8 +107,8 @@ static inline bool utf8_range_is_ascii8(const unsigned char *src)
     return (data64 & 0x8080808080808080ull) == 0;
 }
 
-// gocc: utf8_valid_range(src string) bool
-// gocc-variant: utf8_valid_range_bytes(src []byte) bool
+// gocc: utf8_valid_range(src []byte) bool
+// gocc-variant: utf8_valid_range_string(src string) bool
 bool utf8_valid_range(const unsigned char *src, int64_t src_len)
 {
     if (src_len > 16)

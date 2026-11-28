@@ -12,26 +12,26 @@ var (
 	hasAVX512 = cpu.X86.HasAVX512BW && cpu.X86.HasAVX512VBMI
 )
 
-func ValidString(s string) bool {
-	if hasAVX512 {
-		return utf8_valid_range_avx512(s)
-	}
-
-	if hasAVX2 {
-		return utf8_valid_range_avx2(s)
-	}
-
-	return stdlib.ValidString(s)
-}
-
 func Valid(p []byte) bool {
 	if hasAVX512 {
-		return utf8_valid_range_avx512_bytes(p)
+		return utf8_valid_range_avx512(p)
 	}
 
 	if hasAVX2 {
-		return utf8_valid_range_avx2_bytes(p)
+		return utf8_valid_range_avx2(p)
 	}
 
 	return stdlib.Valid(p)
+}
+
+func ValidString(s string) bool {
+	if hasAVX512 {
+		return utf8_valid_range_avx512_string(s)
+	}
+
+	if hasAVX2 {
+		return utf8_valid_range_avx2_string(s)
+	}
+
+	return stdlib.ValidString(s)
 }
