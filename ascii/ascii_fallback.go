@@ -54,7 +54,7 @@ func asciiFoldWord(x uint64) uint64 {
 	return x - mask
 }
 
-func equalFoldGo(a, b string) bool {
+func equalFoldGo[T string | []byte](a, b T) bool {
 	if len(a) != len(b) {
 		return false
 	}
@@ -144,7 +144,7 @@ func indexFoldGo[T string | []byte](s T, substr T) int {
 		b := byte(s[i])
 		if b == first || b == complement {
 			prefix := s[i:]
-			if equalFoldGo(string(prefix[:len(substr)]), string(substr)) {
+			if equalFoldGo(prefix[:len(substr)], substr) {
 				return i
 			}
 		}

@@ -5,7 +5,8 @@
 
 // The function returns true (1) if all chars passed in src are
 // 7-bit values (0x00..0x7F). Otherwise, it returns false (0).
-// gocc: isAsciiSse(src string) bool
+// gocc: isAsciiSse(src []byte) bool
+// gocc-variant: isAsciiSseString(src string) bool
 bool is_ascii_sse(unsigned char *src, uint64_t src_len)
 {
     // ASCII chars have MSB = 0, so we use ptest to detect any set MSBs
@@ -87,7 +88,8 @@ bool is_ascii_sse(unsigned char *src, uint64_t src_len)
 // IndexAny using 256-bit bitset approach.
 // The bitset is built in Go: bit c of its 256 is set when byte c is searched for.
 //
-// gocc: indexAnySse(data string, bitset *[4]uint64) int
+// gocc: indexAnySse(data []byte, bitset *[4]uint64) int
+// gocc-variant: indexAnySseString(data string, bitset *[4]uint64) int
 int64_t index_any_sse(unsigned char *data, uint64_t data_len, const uint64_t *bitset)
 {
     if (data_len == 0) {
@@ -178,7 +180,8 @@ static inline __m128i equal_fold_vec(__m128i va, __m128i vb,
 }
 
 // ASCII case-insensitive string comparison using SSE4.1
-// gocc: equalFoldSse(a, b string) bool
+// gocc: equalFoldSse(a, b []byte) bool
+// gocc-variant: equalFoldSseString(a, b string) bool
 bool equal_fold_sse(const char *a, uint64_t a_len, const char *b, uint64_t b_len) {
     if (a_len != b_len)
         return false;
@@ -753,7 +756,8 @@ int64_t index_fold_rabin_karp_sse(unsigned char *haystack, int64_t haystack_len,
     return index_fold_rabin_karp_core(haystack, haystack_len, needle, needle_len);
 }
 
-// gocc: indexFoldSse(a, b string) int
+// gocc: indexFoldSse(a, b []byte) int
+// gocc-variant: indexFoldSseString(a, b string) int
 int64_t index_fold_sse(unsigned char *haystack, int64_t haystack_len,
                        unsigned char *needle, int64_t needle_len) {
     if (haystack_len < needle_len) return -1;

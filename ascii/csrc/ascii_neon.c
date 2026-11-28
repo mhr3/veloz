@@ -6,7 +6,8 @@
 // Supports unlimited search chars with consistent O(n) performance.
 // The bitset is built in Go: bit c of its 256 is set when byte c is searched for.
 //
-// gocc: indexAnyNeon(data string, bitset *[4]uint64) int
+// gocc: indexAnyNeon(data []byte, bitset *[4]uint64) int
+// gocc-variant: indexAnyNeonString(data string, bitset *[4]uint64) int
 int64_t index_any_neon(unsigned char *data, uint64_t data_len, const uint64_t *bitset)
 {
     if (data_len == 0) {
@@ -70,7 +71,8 @@ int64_t index_any_neon(unsigned char *data, uint64_t data_len, const uint64_t *b
     return -1;
 }
 
-// gocc: ValidString(data string) bool
+// gocc: Valid(data []byte) bool
+// gocc-variant: ValidString(data string) bool
 bool ascii_valid_string(unsigned char *data, uint64_t length)
 {
     const uint64_t blockSize = 16; // NEON can process 128 bits (16 bytes) at a time
@@ -147,7 +149,8 @@ bool ascii_valid_string(unsigned char *data, uint64_t length)
     return (data32 & 0x80808080) ? false : true;
 }
 
-// gocc: IndexMask(data string, mask byte) int
+// gocc: IndexMask(data []byte, mask byte) int
+// gocc-variant: IndexMaskString(data string, mask byte) int
 int64_t index_mask(unsigned char *data, uint64_t length, uint8_t mask)
 {
     const uint64_t blockSize = 16; // NEON can process 128 bits (16 bytes) at a time
@@ -485,7 +488,8 @@ static inline bool equal_fold_long(unsigned char *a, unsigned char *b, int64_t l
     return !equal_fold_has_diff(equal_fold_diff16(vld1q_u8(a + length - blockSize), vld1q_u8(b + length - blockSize), table, offset));
 }
 
-// gocc: EqualFold(a, b string) bool
+// gocc: EqualFold(a, b []byte) bool
+// gocc-variant: EqualFoldString(a, b string) bool
 bool equal_fold(unsigned char *a, uint64_t a_len, unsigned char *b, uint64_t b_len)
 {
     if (a_len != b_len)
@@ -1033,7 +1037,8 @@ int64_t index_fold_rabin_karp(unsigned char *haystack, const int64_t haystack_le
     return index_fold_rabin_karp_core(haystack, haystack_len, needle, needle_len, table);
 }
 
-// gocc: IndexFold(a, b string) int
+// gocc: IndexFold(a, b []byte) int
+// gocc-variant: IndexFoldString(a, b string) int
 int64_t index_fold(unsigned char *haystack, int64_t haystack_len, unsigned char *needle, const int64_t needle_len)
 {
     const uint64_t blockSize = 16; // NEON can process 128 bits (16 bytes) at a time

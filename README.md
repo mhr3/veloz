@@ -27,7 +27,9 @@ go get github.com/mhr3/veloz
 
 ### ASCII Operations
 
-The `ascii` package provides functions for validating and searching ASCII strings:
+The `ascii` package provides functions for validating and searching ASCII text. A function takes
+its text as a `[]byte`, as the ones of the standard `bytes` package do, and has a form with a
+`String` suffix for strings:
 
 ```go
 package main
@@ -44,12 +46,15 @@ func main() {
     fmt.Println(ascii.ValidString("Hello, 世界!"))   // false
 
     // Case-insensitive string comparison
-    fmt.Println(ascii.EqualFold("Hello", "HELLO"))   // true
-    fmt.Println(ascii.EqualFold("Hello", "World"))   // false
+    fmt.Println(ascii.EqualFoldString("Hello", "HELLO"))   // true
+    fmt.Println(ascii.EqualFoldString("Hello", "World"))   // false
 
     // Case-insensitive substring search
-    fmt.Println(ascii.IndexFold("Hello, World!", "WORLD"))  // 7
-    fmt.Println(ascii.IndexFold("Hello, World!", "foo"))    // -1
+    fmt.Println(ascii.IndexFoldString("Hello, World!", "WORLD"))  // 7
+    fmt.Println(ascii.IndexFoldString("Hello, World!", "foo"))    // -1
+
+    // The same for a []byte
+    fmt.Println(ascii.IndexFold([]byte("Hello, World!"), []byte("WORLD")))  // 7
 }
 ```
 

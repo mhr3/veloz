@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 	"unicode"
+	"unsafe"
 
 	segAscii "github.com/segmentio/asm/ascii"
 )
@@ -16,6 +17,52 @@ func makeASCII(n int) []byte {
 		data[i] = byte(rand.Uint32() & 0x7f)
 	}
 	return data
+}
+
+// The tests are written for strings. The helpers below call the string form
+// of a function and the []byte form for the same bytes, and fail the test
+// where the two give different answers.
+
+func bytesOf(s string) []byte {
+	return unsafe.Slice(unsafe.StringData(s), len(s))
+}
+
+func agree[R comparable](t testing.TB, name string, ofString, ofBytes R) R {
+	t.Helper()
+	if ofString != ofBytes {
+		t.Fatalf("%sString = %v, %s = %v for the same bytes", name, ofString, name, ofBytes)
+	}
+	return ofString
+}
+
+func bothValid(t testing.TB, s string) bool {
+	t.Helper()
+	return agree(t, "Valid", ValidString(s), Valid(bytesOf(s)))
+}
+
+func bothIndexMask(t testing.TB, s string, mask byte) int {
+	t.Helper()
+	return agree(t, "IndexMask", IndexMaskString(s, mask), IndexMask(bytesOf(s), mask))
+}
+
+func bothEqualFold(t testing.TB, a, b string) bool {
+	t.Helper()
+	return agree(t, "EqualFold", EqualFoldString(a, b), EqualFold(bytesOf(a), bytesOf(b)))
+}
+
+func bothIndexFold(t testing.TB, s, substr string) int {
+	t.Helper()
+	return agree(t, "IndexFold", IndexFoldString(s, substr), IndexFold(bytesOf(s), bytesOf(substr)))
+}
+
+func bothIndexAny(t testing.TB, s, chars string) int {
+	t.Helper()
+	return agree(t, "IndexAny", IndexAnyString(s, chars), IndexAny(bytesOf(s), chars))
+}
+
+func bothIndex(t testing.TB, bs ByteSet, s string) int {
+	t.Helper()
+	return agree(t, "ByteSet.Index", bs.IndexString(s), bs.Index(bytesOf(s)))
 }
 
 type ValidTest struct {
@@ -49,14 +96,14 @@ var validTests = []ValidTest{
 func TestAscii(t *testing.T) {
 	forEachKernel(t, func(t *testing.T) {
 		for _, vt := range validTests {
-			if ValidString(vt.in) != vt.exp {
+			if bothValid(t, vt.in) != vt.exp {
 				t.Errorf("ValidString(%q) = %v; want %v", vt.in, !vt.exp, vt.exp)
 			}
 		}
 
 		for _, vt := range validTests {
 			pt := "0123456789ab" + vt.in
-			if ValidString(pt) != vt.exp {
+			if bothValid(t, pt) != vt.exp {
 				t.Errorf("ValidString(%q) = %v; want %v", pt, !vt.exp, vt.exp)
 			}
 		}
@@ -67,27 +114,23 @@ func TestIndexMask(t *testing.T) {
 	forEachKernel(t, func(t *testing.T) {
 		for i := 4; i < 6400; i++ {
 			data := makeASCII(i)
-			if ValidString(string(data)) != true {
+			if bothValid(t, string(data)) != true {
 				t.Errorf("ValidString(%q) = false; want true", data)
 			}
-			if res := IndexMask(string(data), 0x80); res != -1 {
+			if res := bothIndexMask(t, string(data), 0x80); res != -1 {
 				t.Errorf("IndexMask([%d]) = %d; want %d", len(data), res, -1)
 			}
 
 			idx := rand.Intn(i)
 			data[idx] |= 0x80
-			if ValidString(string(data)) != false {
+			if bothValid(t, string(data)) != false {
 				t.Errorf("ValidString(%q) = true; want false", data)
 			}
-			if res := IndexMask(string(data), 0x80); res != idx {
+			if res := bothIndexMask(t, string(data), 0x80); res != idx {
 				t.Errorf("IndexMask([%d]) = %d; want %d", len(data), res, idx)
 			}
 		}
 	})
-}
-
-func containsFold(s, substr string) bool {
-	return IndexFold(s, substr) != -1
 }
 
 func TestContainsFold(t *testing.T) {
@@ -186,12 +229,12 @@ func TestContainsFold(t *testing.T) {
 
 	forEachKernel(t, func(t *testing.T) {
 		for _, ct := range containsTests {
-			if containsFold(ct.str, ct.substr) != ct.expected {
+			if (bothIndexFold(t, ct.str, ct.substr) != -1) != ct.expected {
 				t.Errorf("ContainsFold(%s, %s) = %v, want %v",
 					ct.str, ct.substr, !ct.expected, ct.expected)
 			}
 			want := indexFoldGo(ct.str, ct.substr)
-			if idx := IndexFold(ct.str, ct.substr); idx != want {
+			if idx := bothIndexFold(t, ct.str, ct.substr); idx != want {
 				t.Errorf("IndexFold(%s, %s) = %v, want %v",
 					ct.str, ct.substr, idx, want)
 			}
@@ -233,7 +276,7 @@ func TestIndexFoldPeriodic(t *testing.T) {
 							head + needle[:len(needle)/2] + poison + needle[len(needle)/2:] + head,
 						} {
 							want := indexFoldGo(hay, needle)
-							if idx := IndexFold(hay, needle); idx != want {
+							if idx := bothIndexFold(t, hay, needle); idx != want {
 								t.Fatalf("IndexFold(%q, %q) = %v, want %v", hay, needle, idx, want)
 							}
 							if idx := indexFoldRabinKarp(hay, needle); idx != want {
@@ -258,7 +301,7 @@ func TestIndexFoldShortNeedles(t *testing.T) {
 		check := func(hay, needle string) {
 			t.Helper()
 			want := indexFoldGo(hay, needle)
-			if idx := IndexFold(hay, needle); idx != want {
+			if idx := bothIndexFold(t, hay, needle); idx != want {
 				t.Fatalf("IndexFold(%q, %q) = %v, want %v", hay, needle, idx, want)
 			}
 		}
@@ -299,7 +342,7 @@ func TestIndexFoldLookalikes(t *testing.T) {
 		check := func(hay, needle string) {
 			t.Helper()
 			want := indexFoldGo(hay, needle)
-			if idx := IndexFold(hay, needle); idx != want {
+			if idx := bothIndexFold(t, hay, needle); idx != want {
 				t.Fatalf("IndexFold(%q, %q) = %v, want %v", hay, needle, idx, want)
 			}
 		}
@@ -366,10 +409,10 @@ func TestEqualFold(t *testing.T) {
 
 	forEachKernel(t, func(t *testing.T) {
 		for _, tt := range equalFoldTests {
-			if out := EqualFold(tt.s, tt.t); out != tt.out {
+			if out := bothEqualFold(t, tt.s, tt.t); out != tt.out {
 				t.Errorf("EqualFold(%#q, %#q) = %v, want %v", tt.s, tt.t, out, tt.out)
 			}
-			if out := EqualFold(tt.t, tt.s); out != tt.out {
+			if out := bothEqualFold(t, tt.t, tt.s); out != tt.out {
 				t.Errorf("EqualFold(%#q, %#q) = %v, want %v", tt.t, tt.s, out, tt.out)
 			}
 		}
@@ -390,17 +433,17 @@ func TestEqualFoldLengths(t *testing.T) {
 			a := strings.Repeat(alphabet, n/len(alphabet)+1)[:n]
 			b := strings.ToUpper(a)
 
-			if !EqualFold(a, b) {
+			if !bothEqualFold(t, a, b) {
 				t.Fatalf("EqualFold(%q, %q) = false, want true", a, b)
 			}
-			if !EqualFold((a + "x")[:n], (b + "y")[:n]) {
+			if !bothEqualFold(t, (a + "x")[:n], (b + "y")[:n]) {
 				t.Fatalf("EqualFold of %q and %q with different bytes behind them = false, want true", a, b)
 			}
 
 			for i := 0; i < n; i++ {
 				c := []byte(b)
 				c[i] ^= 0x10 // another letter or digit, not the other case
-				if EqualFold(a, string(c)) || EqualFold(string(c), a) {
+				if bothEqualFold(t, a, string(c)) || bothEqualFold(t, string(c), a) {
 					t.Fatalf("EqualFold(%q, %q) = true, want false", a, c)
 				}
 			}
@@ -446,7 +489,10 @@ func TestHasPrefixFold(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		if got := HasPrefixFold(tt.s, tt.prefix); got != tt.want {
+		if got := HasPrefixFoldString(tt.s, tt.prefix); got != tt.want {
+			t.Errorf("HasPrefixFoldString(%q, %q) = %v, want %v", tt.s, tt.prefix, got, tt.want)
+		}
+		if got := HasPrefixFold([]byte(tt.s), []byte(tt.prefix)); got != tt.want {
 			t.Errorf("HasPrefixFold(%q, %q) = %v, want %v", tt.s, tt.prefix, got, tt.want)
 		}
 	}
@@ -490,7 +536,10 @@ func TestHasSuffixFold(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		if got := HasSuffixFold(tt.s, tt.suffix); got != tt.want {
+		if got := HasSuffixFoldString(tt.s, tt.suffix); got != tt.want {
+			t.Errorf("HasSuffixFoldString(%q, %q) = %v, want %v", tt.s, tt.suffix, got, tt.want)
+		}
+		if got := HasSuffixFold([]byte(tt.s), []byte(tt.suffix)); got != tt.want {
 			t.Errorf("HasSuffixFold(%q, %q) = %v, want %v", tt.s, tt.suffix, got, tt.want)
 		}
 	}
@@ -542,7 +591,7 @@ func BenchmarkIndexMask(b *testing.B) {
 		b.Run(fmt.Sprintf("simd-%d", n), func(b *testing.B) {
 			b.SetBytes(int64(len(asciiStr)))
 			for i := 0; i < b.N; i++ {
-				IndexMask(asciiStr, 0x80)
+				IndexMaskString(asciiStr, 0x80)
 			}
 		})
 	}
@@ -581,7 +630,7 @@ func BenchmarkAsciiEqualFold(b *testing.B) {
 		b.Run(fmt.Sprintf("simd-%d", n), func(b *testing.B) {
 			b.SetBytes(int64(len(s1)))
 			for i := 0; i < b.N; i++ {
-				EqualFold(s1, s2)
+				EqualFoldString(s1, s2)
 			}
 		})
 	}
@@ -620,7 +669,7 @@ func BenchmarkAsciiIndexFold(b *testing.B) {
 		b.Run(fmt.Sprintf("simd-%d", n), func(b *testing.B) {
 			b.SetBytes(int64(len(s1)))
 			for i := 0; i < b.N; i++ {
-				IndexFold(s1, s2)
+				IndexFoldString(s1, s2)
 			}
 		})
 	}
@@ -638,7 +687,7 @@ func BenchmarkIndexTorture(b *testing.B) {
 
 	b.Run("simd", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			IndexFold(benchInputTorture, benchNeedleTorture)
+			IndexFoldString(benchInputTorture, benchNeedleTorture)
 		}
 	})
 }
@@ -657,7 +706,7 @@ func BenchmarkIndexPeriodic(b *testing.B) {
 		b.Run(fmt.Sprintf("simd-%d", skip), func(b *testing.B) {
 			s := strings.Repeat("a"+strings.Repeat(" ", skip-1), 1<<16/skip)
 			for i := 0; i < b.N; i++ {
-				IndexFold(s, key)
+				IndexFoldString(s, key)
 			}
 		})
 	}
@@ -674,7 +723,7 @@ func FuzzEqualFold(f *testing.F) {
 		}
 
 		forEachKernel(t, func(t *testing.T) {
-			res := EqualFold(in1, in2)
+			res := bothEqualFold(t, in1, in2)
 			stdRes := strings.EqualFold(in1, in2)
 			if res != stdRes {
 				t.Fatalf("EqualFold(%q, %q) = %v; want %v", in1, in2, res, stdRes)
@@ -702,7 +751,7 @@ func FuzzIndexFold(f *testing.F) {
 		}
 
 		forEachKernel(t, func(t *testing.T) {
-			res := IndexFold(istr, isubstr)
+			res := bothIndexFold(t, istr, isubstr)
 			goRes := indexFoldGo(istr, isubstr)
 			if res != goRes {
 				t.Fatalf("IndexFold(%q, %q) = %v; want %v", istr, isubstr, res, goRes)
@@ -773,7 +822,7 @@ func TestIndexAny(t *testing.T) {
 
 	forEachKernel(t, func(t *testing.T) {
 		for _, tt := range tests {
-			if got := IndexAny(tt.s, tt.chars); got != tt.want {
+			if got := bothIndexAny(t, tt.s, tt.chars); got != tt.want {
 				t.Errorf("IndexAny(%q, %q) = %d, want %d", tt.s, tt.chars, got, tt.want)
 			}
 		}
@@ -812,11 +861,11 @@ func TestByteSetIndex(t *testing.T) {
 	forEachKernel(t, func(t *testing.T) {
 		for _, tt := range tests {
 			bs := NewByteSet(tt.chars)
-			if got := bs.Index(tt.s); got != tt.want {
+			if got := bothIndex(t, bs, tt.s); got != tt.want {
 				t.Errorf("ByteSet(%q).Index(%q) = %d, want %d", tt.chars, tt.s, got, tt.want)
 			}
 			// Verify matches IndexAny
-			if got := IndexAny(tt.s, tt.chars); got != tt.want {
+			if got := bothIndexAny(t, tt.s, tt.chars); got != tt.want {
 				t.Errorf("IndexAny(%q, %q) = %d, want %d", tt.s, tt.chars, got, tt.want)
 			}
 		}
@@ -852,7 +901,7 @@ func TestByteSetIndexEveryByte(t *testing.T) {
 				case ^byte(v):
 					want = 1
 				}
-				if got := one.Index(s); got != want {
+				if got := bothIndex(t, one, s); got != want {
 					t.Fatalf("ByteSet(%#02x).Index(%#02x %#02x ...) = %d, want %d", set, byte(v), ^byte(v), got, want)
 				}
 
@@ -860,7 +909,7 @@ func TestByteSetIndexEveryByte(t *testing.T) {
 				if v == set {
 					want = 1
 				}
-				if got := allButOne.Index(s); got != want {
+				if got := bothIndex(t, allButOne, s); got != want {
 					t.Fatalf("ByteSet(all but %#02x).Index(%#02x %#02x ...) = %d, want %d", set, byte(v), ^byte(v), got, want)
 				}
 			}
@@ -884,7 +933,10 @@ func TestByteSetMatch(t *testing.T) {
 
 	for _, tt := range tests {
 		bs := NewByteSet(tt.chars)
-		if got := bs.Match(tt.s); got != tt.want {
+		if got := bs.MatchString(tt.s); got != tt.want {
+			t.Errorf("ByteSet(%q).MatchString(%q) = %v, want %v", tt.chars, tt.s, got, tt.want)
+		}
+		if got := bs.Match([]byte(tt.s)); got != tt.want {
 			t.Errorf("ByteSet(%q).Match(%q) = %v, want %v", tt.chars, tt.s, got, tt.want)
 		}
 	}
@@ -905,7 +957,10 @@ func TestContainsAny(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		if got := ContainsAny(tt.s, tt.chars); got != tt.want {
+		if got := ContainsAnyString(tt.s, tt.chars); got != tt.want {
+			t.Errorf("ContainsAnyString(%q, %q) = %v, want %v", tt.s, tt.chars, got, tt.want)
+		}
+		if got := ContainsAny([]byte(tt.s), tt.chars); got != tt.want {
 			t.Errorf("ContainsAny(%q, %q) = %v, want %v", tt.s, tt.chars, got, tt.want)
 		}
 	}
@@ -927,10 +982,50 @@ func TestIndexNonASCII(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		if got := IndexNonASCII(tt.s); got != tt.want {
+		if got := IndexNonASCIIString(tt.s); got != tt.want {
+			t.Errorf("IndexNonASCIIString(%q) = %d, want %d", tt.s, got, tt.want)
+		}
+		if got := IndexNonASCII([]byte(tt.s)); got != tt.want {
 			t.Errorf("IndexNonASCII(%q) = %d, want %d", tt.s, got, tt.want)
 		}
 	}
+}
+
+// A []byte ends at its length. What its capacity has after that is not part
+// of the input: it is not searched, it is not compared, and it does not
+// complete a needle.
+func TestCapacity(t *testing.T) {
+	forEachKernel(t, func(t *testing.T) {
+		for _, n := range []int{0, 1, 7, 15, 16, 17, 31, 32, 33, 63, 64, 65, 200} {
+			text := strings.Repeat("a", n)
+			p := []byte(text + "\x80Z")[:n]
+			q := []byte(text + "Q!")[:n]
+
+			if !Valid(p) {
+				t.Fatalf("Valid of %d bytes with \\x80 after their end = false, want true", n)
+			}
+			if got := IndexMask(p, 0x80); got != -1 {
+				t.Fatalf("IndexMask of %d bytes with \\x80 after their end = %d, want -1", n, got)
+			}
+			if got := NewByteSet("\x80Z").Index(p); got != -1 {
+				t.Fatalf("ByteSet.Index of %d bytes with a byte of the set after their end = %d, want -1", n, got)
+			}
+			if !EqualFold(p, q) {
+				t.Fatalf("EqualFold of %d equal bytes with different ones after their end = false, want true", n)
+			}
+			if got := IndexFold(p, []byte("a\x80")); got != -1 {
+				t.Fatalf("IndexFold of %d bytes for a needle that ends after their end = %d, want -1", n, got)
+			}
+
+			want := 0
+			if n == 0 {
+				want = -1
+			}
+			if got := IndexFold(p, []byte("aZ")[:1]); got != want {
+				t.Fatalf("IndexFold of %d bytes for a needle with more after its end = %d, want %d", n, got, want)
+			}
+		}
+	})
 }
 
 func BenchmarkIndexAny(b *testing.B) {
@@ -949,14 +1044,14 @@ func BenchmarkIndexAny(b *testing.B) {
 		b.Run(fmt.Sprintf("byteset-%d", n), func(b *testing.B) {
 			b.SetBytes(int64(len(data)))
 			for i := 0; i < b.N; i++ {
-				bs.Index(data)
+				bs.IndexString(data)
 			}
 		})
 
 		b.Run(fmt.Sprintf("indexany-%d", n), func(b *testing.B) {
 			b.SetBytes(int64(len(data)))
 			for i := 0; i < b.N; i++ {
-				IndexAny(data, chars)
+				IndexAnyString(data, chars)
 			}
 		})
 	}
@@ -972,14 +1067,14 @@ func BenchmarkByteSetIndex(b *testing.B) {
 		b.Run(fmt.Sprintf("per-call-%d", n), func(b *testing.B) {
 			b.SetBytes(int64(len(data)))
 			for i := 0; i < b.N; i++ {
-				IndexAny(data, chars)
+				IndexAnyString(data, chars)
 			}
 		})
 
 		b.Run(fmt.Sprintf("byteset-%d", n), func(b *testing.B) {
 			b.SetBytes(int64(len(data)))
 			for i := 0; i < b.N; i++ {
-				bs.Index(data)
+				bs.IndexString(data)
 			}
 		})
 	}
@@ -1010,7 +1105,7 @@ func FuzzIndexAny(f *testing.F) {
 		want := indexAnyNaive(s, chars)
 
 		forEachKernel(t, func(t *testing.T) {
-			got := IndexAny(s, chars)
+			got := bothIndexAny(t, s, chars)
 			if got != want {
 				t.Fatalf("IndexAny(%q, %q) = %d, want %d", s, chars, got, want)
 			}

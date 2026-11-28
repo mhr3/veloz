@@ -3,7 +3,8 @@
 #include <stdbool.h>
 #include <x86intrin.h>
 
-// gocc: isAsciiAvx(src string) bool
+// gocc: isAsciiAvx(src []byte) bool
+// gocc-variant: isAsciiAvxString(src string) bool
 bool is_ascii_avx(unsigned char *src, uint64_t src_len)
 {
     // ASCII chars have MSB = 0, so we use movemask to detect any set MSBs
@@ -96,7 +97,8 @@ bool is_ascii_avx(unsigned char *src, uint64_t src_len)
 // IndexAny using 256-bit bitset approach.
 // The bitset is built in Go: bit c of its 256 is set when byte c is searched for.
 //
-// gocc: indexAnyAvx2(data string, bitset *[4]uint64) int
+// gocc: indexAnyAvx2(data []byte, bitset *[4]uint64) int
+// gocc-variant: indexAnyAvx2String(data string, bitset *[4]uint64) int
 int64_t index_any_avx2(unsigned char *data, uint64_t data_len, const uint64_t *bitset)
 {
     if (data_len == 0) {
@@ -191,7 +193,8 @@ static inline __m256i equal_fold_vec(__m256i va, __m256i vb,
 }
 
 // ASCII case-insensitive string comparison using AVX2
-// gocc: equalFoldAvx(a, b string) bool
+// gocc: equalFoldAvx(a, b []byte) bool
+// gocc-variant: equalFoldAvxString(a, b string) bool
 bool equal_fold_avx2(const char *a, uint64_t a_len, const char *b, uint64_t b_len) {
     if (a_len != b_len)
         return false;
@@ -251,7 +254,8 @@ bool equal_fold_avx2(const char *a, uint64_t a_len, const char *b, uint64_t b_le
     return _mm256_testc_si256(eq, all_ones);
 }
 
-// gocc: indexMaskAvx(data string, mask byte) int
+// gocc: indexMaskAvx(data []byte, mask byte) int
+// gocc-variant: indexMaskAvxString(data string, mask byte) int
 int64_t index_mask_avx(unsigned char *data, uint64_t length, uint8_t mask)
 {
     const unsigned char *data_start = data;
@@ -1020,7 +1024,8 @@ int64_t index_fold_rabin_karp_avx2(unsigned char *haystack, int64_t haystack_len
     return index_fold_rabin_karp_core(haystack, haystack_len, needle, needle_len);
 }
 
-// gocc: indexFoldAvx(a, b string) int
+// gocc: indexFoldAvx(a, b []byte) int
+// gocc-variant: indexFoldAvxString(a, b string) int
 int64_t index_fold_avx2(unsigned char *haystack, int64_t haystack_len,
                         unsigned char *needle, int64_t needle_len) {
     // Edge cases

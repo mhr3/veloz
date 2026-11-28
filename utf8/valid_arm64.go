@@ -1,15 +1,10 @@
 package utf8
 
-import (
-	"unsafe"
-
-	"github.com/mhr3/veloz/ascii"
-)
+import "github.com/mhr3/veloz/ascii"
 
 func Valid(p []byte) bool {
-	// speed up the common case; IndexMask has no []byte form, and it only
-	// reads the bytes
-	idx := ascii.IndexMask(unsafe.String(unsafe.SliceData(p), len(p)), 0x80)
+	// speed up the common case
+	idx := ascii.IndexMask(p, 0x80)
 	if idx == -1 {
 		return true
 	}
@@ -19,7 +14,7 @@ func Valid(p []byte) bool {
 
 func ValidString(s string) bool {
 	// speed up the common case
-	idx := ascii.IndexMask(s, 0x80)
+	idx := ascii.IndexMaskString(s, 0x80)
 	if idx == -1 {
 		return true
 	}
