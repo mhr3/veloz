@@ -8,32 +8,31 @@
 
 #include "textflag.h"
 
-DATA LCPI0_0<>+0x00(SB)/8, $0x00c200809080a080
+DATA LCPI0_0<>+0x00(SB)/8, $0x0000809080a080c2
 DATA LCPI0_0<>+0x08(SB)/8, $0x0000000000000000
 GLOBL LCPI0_0<>(SB), (RODATA|NOPTR), $16
 
-DATA LCPI0_1<>+0x00(SB)/8, $0x00be001030202040
+DATA LCPI0_1<>+0x00(SB)/8, $0x00001030202040be
 DATA LCPI0_1<>+0x08(SB)/8, $0x0000000000000000
 GLOBL LCPI0_1<>(SB), (RODATA|NOPTR), $16
 
-DATA _second_range_tbl<>+0x00(SB)/8, $0x0000000000000001
-DATA _second_range_tbl<>+0x08(SB)/8, $0x0000020000000000
-DATA _second_range_tbl<>+0x10(SB)/8, $0x0505050400000003
-DATA _second_range_tbl<>+0x18(SB)/8, $0x0505050505050505
-GLOBL _second_range_tbl<>(SB), (RODATA|NOPTR), $32
+DATA _range_adjust_tbl<>+0x00(SB)/8, $0x0000000000000001
+DATA _range_adjust_tbl<>+0x08(SB)/8, $0x0000020000000000
+DATA _range_adjust_tbl<>+0x10(SB)/8, $0x0505050400000003
+DATA _range_adjust_tbl<>+0x18(SB)/8, $0x0505050505050505
+GLOBL _range_adjust_tbl<>(SB), (RODATA|NOPTR), $32
 
 TEXT ·utf8_valid_range(SB), NOSPLIT, $0-17
 	MOVD  src_base+0(FP), R0
 	MOVD  src_len+8(FP), R1
-	NOP                                // (skipped)                            // str	d12, [sp, #-64]!
+	NOP                                // (skipped)                            // stp	d11, d10, [sp, #-48]!
 	CMP   $17, R1                      // <--                                  // cmp	x1, #17
-	NOP                                // (skipped)                            // stp	d11, d10, [sp, #16]
-	NOP                                // (skipped)                            // stp	d9, d8, [sp, #32]
-	NOP                                // (skipped)                            // stp	x29, x30, [sp, #48]
-	NOP                                // (skipped)                            // add	x29, sp, #48
+	NOP                                // (skipped)                            // stp	d9, d8, [sp, #16]
+	NOP                                // (skipped)                            // stp	x29, x30, [sp, #32]
+	NOP                                // (skipped)                            // add	x29, sp, #32
 	BLT   LBB0_23                      // <--                                  // b.lt	.LBB0_23
-	MOVD  $_second_range_tbl<>(SB), R8 // <--                                  // adrp	x8, _second_range_tbl
-	NOP                                // (skipped)                            // add	x8, x8, :lo12:_second_range_tbl
+	MOVD  $_range_adjust_tbl<>(SB), R8 // <--                                  // adrp	x8, _range_adjust_tbl
+	NOP                                // (skipped)                            // add	x8, x8, :lo12:_range_adjust_tbl
 	CMP   $64, R1                      // <--                                  // cmp	x1, #64
 	VLD1  (R8), [V0.B16, V1.B16]       // <--                                  // ld1	{ v0.16b, v1.16b }, [x8]
 	MOVD  $LCPI0_0<>(SB), R8           // <--                                  // adrp	x8, .LCPI0_0
@@ -41,12 +40,11 @@ TEXT ·utf8_valid_range(SB), NOSPLIT, $0-17
 	BCC   LBB0_11                      // <--                                  // b.lo	.LBB0_11
 	WORD  $0x6f00e405                  // VMOVI $0, V5.D2                      // movi	v5.2d, #0000000000000000
 	WORD  $0x4f01e406                  // VMOVI $32, V6.B16                    // movi	v6.16b, #32
-	FMOVQ (R8), F19                    // <--                                  // ldr	q19, [x8, :lo12:.LCPI0_0]
-	WORD  $0x4f06e407                  // VMOVI $192, V7.B16                   // movi	v7.16b, #192
-	WORD  $0x4f07e410                  // VMOVI $224, V16.B16                  // movi	v16.16b, #224
-	FMOVQ (R9), F20                    // <--                                  // ldr	q20, [x9, :lo12:.LCPI0_1]
-	WORD  $0x4f07e611                  // VMOVI $240, V17.B16                  // movi	v17.16b, #240
-	WORD  $0x4f00e4d2                  // VMOVI $6, V18.B16                    // movi	v18.16b, #6
+	FMOVQ (R8), F18                    // <--                                  // ldr	q18, [x8, :lo12:.LCPI0_0]
+	WORD  $0x4f05e7e7                  // VMOVI $191, V7.B16                   // movi	v7.16b, #191
+	WORD  $0x4f06e7f0                  // VMOVI $223, V16.B16                  // movi	v16.16b, #223
+	FMOVQ (R9), F19                    // <--                                  // ldr	q19, [x9, :lo12:.LCPI0_1]
+	WORD  $0x4f07e5f1                  // VMOVI $239, V17.B16                  // movi	v17.16b, #239
 	JMP   LBB0_4                       // <--                                  // b	.LBB0_4
 
 LBB0_3:
@@ -56,76 +54,73 @@ LBB0_3:
 	BLE  LBB0_10     // <--                                  // b.le	.LBB0_10
 
 LBB0_4:
-	VMOV   V5.B16, V22.B16                        // <--                                  // mov	v22.16b, v5.16b
+	VMOV   V5.B16, V20.B16                        // <--                                  // mov	v20.16b, v5.16b
 	VLD1   (R0), [V2.B16, V3.B16, V4.B16, V5.B16] // <--                                  // ld1	{ v2.16b, v3.16b, v4.16b, v5.16b }, [x0]
-	VEXT   $15, V2.B16, V22.B16, V21.B16          // <--                                  // ext	v21.16b, v22.16b, v2.16b, #15
-	VEXT   $14, V2.B16, V22.B16, V23.B16          // <--                                  // ext	v23.16b, v22.16b, v2.16b, #14
-	VEXT   $15, V3.B16, V2.B16, V24.B16           // <--                                  // ext	v24.16b, v2.16b, v3.16b, #15
-	VEXT   $14, V3.B16, V2.B16, V25.B16           // <--                                  // ext	v25.16b, v2.16b, v3.16b, #14
-	VEXT   $15, V4.B16, V3.B16, V26.B16           // <--                                  // ext	v26.16b, v3.16b, v4.16b, #15
-	VEXT   $14, V4.B16, V3.B16, V27.B16           // <--                                  // ext	v27.16b, v3.16b, v4.16b, #14
-	VEXT   $13, V2.B16, V22.B16, V22.B16          // <--                                  // ext	v22.16b, v22.16b, v2.16b, #13
-	VEXT   $13, V3.B16, V2.B16, V10.B16           // <--                                  // ext	v10.16b, v2.16b, v3.16b, #13
-	VEXT   $15, V5.B16, V4.B16, V28.B16           // <--                                  // ext	v28.16b, v4.16b, v5.16b, #15
-	VEXT   $14, V5.B16, V4.B16, V29.B16           // <--                                  // ext	v29.16b, v4.16b, v5.16b, #14
-	VEXT   $13, V4.B16, V3.B16, V11.B16           // <--                                  // ext	v11.16b, v3.16b, v4.16b, #13
-	VEXT   $13, V5.B16, V4.B16, V12.B16           // <--                                  // ext	v12.16b, v4.16b, v5.16b, #13
-	VCMHI  V21.B16, V7.B16, V30.B16               // <--                                  // cmhi	v30.16b, v7.16b, v21.16b
-	VCMHI  V23.B16, V16.B16, V23.B16              // <--                                  // cmhi	v23.16b, v16.16b, v23.16b
-	VCMHI  V24.B16, V7.B16, V31.B16               // <--                                  // cmhi	v31.16b, v7.16b, v24.16b
-	VCMHI  V25.B16, V16.B16, V25.B16              // <--                                  // cmhi	v25.16b, v16.16b, v25.16b
+	VEXT   $15, V2.B16, V20.B16, V21.B16          // <--                                  // ext	v21.16b, v20.16b, v2.16b, #15
+	VEXT   $14, V2.B16, V20.B16, V22.B16          // <--                                  // ext	v22.16b, v20.16b, v2.16b, #14
+	VEXT   $15, V3.B16, V2.B16, V23.B16           // <--                                  // ext	v23.16b, v2.16b, v3.16b, #15
+	VEXT   $14, V3.B16, V2.B16, V24.B16           // <--                                  // ext	v24.16b, v2.16b, v3.16b, #14
+	VEXT   $15, V4.B16, V3.B16, V25.B16           // <--                                  // ext	v25.16b, v3.16b, v4.16b, #15
+	VEXT   $14, V4.B16, V3.B16, V26.B16           // <--                                  // ext	v26.16b, v3.16b, v4.16b, #14
+	VEXT   $15, V5.B16, V4.B16, V27.B16           // <--                                  // ext	v27.16b, v4.16b, v5.16b, #15
+	VEXT   $14, V5.B16, V4.B16, V28.B16           // <--                                  // ext	v28.16b, v4.16b, v5.16b, #14
+	VEXT   $13, V2.B16, V20.B16, V20.B16          // <--                                  // ext	v20.16b, v20.16b, v2.16b, #13
+	VEXT   $13, V3.B16, V2.B16, V9.B16            // <--                                  // ext	v9.16b, v2.16b, v3.16b, #13
+	VEXT   $13, V4.B16, V3.B16, V10.B16           // <--                                  // ext	v10.16b, v3.16b, v4.16b, #13
+	VEXT   $13, V5.B16, V4.B16, V11.B16           // <--                                  // ext	v11.16b, v4.16b, v5.16b, #13
+	VCMHI  V7.B16, V21.B16, V29.B16               // <--                                  // cmhi	v29.16b, v21.16b, v7.16b
+	VCMHI  V16.B16, V22.B16, V22.B16              // <--                                  // cmhi	v22.16b, v22.16b, v16.16b
+	VCMHI  V7.B16, V23.B16, V30.B16               // <--                                  // cmhi	v30.16b, v23.16b, v7.16b
+	VCMHI  V16.B16, V24.B16, V24.B16              // <--                                  // cmhi	v24.16b, v24.16b, v16.16b
+	VCMHI  V7.B16, V25.B16, V31.B16               // <--                                  // cmhi	v31.16b, v25.16b, v7.16b
+	VCMHI  V16.B16, V26.B16, V26.B16              // <--                                  // cmhi	v26.16b, v26.16b, v16.16b
+	VCMHI  V7.B16, V27.B16, V8.B16                // <--                                  // cmhi	v8.16b, v27.16b, v7.16b
+	VCMHI  V16.B16, V28.B16, V28.B16              // <--                                  // cmhi	v28.16b, v28.16b, v16.16b
 	VADD   V6.B16, V21.B16, V21.B16               // <--                                  // add	v21.16b, v21.16b, v6.16b
-	VCMHI  V26.B16, V7.B16, V8.B16                // <--                                  // cmhi	v8.16b, v7.16b, v26.16b
-	VCMHI  V27.B16, V16.B16, V27.B16              // <--                                  // cmhi	v27.16b, v16.16b, v27.16b
-	VCMHI  V22.B16, V17.B16, V22.B16              // <--                                  // cmhi	v22.16b, v17.16b, v22.16b
-	VADD   V6.B16, V24.B16, V24.B16               // <--                                  // add	v24.16b, v24.16b, v6.16b
-	VAND   V30.B16, V23.B16, V23.B16              // <--                                  // and	v23.16b, v23.16b, v30.16b
-	VCMHI  V10.B16, V17.B16, V30.B16              // <--                                  // cmhi	v30.16b, v17.16b, v10.16b
-	VCMHI  V28.B16, V7.B16, V9.B16                // <--                                  // cmhi	v9.16b, v7.16b, v28.16b
-	VAND   V31.B16, V25.B16, V25.B16              // <--                                  // and	v25.16b, v25.16b, v31.16b
+	VORR   V29.B16, V22.B16, V22.B16              // <--                                  // orr	v22.16b, v22.16b, v29.16b
+	VCMHI  V17.B16, V20.B16, V20.B16              // <--                                  // cmhi	v20.16b, v20.16b, v17.16b
+	VADD   V6.B16, V23.B16, V23.B16               // <--                                  // add	v23.16b, v23.16b, v6.16b
+	VADD   V6.B16, V25.B16, V25.B16               // <--                                  // add	v25.16b, v25.16b, v6.16b
+	VADD   V6.B16, V27.B16, V27.B16               // <--                                  // add	v27.16b, v27.16b, v6.16b
+	VORR   V30.B16, V24.B16, V24.B16              // <--                                  // orr	v24.16b, v24.16b, v30.16b
+	VORR   V31.B16, V26.B16, V26.B16              // <--                                  // orr	v26.16b, v26.16b, v31.16b
+	VORR   V8.B16, V28.B16, V28.B16               // <--                                  // orr	v28.16b, v28.16b, v8.16b
+	VCMHI  V17.B16, V9.B16, V29.B16               // <--                                  // cmhi	v29.16b, v9.16b, v17.16b
+	VCMHI  V17.B16, V10.B16, V30.B16              // <--                                  // cmhi	v30.16b, v10.16b, v17.16b
+	VCMHI  V17.B16, V11.B16, V31.B16              // <--                                  // cmhi	v31.16b, v11.16b, v17.16b
 	VTBL   V21.B16, [V0.B16, V1.B16], V21.B16     // <--                                  // tbl	v21.16b, { v0.16b, v1.16b }, v21.16b
-	VCMHI  V29.B16, V16.B16, V29.B16              // <--                                  // cmhi	v29.16b, v16.16b, v29.16b
-	VAND   V8.B16, V27.B16, V27.B16               // <--                                  // and	v27.16b, v27.16b, v8.16b
-	VCMHI  V11.B16, V17.B16, V31.B16              // <--                                  // cmhi	v31.16b, v17.16b, v11.16b
-	VADD   V6.B16, V26.B16, V26.B16               // <--                                  // add	v26.16b, v26.16b, v6.16b
-	VAND   V22.B16, V23.B16, V22.B16              // <--                                  // and	v22.16b, v23.16b, v22.16b
-	VTBL   V24.B16, [V0.B16, V1.B16], V23.B16     // <--                                  // tbl	v23.16b, { v0.16b, v1.16b }, v24.16b
-	VADD   V6.B16, V28.B16, V28.B16               // <--                                  // add	v28.16b, v28.16b, v6.16b
-	VAND   V30.B16, V25.B16, V25.B16              // <--                                  // and	v25.16b, v25.16b, v30.16b
-	VAND   V9.B16, V29.B16, V29.B16               // <--                                  // and	v29.16b, v29.16b, v9.16b
-	VCMHI  V12.B16, V17.B16, V8.B16               // <--                                  // cmhi	v8.16b, v17.16b, v12.16b
-	VAND   V31.B16, V27.B16, V27.B16              // <--                                  // and	v27.16b, v27.16b, v31.16b
-	VTBL   V26.B16, [V0.B16, V1.B16], V24.B16     // <--                                  // tbl	v24.16b, { v0.16b, v1.16b }, v26.16b
-	VBIT   V22.B16, V18.B16, V21.B16              // <--                                  // bit	v21.16b, v18.16b, v22.16b
-	VTBL   V28.B16, [V0.B16, V1.B16], V26.B16     // <--                                  // tbl	v26.16b, { v0.16b, v1.16b }, v28.16b
-	VMOV   V25.B16, V22.B16                       // <--                                  // mov	v22.16b, v25.16b
-	VAND   V8.B16, V29.B16, V28.B16               // <--                                  // and	v28.16b, v29.16b, v8.16b
-	VBSL   V23.B16, V18.B16, V22.B16              // <--                                  // bsl	v22.16b, v18.16b, v23.16b
-	VMOV   V27.B16, V23.B16                       // <--                                  // mov	v23.16b, v27.16b
-	VTBL   V21.B16, [V19.B16], V25.B16            // <--                                  // tbl	v25.16b, { v19.16b }, v21.16b
-	VTBL   V21.B16, [V20.B16], V21.B16            // <--                                  // tbl	v21.16b, { v20.16b }, v21.16b
-	VBSL   V24.B16, V18.B16, V23.B16              // <--                                  // bsl	v23.16b, v18.16b, v24.16b
-	VMOV   V28.B16, V24.B16                       // <--                                  // mov	v24.16b, v28.16b
-	VSUB   V25.B16, V2.B16, V25.B16               // <--                                  // sub	v25.16b, v2.16b, v25.16b
-	VBSL   V26.B16, V18.B16, V24.B16              // <--                                  // bsl	v24.16b, v18.16b, v26.16b
-	VTBL   V22.B16, [V19.B16], V26.B16            // <--                                  // tbl	v26.16b, { v19.16b }, v22.16b
-	VTBL   V22.B16, [V20.B16], V22.B16            // <--                                  // tbl	v22.16b, { v20.16b }, v22.16b
-	VTBL   V23.B16, [V19.B16], V27.B16            // <--                                  // tbl	v27.16b, { v19.16b }, v23.16b
-	VTBL   V23.B16, [V20.B16], V23.B16            // <--                                  // tbl	v23.16b, { v20.16b }, v23.16b
+	VORR   V20.B16, V22.B16, V20.B16              // <--                                  // orr	v20.16b, v22.16b, v20.16b
+	VTBL   V23.B16, [V0.B16, V1.B16], V22.B16     // <--                                  // tbl	v22.16b, { v0.16b, v1.16b }, v23.16b
+	VTBL   V25.B16, [V0.B16, V1.B16], V23.B16     // <--                                  // tbl	v23.16b, { v0.16b, v1.16b }, v25.16b
+	VTBL   V27.B16, [V0.B16, V1.B16], V25.B16     // <--                                  // tbl	v25.16b, { v0.16b, v1.16b }, v27.16b
+	VORR   V29.B16, V24.B16, V24.B16              // <--                                  // orr	v24.16b, v24.16b, v29.16b
+	VORR   V30.B16, V26.B16, V26.B16              // <--                                  // orr	v26.16b, v26.16b, v30.16b
+	VORR   V31.B16, V28.B16, V27.B16              // <--                                  // orr	v27.16b, v28.16b, v31.16b
+	VSUB   V20.B16, V21.B16, V20.B16              // <--                                  // sub	v20.16b, v21.16b, v20.16b
+	VSUB   V24.B16, V22.B16, V21.B16              // <--                                  // sub	v21.16b, v22.16b, v24.16b
+	VSUB   V26.B16, V23.B16, V22.B16              // <--                                  // sub	v22.16b, v23.16b, v26.16b
+	VSUB   V27.B16, V25.B16, V23.B16              // <--                                  // sub	v23.16b, v25.16b, v27.16b
+	VTBL   V20.B16, [V18.B16], V24.B16            // <--                                  // tbl	v24.16b, { v18.16b }, v20.16b
+	VTBL   V20.B16, [V19.B16], V20.B16            // <--                                  // tbl	v20.16b, { v19.16b }, v20.16b
+	VTBL   V21.B16, [V18.B16], V25.B16            // <--                                  // tbl	v25.16b, { v18.16b }, v21.16b
+	VTBL   V21.B16, [V19.B16], V21.B16            // <--                                  // tbl	v21.16b, { v19.16b }, v21.16b
+	VTBL   V22.B16, [V18.B16], V26.B16            // <--                                  // tbl	v26.16b, { v18.16b }, v22.16b
+	VTBL   V23.B16, [V18.B16], V27.B16            // <--                                  // tbl	v27.16b, { v18.16b }, v23.16b
+	VTBL   V22.B16, [V19.B16], V22.B16            // <--                                  // tbl	v22.16b, { v19.16b }, v22.16b
+	VTBL   V23.B16, [V19.B16], V23.B16            // <--                                  // tbl	v23.16b, { v19.16b }, v23.16b
+	VSUB   V24.B16, V2.B16, V24.B16               // <--                                  // sub	v24.16b, v2.16b, v24.16b
+	VSUB   V25.B16, V3.B16, V25.B16               // <--                                  // sub	v25.16b, v3.16b, v25.16b
+	VSUB   V26.B16, V4.B16, V26.B16               // <--                                  // sub	v26.16b, v4.16b, v26.16b
+	VSUB   V27.B16, V5.B16, V27.B16               // <--                                  // sub	v27.16b, v5.16b, v27.16b
+	VCMHI  V24.B16, V20.B16, V20.B16              // <--                                  // cmhi	v20.16b, v20.16b, v24.16b
 	VCMHI  V25.B16, V21.B16, V21.B16              // <--                                  // cmhi	v21.16b, v21.16b, v25.16b
-	VTBL   V24.B16, [V19.B16], V28.B16            // <--                                  // tbl	v28.16b, { v19.16b }, v24.16b
-	VTBL   V24.B16, [V20.B16], V24.B16            // <--                                  // tbl	v24.16b, { v20.16b }, v24.16b
-	VSUB   V26.B16, V3.B16, V26.B16               // <--                                  // sub	v26.16b, v3.16b, v26.16b
-	VSUB   V27.B16, V4.B16, V27.B16               // <--                                  // sub	v27.16b, v4.16b, v27.16b
 	VCMHI  V26.B16, V22.B16, V22.B16              // <--                                  // cmhi	v22.16b, v22.16b, v26.16b
-	VSUB   V28.B16, V5.B16, V28.B16               // <--                                  // sub	v28.16b, v5.16b, v28.16b
 	VCMHI  V27.B16, V23.B16, V23.B16              // <--                                  // cmhi	v23.16b, v23.16b, v27.16b
-	VAND   V21.B16, V22.B16, V21.B16              // <--                                  // and	v21.16b, v22.16b, v21.16b
-	VCMHI  V28.B16, V24.B16, V24.B16              // <--                                  // cmhi	v24.16b, v24.16b, v28.16b
-	VAND   V24.B16, V23.B16, V22.B16              // <--                                  // and	v22.16b, v23.16b, v24.16b
-	VAND   V22.B16, V21.B16, V21.B16              // <--                                  // and	v21.16b, v21.16b, v22.16b
-	VUMINV V21.S4, V22                            // <--                                  // uminv	s22, v21.4s
-	FMOVS  F22, R10                               // <--                                  // fmov	w10, s22
+	VAND   V20.B16, V21.B16, V20.B16              // <--                                  // and	v20.16b, v21.16b, v20.16b
+	VAND   V23.B16, V22.B16, V21.B16              // <--                                  // and	v21.16b, v22.16b, v23.16b
+	VAND   V21.B16, V20.B16, V20.B16              // <--                                  // and	v20.16b, v20.16b, v21.16b
+	VUMINV V20.S4, V21                            // <--                                  // uminv	s21, v20.4s
+	FMOVS  F21, R10                               // <--                                  // fmov	w10, s21
 	CMNW   $1, R10                                // <--                                  // cmn	w10, #1
 	BNE    LBB0_45                                // <--                                  // b.ne	.LBB0_45
 	MOVD   56(R0), R10                            // <--                                  // ldr	x10, [x0, #56]
@@ -157,56 +152,54 @@ LBB0_10:
 	JMP LBB0_14 // <--                                  // b	.LBB0_14
 
 LBB0_11:
-	WORD $0x6f07e7f5 // VMOVI $-1, V21.D2                    // movi	v21.2d, #0xffffffffffffffff
+	WORD $0x6f07e7f4 // VMOVI $-1, V20.D2                    // movi	v20.2d, #0xffffffffffffffff
 	WORD $0x6f00e405 // VMOVI $0, V5.D2                      // movi	v5.2d, #0000000000000000
 
 LBB0_12:
 	WORD  $0x4f01e406 // VMOVI $32, V6.B16                    // movi	v6.16b, #32
-	WORD  $0x4f06e407 // VMOVI $192, V7.B16                   // movi	v7.16b, #192
-	FMOVQ (R8), F19   // <--                                  // ldr	q19, [x8, :lo12:.LCPI0_0]
-	WORD  $0x4f07e410 // VMOVI $224, V16.B16                  // movi	v16.16b, #224
-	WORD  $0x4f07e611 // VMOVI $240, V17.B16                  // movi	v17.16b, #240
-	FMOVQ (R9), F20   // <--                                  // ldr	q20, [x9, :lo12:.LCPI0_1]
-	WORD  $0x4f00e4d2 // VMOVI $6, V18.B16                    // movi	v18.16b, #6
+	WORD  $0x4f05e7e7 // VMOVI $191, V7.B16                   // movi	v7.16b, #191
+	FMOVQ (R8), F18   // <--                                  // ldr	q18, [x8, :lo12:.LCPI0_0]
+	WORD  $0x4f06e7f0 // VMOVI $223, V16.B16                  // movi	v16.16b, #223
+	WORD  $0x4f07e5f1 // VMOVI $239, V17.B16                  // movi	v17.16b, #239
+	FMOVQ (R9), F19   // <--                                  // ldr	q19, [x9, :lo12:.LCPI0_1]
 	MOVD  R1, R8      // <--                                  // mov	x8, x1
 
 LBB0_13:
-	FMOVQ.P 16(R0), F22                      // <--                                  // ldr	q22, [x0], #16
+	FMOVQ.P 16(R0), F21                      // <--                                  // ldr	q21, [x0], #16
 	SUB     $16, R8, R1                      // <--                                  // sub	x1, x8, #16
 	CMP     $31, R8                          // <--                                  // cmp	x8, #31
 	MOVD    R1, R8                           // <--                                  // mov	x8, x1
-	VEXT    $15, V22.B16, V5.B16, V23.B16    // <--                                  // ext	v23.16b, v5.16b, v22.16b, #15
-	VEXT    $14, V22.B16, V5.B16, V24.B16    // <--                                  // ext	v24.16b, v5.16b, v22.16b, #14
-	VEXT    $13, V22.B16, V5.B16, V2.B16     // <--                                  // ext	v2.16b, v5.16b, v22.16b, #13
-	VCMHI   V23.B16, V7.B16, V3.B16          // <--                                  // cmhi	v3.16b, v7.16b, v23.16b
-	VCMHI   V24.B16, V16.B16, V4.B16         // <--                                  // cmhi	v4.16b, v16.16b, v24.16b
-	VADD    V6.B16, V23.B16, V5.B16          // <--                                  // add	v5.16b, v23.16b, v6.16b
-	VCMHI   V2.B16, V17.B16, V2.B16          // <--                                  // cmhi	v2.16b, v17.16b, v2.16b
-	VAND    V3.B16, V4.B16, V3.B16           // <--                                  // and	v3.16b, v4.16b, v3.16b
+	VEXT    $15, V21.B16, V5.B16, V22.B16    // <--                                  // ext	v22.16b, v5.16b, v21.16b, #15
+	VEXT    $14, V21.B16, V5.B16, V23.B16    // <--                                  // ext	v23.16b, v5.16b, v21.16b, #14
+	VEXT    $13, V21.B16, V5.B16, V2.B16     // <--                                  // ext	v2.16b, v5.16b, v21.16b, #13
+	VCMHI   V7.B16, V22.B16, V3.B16          // <--                                  // cmhi	v3.16b, v22.16b, v7.16b
+	VCMHI   V16.B16, V23.B16, V4.B16         // <--                                  // cmhi	v4.16b, v23.16b, v16.16b
+	VADD    V6.B16, V22.B16, V5.B16          // <--                                  // add	v5.16b, v22.16b, v6.16b
+	VCMHI   V17.B16, V2.B16, V2.B16          // <--                                  // cmhi	v2.16b, v2.16b, v17.16b
+	VORR    V3.B16, V4.B16, V3.B16           // <--                                  // orr	v3.16b, v4.16b, v3.16b
 	VTBL    V5.B16, [V0.B16, V1.B16], V4.B16 // <--                                  // tbl	v4.16b, { v0.16b, v1.16b }, v5.16b
-	VAND    V2.B16, V3.B16, V2.B16           // <--                                  // and	v2.16b, v3.16b, v2.16b
-	VBSL    V4.B16, V18.B16, V2.B16          // <--                                  // bsl	v2.16b, v18.16b, v4.16b
-	VTBL    V2.B16, [V19.B16], V3.B16        // <--                                  // tbl	v3.16b, { v19.16b }, v2.16b
-	VTBL    V2.B16, [V20.B16], V2.B16        // <--                                  // tbl	v2.16b, { v20.16b }, v2.16b
-	VSUB    V3.B16, V22.B16, V3.B16          // <--                                  // sub	v3.16b, v22.16b, v3.16b
+	VORR    V2.B16, V3.B16, V2.B16           // <--                                  // orr	v2.16b, v3.16b, v2.16b
+	VSUB    V2.B16, V4.B16, V2.B16           // <--                                  // sub	v2.16b, v4.16b, v2.16b
+	VTBL    V2.B16, [V18.B16], V3.B16        // <--                                  // tbl	v3.16b, { v18.16b }, v2.16b
+	VTBL    V2.B16, [V19.B16], V2.B16        // <--                                  // tbl	v2.16b, { v19.16b }, v2.16b
+	VSUB    V3.B16, V21.B16, V3.B16          // <--                                  // sub	v3.16b, v21.16b, v3.16b
 	VCMHI   V3.B16, V2.B16, V2.B16           // <--                                  // cmhi	v2.16b, v2.16b, v3.16b
-	VAND    V2.B16, V21.B16, V21.B16         // <--                                  // and	v21.16b, v21.16b, v2.16b
-	VMOV    V22.B16, V5.B16                  // <--                                  // mov	v5.16b, v22.16b
+	VAND    V2.B16, V20.B16, V20.B16         // <--                                  // and	v20.16b, v20.16b, v2.16b
+	VMOV    V21.B16, V5.B16                  // <--                                  // mov	v5.16b, v21.16b
 	BHI     LBB0_13                          // <--                                  // b.hi	.LBB0_13
 
 LBB0_14:
-	VUMINV V21.S4, V0  // <--                                  // uminv	s0, v21.4s
+	VUMINV V20.S4, V0  // <--                                  // uminv	s0, v20.4s
 	FMOVS  F0, R8      // <--                                  // fmov	w8, s0
 	CMNW   $1, R8      // <--                                  // cmn	w8, #1
 	BEQ    LBB0_17     // <--                                  // b.eq	.LBB0_17
 	WORD   $0x2a1f03e8 // MOVW ZR, R8                          // mov	w8, wzr
 
 LBB0_16:
-	NOP                 // (skipped)                            // ldp	x29, x30, [sp, #48]
+	NOP                 // (skipped)                            // ldp	x29, x30, [sp, #32]
 	WORD $0x2a0803e0    // MOVW R8, R0                          // mov	w0, w8
-	NOP                 // (skipped)                            // ldp	d9, d8, [sp, #32]
-	NOP                 // (skipped)                            // ldp	d11, d10, [sp, #16]
-	NOP                 // (skipped)                            // ldr	d12, [sp], #64
+	NOP                 // (skipped)                            // ldp	d9, d8, [sp, #16]
+	NOP                 // (skipped)                            // ldp	d11, d10, [sp], #48
 	MOVB R0, ret+16(FP) // <--
 	RET                 // <--                                  // ret
 
@@ -318,20 +311,18 @@ LBB0_38:
 
 LBB0_44:
 	MOVW $1, R8         // <--                                  // mov	w8, #1
-	NOP                 // (skipped)                            // ldp	x29, x30, [sp, #48]
+	NOP                 // (skipped)                            // ldp	x29, x30, [sp, #32]
 	WORD $0x2a0803e0    // MOVW R8, R0                          // mov	w0, w8
-	NOP                 // (skipped)                            // ldp	d9, d8, [sp, #32]
-	NOP                 // (skipped)                            // ldp	d11, d10, [sp, #16]
-	NOP                 // (skipped)                            // ldr	d12, [sp], #64
+	NOP                 // (skipped)                            // ldp	d9, d8, [sp, #16]
+	NOP                 // (skipped)                            // ldp	d11, d10, [sp], #48
 	MOVB R0, ret+16(FP) // <--
 	RET                 // <--                                  // ret
 
 LBB0_45:
 	WORD $0x2a1f03e8    // MOVW ZR, R8                          // mov	w8, wzr
-	NOP                 // (skipped)                            // ldp	x29, x30, [sp, #48]
+	NOP                 // (skipped)                            // ldp	x29, x30, [sp, #32]
 	WORD $0x2a0803e0    // MOVW R8, R0                          // mov	w0, w8
-	NOP                 // (skipped)                            // ldp	d9, d8, [sp, #32]
-	NOP                 // (skipped)                            // ldp	d11, d10, [sp, #16]
-	NOP                 // (skipped)                            // ldr	d12, [sp], #64
+	NOP                 // (skipped)                            // ldp	d9, d8, [sp, #16]
+	NOP                 // (skipped)                            // ldp	d11, d10, [sp], #48
 	MOVB R0, ret+16(FP) // <--
 	RET                 // <--                                  // ret
