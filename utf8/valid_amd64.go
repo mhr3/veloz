@@ -23,3 +23,15 @@ func ValidString(s string) bool {
 
 	return stdlib.ValidString(s)
 }
+
+func Valid(p []byte) bool {
+	if hasAVX512 {
+		return utf8_valid_range_avx512_bytes(p)
+	}
+
+	if hasAVX2 {
+		return utf8_valid_range_avx2_bytes(p)
+	}
+
+	return stdlib.Valid(p)
+}

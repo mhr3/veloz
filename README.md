@@ -55,7 +55,7 @@ func main() {
 
 ### UTF-8 Validation
 
-The `utf8` package provides fast UTF-8 string validation:
+The `utf8` package provides fast UTF-8 validation, of strings and of byte slices:
 
 ```go
 package main
@@ -71,6 +71,9 @@ func main() {
     fmt.Println(utf8.ValidString("Hello, 世界!"))           // true
     fmt.Println(utf8.ValidString("Valid UTF-8 string"))    // true
     fmt.Println(utf8.ValidString(string([]byte{0xff})))    // false (invalid UTF-8)
+
+    // The same for a []byte
+    fmt.Println(utf8.Valid([]byte("Hello, 世界!")))         // true
 }
 ```
 

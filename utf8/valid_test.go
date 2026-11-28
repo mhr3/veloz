@@ -47,6 +47,18 @@ func genExamples(current string, ranges []byteRange) []string {
 	return all
 }
 
+// bothValid returns ValidString(s), having checked that Valid says the same
+// of the bytes of s.
+func bothValid(t testing.TB, kernel, s string) bool {
+	t.Helper()
+
+	got := ValidString(s)
+	if ofBytes := Valid(unsafe.Slice(unsafe.StringData(s), len(s))); ofBytes != got {
+		t.Fatalf("%s: Valid(%q) = %v, ValidString of it = %v", kernel, s, ofBytes, got)
+	}
+	return got
+}
+
 func TestValid(t *testing.T) {
 	var examples = []string{
 		// Tests copied from the stdlib
@@ -153,7 +165,7 @@ func TestValid(t *testing.T) {
 		t.Run(tt, func(t *testing.T) {
 			expected := stdlib.ValidString(tt)
 			forEachKernel(func(kernel string) {
-				assert.Equal(t, expected, ValidString(tt), kernel)
+				assert.Equal(t, expected, bothValid(t, kernel, tt), kernel)
 			})
 		})
 	}
@@ -166,11 +178,40 @@ func TestValidEmpty(t *testing.T) {
 
 	for _, s := range []string{"", string(noData), "a"[:0]} {
 		forEachKernel(func(kernel string) {
-			if !ValidString(s) {
+			if !bothValid(t, kernel, s) {
 				t.Fatalf("%s: ValidString(%q) = false, want true", kernel, s)
 			}
 		})
 	}
+
+	for _, p := range [][]byte{nil, {}, []byte("a")[:0]} {
+		forEachKernel(func(kernel string) {
+			if !Valid(p) {
+				t.Fatalf("%s: Valid(%#v) = false, want true", kernel, p)
+			}
+		})
+	}
+}
+
+// A []byte ends at its length. What the capacity has after that is not part
+// of the input: it does not make the input invalid, and it does not complete
+// a character the input ends in the middle of.
+func TestValidCapacity(t *testing.T) {
+	forEachKernel(func(kernel string) {
+		for n := 0; n <= 200; n++ {
+			front := strings.Repeat("a", n%2) + strings.Repeat("é", n/2)
+
+			p := []byte(front + "\xff")[:n]
+			if !Valid(p) {
+				t.Fatalf("%s: Valid(%q) = false with \\xff after its end, want true", kernel, p)
+			}
+
+			p = []byte(front + "日")[:n+2]
+			if Valid(p) {
+				t.Fatalf("%s: Valid(%q) = true with the rest of its last character after its end, want false", kernel, p)
+			}
+		}
+	})
 }
 
 // The kernels take the input in blocks and carry what a block ends with over
@@ -199,7 +240,7 @@ func TestValidBlocks(t *testing.T) {
 					for _, seq := range sequences {
 						for _, after := range []int{0, 9, 150} {
 							s := front + seq + strings.Repeat("a", after)
-							if got, want := ValidString(s), stdlib.ValidString(s); got != want {
+							if got, want := bothValid(t, kernel, s), stdlib.ValidString(s); got != want {
 								t.Fatalf("%s: ValidString(%q) = %v, want %v", kernel, s, got, want)
 							}
 						}
@@ -234,7 +275,7 @@ func TestValidPageEnd(t *testing.T) {
 						copy(in[n-len(seq):], seq)
 
 						s := unsafe.String(unsafe.SliceData(in), n)
-						if got, want := ValidString(s), stdlib.ValidString(s); got != want {
+						if got, want := bothValid(t, kernel, s), stdlib.ValidString(s); got != want {
 							t.Fatalf("%s: ValidString(%q) = %v, want %v, %d bytes in front of the end of the page", kernel, s, got, want, end-at)
 						}
 					}
@@ -259,7 +300,7 @@ func FuzzValidString(f *testing.F) {
 		for _, in := range []string{s, long, long[len("é"):]} {
 			want := stdlib.ValidString(in)
 			forEachKernel(func(kernel string) {
-				if got := ValidString(in); got != want {
+				if got := bothValid(t, kernel, in); got != want {
 					t.Fatalf("%s: ValidString(%q) = %v, want %v", kernel, in, got, want)
 				}
 			})

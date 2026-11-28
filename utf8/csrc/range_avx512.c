@@ -125,6 +125,7 @@ static inline __m512i utf8_range_load_tail(const unsigned char *src, int64_t src
 }
 
 // gocc: utf8_valid_range_avx512(src string) bool
+// gocc-variant: utf8_valid_range_avx512_bytes(src []byte) bool
 bool utf8_valid_range_avx512(const unsigned char *src, int64_t src_len)
 {
     /*
